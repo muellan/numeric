@@ -34,60 +34,27 @@ namespace num {
 //-------------------------------------------------------------------
 template<class T>
 inline T
-deg_to_rad(const T& angle, bool mod2pi = true)
+deg_to_rad(const T& angle, bool wrap = true)
 {
 	using std::fmod;
 
-	if(mod2pi)
+	if(wrap)
 		return fmod(angle*T(pi/180.0), T(2 * pi + 1e-10));
 	else
 		return (angle * T(pi/180.0));
 }
 
-//---------------------------------------------------------
-template<class T>
-inline T
-arcmin2rad(const T& angle, bool mod2pi = true)
-{
-	return deg_to_rad(angle / T(60), mod2pi);
-}
-
-//---------------------------------------------------------
-template<class T>
-inline T
-arcsec_to_rad(const T& angle, bool mod2pi = true)
-{
-	return deg_to_rad(angle / T(3600), mod2pi);
-}
-
-
 //-------------------------------------------------------------------
 template<class T>
 inline T
-rad_to_deg(const T& angle, bool mod2pi = true)
+rad_to_deg(const T& angle, bool wrap = true)
 {
 	using std::fmod;
 
-	if(mod2pi)
+	if(wrap)
 		return fmod(angle * T(180.0/pi), T(360));
 	else
 		return (angle * T(180.0/pi));
-}
-
-//---------------------------------------------------------
-template<class T>
-inline T
-rad_to_arcmin(const T& angle, bool mod2pi = true)
-{
-	return (T(60) * rad_to_deg(angle, mod2pi));
-}
-
-//---------------------------------------------------------
-template<class T>
-inline T
-rad_to_arcsec(const T& angle, bool mod2pi = true)
-{
-	return (T(3600) * rad_to_deg(angle, mod2pi));
 }
 
 
