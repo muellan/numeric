@@ -410,11 +410,27 @@ make_dual(const T& x)
 //-------------------------------------------------------------------
 // I/O
 //-------------------------------------------------------------------
-template<class CharT, class Traits, class T>
-inline std::basic_ostream<CharT,Traits>&
-operator << (std::basic_ostream<CharT,Traits>& os, const dual<T>& x)
+template<class Istream, class T>
+inline Istream&
+operator >> (Istream& is, dual<T>& x)
 {
-	return (os << "(" << x.real() << "," << x.imag() << ")");
+	return (is >> x.real() >> x.imag());
+}
+
+//---------------------------------------------------------
+template<class Ostream, class T>
+inline Ostream&
+operator << (Ostream& os, const dual<T>& x)
+{
+	return (os << x.real() << " " << x.imag() );
+}
+
+//---------------------------------------------------------
+template<class T, class Ostream>
+inline Ostream&
+print(const dual<T>& d, Ostream& os)
+{
+	return (os << "(" << d.real() << "," << d.imag() << ")" );
 }
 
 
@@ -1265,6 +1281,7 @@ isnormal(const dual<T>& x)
 	using std::isnormal;
 	return (isnormal(x.real()) && isnormal(x.imag()));
 }
+
 
 
 }  // namespace num
