@@ -13,7 +13,6 @@
 #define AM_NUM_NUMERIC_ANGLE_H_
 
 #include <cmath>
-#include <iostream>
 #include <utility>
 
 #include "constants.h"
@@ -21,6 +20,8 @@
 
 
 namespace num {
+
+
 
 
 /*****************************************************************************
@@ -579,9 +580,9 @@ constexpr gons<real_t> operator"" _gon (unsigned long long int x) {
 //-------------------------------------------------------------------
 // I/O
 //-------------------------------------------------------------------
-template<class CharT, class Traits, class T>
-inline std::basic_ostream<CharT,Traits>&
-operator << (std::basic_ostream<CharT,Traits>& os, const angle<T>& r)
+template<class Ostream, class T>
+inline Ostream&
+operator << (Ostream& os, const angle<T>& r)
 {
 	return (os << angle_cast<T>(r));
 }
@@ -590,41 +591,41 @@ operator << (std::basic_ostream<CharT,Traits>& os, const angle<T>& r)
 //-------------------------------------------------------------------
 // pretty printing
 //-------------------------------------------------------------------
-template<class CharT, class Traits, class V>
-inline std::basic_ostream<CharT,Traits>&
-print(const angle<radians_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
+template<class T, class Ostream>
+inline Ostream&
+print(const angle<radians_turn<T>>& a, Ostream& os)
 {
 	return (os << a << "rad");
 }
 
 //---------------------------------------------------------
-template<class CharT, class Traits, class V>
-inline std::basic_ostream<CharT,Traits>&
-print(const angle<degrees_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
+template<class T, class Ostream>
+inline Ostream&
+print(const angle<degrees_turn<T>>& a, Ostream& os)
 {
 	return (os << a << "°");
 }
 
 //---------------------------------------------------------
-template<class CharT, class Traits, class V>
-inline std::basic_ostream<CharT,Traits>&
-print(const angle<arcmins_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
+template<class T, class Ostream>
+inline Ostream&
+print(const angle<arcmins_turn<T>>& a, Ostream& os)
 {
 	return (os << a << "'");
 }
 
 //---------------------------------------------------------
-template<class CharT, class Traits, class V>
-inline std::basic_ostream<CharT,Traits>&
-print(const angle<arcsecs_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
+template<class T, class Ostream>
+inline Ostream&
+print(const angle<arcsecs_turn<T>>& a, Ostream& os)
 {
 	return (os << a << "''");
 }
 
 //---------------------------------------------------------
-template<class CharT, class Traits, class V>
-inline std::basic_ostream<CharT,Traits>&
-print(const angle<gons_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
+template<class T, class Ostream>
+inline Ostream&
+print(const angle<gons_turn<T>>& a, Ostream& os)
 {
 	return (os << a << "gon");
 }

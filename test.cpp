@@ -14,6 +14,8 @@
 
 #ifdef USE_TESTS
 
+#include <iostream>
+
 #include "angle_test.h"
 #include "quaternion_test.h"
 
