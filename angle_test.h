@@ -37,8 +37,8 @@ bool angle_init_correct()
 
 	auto d0 = deg{15};
 	deg  d1 {45.0f};
-	auto d2 = 90_deg;	//via user-defined literals
-	auto d3 = 1_pi_rad;	//via user-defined literals + implicit angle conversion
+	auto d2 = 90_deg;	//via user-defined literal
+	auto d3 = 1_pi_rad;	//via user-defined literal + implicit angle conversion
 	auto d4 = radf{4.5};
 	auto d5 = radd{pi};
 

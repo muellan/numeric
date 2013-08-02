@@ -62,7 +62,6 @@ rad_to_deg(const T& angle, bool wrap = true)
 
 
 
-
 /*****************************************************************************
  *
  *
@@ -83,7 +82,7 @@ struct degrees_turn
 //---------------------------------------------------------
 /// @brief arc minutes full turn
 template<class T>
-struct arc_mins_turn
+struct arcmins_turn
 {
 	using type = T;
 	static constexpr type value = 21600;
@@ -91,7 +90,7 @@ struct arc_mins_turn
 //---------------------------------------------------------
 /// @brief arc seconds full turn
 template<class T>
-struct arc_secs_turn
+struct arcsecs_turn
 {
 	using type = T;
 	static constexpr type value = 1296000;
@@ -174,7 +173,8 @@ public:
 	//---------------------------------------------------------------
 	// CONSTANTS
 	//---------------------------------------------------------------
-	static constexpr numeric_type turn() noexcept {
+	static constexpr numeric_type
+	turn() noexcept {
 		return (turn_type::value);
 	}
 
@@ -411,29 +411,45 @@ public:
 		return ( (res_t(OutTurn::value) / res_t(turn())) * v_);
 	}
 
+
 	//---------------------------------------------------------------
 	template<class OutTurn>
 	inline friend constexpr typename conversion<OutTurn>::type
 	angle_cast(const angle& a)	{
 		return (a.as<OutTurn>());
 	}
+
 	//-----------------------------------------------------
 	template<class T>
 	inline friend constexpr T
-	radians_cast(const angle& a)	{
-		return (a.as<radians_turn<T>>());
+	radians_cast(const angle& a) {
+		return a.as<radians_turn<T>>();
 	}
-	//-----------------------------------------------------
+
+	//---------------------------------------------------------
 	template<class T>
 	inline friend constexpr T
-	degrees_cast(const angle& a)	{
-		return (a.as<degrees_turn<T>>());
+	degrees_cast(const angle& a) {
+		return a.as<degrees_turn<T>>();
 	}
-	//-----------------------------------------------------
+	//---------------------------------------------------------
 	template<class T>
 	inline friend constexpr T
-	gons_cast(const angle& a)	{
-		return (a.as<gons_turn<T>>());
+	arcmins_cast(const angle& a) {
+		return a.as<arcmins_turn<T>>();
+	}
+	//---------------------------------------------------------
+	template<class T>
+	inline friend constexpr T
+	arcsecs_cast(const angle& a) {
+		return a.as<arcsecs_turn<T>>();
+	}
+
+	//---------------------------------------------------------
+	template<class T>
+	inline friend constexpr T
+	gons_cast(const angle& a) {
+		return a.as<gons_turn<T>>();
 	}
 
 
@@ -467,10 +483,10 @@ template<class V>
 using degrees = angle<degrees_turn<V>>;
 
 template<class V>
-using arcmins = angle<arc_mins_turn<V>>;
+using arcmins = angle<arcmins_turn<V>>;
 
 template<class V>
-using arcsecs = angle<arc_secs_turn<V>>;
+using arcsecs = angle<arcsecs_turn<V>>;
 
 //---------------------------------------------------------
 template<class V>
@@ -497,7 +513,6 @@ using gon  = angle<gons_turn<real_t>>;
 using gonf = angle<gons_turn<float>>;
 using gond = angle<gons_turn<double>>;
 using goni = angle<gons_turn<int>>;
-
 
 
 
@@ -593,10 +608,28 @@ print(const angle<degrees_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
 //---------------------------------------------------------
 template<class CharT, class Traits, class V>
 inline std::basic_ostream<CharT,Traits>&
+print(const angle<arcmins_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
+{
+	return (os << a << "'");
+}
+
+//---------------------------------------------------------
+template<class CharT, class Traits, class V>
+inline std::basic_ostream<CharT,Traits>&
+print(const angle<arcsecs_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
+{
+	return (os << a << "''");
+}
+
+//---------------------------------------------------------
+template<class CharT, class Traits, class V>
+inline std::basic_ostream<CharT,Traits>&
 print(const angle<gons_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
 {
 	return (os << a << "gon");
 }
+
+
 
 
 
@@ -613,25 +646,22 @@ print(const angle<gons_turn<V>>& a, std::basic_ostream<CharT,Traits>& os)
 
 //-------------------------------------------------------------------
 template<class T, class... R>
-struct is_angle
-{
-	static constexpr bool value =
-		is_angle<T>::value && is_angle<R...>::value;
-};
+struct is_angle :
+	public std::integral_constant<bool,
+		is_angle<T>::value && is_angle<R...>::value>
+{};
 
 //---------------------------------------------------------
 template<class T>
-struct is_angle<T>
-{
-	static constexpr bool value = false;
-};
+struct is_angle<T> :
+	public std::false_type
+{};
 
 //-----------------------------------------------------
 template<class T>
-struct is_angle<angle<T>>
-{
-	static constexpr bool value = true;
-};
+struct is_angle<angle<T>> :
+	public std::true_type
+{};
 
 
 
@@ -688,27 +718,32 @@ template<class T>
 inline typename std::common_type<typename T::type,real_t>::type
 sin(const angle<T>& r)
 {
-	using res_t = typename std::common_type<typename T::type,real_t>::type;
 	using std::sin;
-	return sin(angle_cast<radians_turn<res_t>>(r));
+	using res_t = typename std::common_type<typename T::type,real_t>::type;
+
+	return sin(radians_cast<res_t>(r));
 }
+
 //-----------------------------------------------------
 template<class T>
 inline typename std::common_type<typename T::type,real_t>::type
 cos(const angle<T>& r)
 {
-	using res_t = typename std::common_type<typename T::type,real_t>::type;
 	using std::cos;
-	return cos(angle_cast<radians_turn<res_t>>(r));
+	using res_t = typename std::common_type<typename T::type,real_t>::type;
+
+	return cos(radians_cast<res_t>(r));
 }
+
 //-----------------------------------------------------
 template<class T>
 inline typename std::common_type<typename T::type,real_t>::type
 tan(const angle<T>& r)
 {
-	using res_t = typename std::common_type<typename T::type,real_t>::type;
 	using std::tan;
-	return tan(angle_cast<radians_turn<res_t>>(r));
+	using res_t = typename std::common_type<typename T::type,real_t>::type;
+
+	return tan(radians_cast<res_t>(r));
 }
 
 
@@ -720,26 +755,32 @@ template<class T>
 inline typename std::common_type<typename T::type,real_t>::type
 sinh(const angle<T>& r)
 {
-	using res_t = typename std::common_type<typename T::type,real_t>::type;
 	using std::sinh;
-	return sinh(angle_cast<radians_turn<res_t>>(r));
+	using res_t = typename std::common_type<typename T::type,real_t>::type;
+
+	return sinh(radians_cast<res_t>(r));
 }
+
 //-----------------------------------------------------
 template<class T>
 inline typename std::common_type<typename T::type,real_t>::type
 cosh(const angle<T>& r)
 {
-	using res_t = typename std::common_type<typename T::type,real_t>::type;
 	using std::cosh;
-	return cosh(angle_cast<radians_turn<res_t>>(r));
+	using res_t = typename std::common_type<typename T::type,real_t>::type;
+
+	return cosh(radians_cast<res_t>(r));
 }
+
 //-----------------------------------------------------
 template<class T>
 inline typename std::common_type<typename T::type,real_t>::type
 tanh(const angle<T>& r)
 {
+	using std::tanh;
 	using res_t = typename std::common_type<typename T::type,real_t>::type;
-	return tanh(angle_cast<radians_turn<res_t>>(r));
+
+	return tanh(radians_cast<res_t>(r));
 }
 
 
@@ -753,8 +794,10 @@ rad_asin(T v)
 {
 	using std::asin;
 	using res_t = typename std::common_type<T,real_t>::type;
+
 	return radians<res_t>{res_t(asin(v))};
 }
+
 //-----------------------------------------------------
 template<class T>
 inline radians<typename std::common_type<T,real_t>::type>
@@ -762,8 +805,10 @@ rad_acos(T v)
 {
 	using std::acos;
 	using res_t = typename std::common_type<T,real_t>::type;
+
 	return radians<res_t>{res_t(acos(v))};
 }
+
 //-----------------------------------------------------
 template<class T>
 inline radians<typename std::common_type<T,real_t>::type>
@@ -771,8 +816,10 @@ rad_atan(T v)
 {
 	using std::atan;
 	using res_t = typename std::common_type<T,real_t>::type;
+
 	return radians<res_t>{res_t(atan(v))};
 }
+
 //-----------------------------------------------------
 template<class T>
 inline radians<typename std::common_type<T,real_t>::type>
@@ -780,6 +827,7 @@ rad_atan2(T x, T y)
 {
 	using std::atan2;
 	using res_t = typename std::common_type<T,real_t>::type;
+
 	return radians<res_t>{res_t(atan2(x,y))};
 }
 
@@ -794,8 +842,10 @@ rad_asinh(T v)
 {
 	using std::asinh;
 	using res_t = typename std::common_type<T,real_t>::type;
+
 	return radians<res_t>{res_t(asinh(v))};
 }
+
 //-----------------------------------------------------
 template<class T>
 inline radians<typename std::common_type<T,real_t>::type>
@@ -803,8 +853,10 @@ rad_acosh(T v)
 {
 	using std::acosh;
 	using res_t = typename std::common_type<T,real_t>::type;
+
 	return radians<res_t>{res_t(acosh(v))};
 }
+
 //-----------------------------------------------------
 template<class T>
 inline radians<typename std::common_type<T,real_t>::type>
@@ -812,6 +864,7 @@ rad_atanh(T v)
 {
 	using std::atanh;
 	using res_t = typename std::common_type<T,real_t>::type;
+
 	return radians<res_t>{res_t(atanh(v))};
 }
 
