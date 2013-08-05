@@ -714,14 +714,14 @@ turn_remainder(angle<T> a)
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr radians<T>
-make_rad(const T& t)
+make_radians(const T& t)
 {
 	return radians<T>{t};
 }
 //---------------------------------------------------------
 template<class U>
 inline constexpr radians<typename angle<U>::numeric_type>
-make_rad(const angle<U>& a)
+make_radians(const angle<U>& a)
 {
 	return radians<typename angle<U>::numeric_type>{a};
 }
@@ -729,14 +729,14 @@ make_rad(const angle<U>& a)
 //---------------------------------------------------------
 template<class T>
 inline constexpr degrees<T>
-make_deg(const T& t)
+make_degrees(const T& t)
 {
 	return degrees<T>{t};
 }
 //---------------------------------------------------------
 template<class U>
 inline constexpr degrees<typename angle<U>::numeric_type>
-make_deg(const angle<U>& a)
+make_degrees(const angle<U>& a)
 {
 	return degrees<typename angle<U>::numeric_type>{a};
 }
@@ -744,14 +744,14 @@ make_deg(const angle<U>& a)
 //---------------------------------------------------------
 template<class T>
 inline constexpr gons<T>
-make_gon(const T& t)
+make_gons(const T& t)
 {
 	return gons<T>{t};
 }
 //---------------------------------------------------------
 template<class U>
 inline constexpr gons<typename angle<U>::numeric_type>
-make_gon(const angle<U>& a)
+make_gons(const angle<U>& a)
 {
 	return gons<typename angle<U>::numeric_type>{a};
 }
