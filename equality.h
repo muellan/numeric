@@ -13,6 +13,8 @@
 #define AM_NUMERIC_EQUALITY_H_
 
 
+#include <complex>
+
 #include "constants.h"
 
 
@@ -41,6 +43,19 @@ numerically_equal(const T1& a, const T2& b)
 		);
 }
 
+//---------------------------------------------------------
+template<class T1, class T2>
+inline constexpr bool
+numerically_equal(const std::complex<T1>& a, const std::complex<T2>& b)
+{
+	return (
+		numerically_equal(a.real(), b.real()) &&
+		numerically_equal(a.imag(), b.imag()) );
+}
+
+
+
+
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
@@ -51,6 +66,17 @@ is_numerically_0(const T& a)
 		(a < (T(0) + epsilon<T>::value)) );
 }
 
+//---------------------------------------------------------
+template<class T>
+inline constexpr bool
+is_numerically_0(const std::complex<T>& a)
+{
+	return is_numerically_0(a.real()) && is_numerically_0(a.imag());
+}
+
+
+
+
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
@@ -60,6 +86,15 @@ is_numerically_1(const T& a)
 		(a > (T(1) - epsilon<T>::value)) &&
 		(a < (T(1) + epsilon<T>::value)) );
 }
+
+//---------------------------------------------------------
+template<class T>
+inline constexpr bool
+is_numerically_1(const std::complex<T>& a)
+{
+	return is_numerically_1(a.real()) && is_numerically_0(a.imag());
+}
+
 
 
 }  // namespace num
