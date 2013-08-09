@@ -72,7 +72,7 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	explicit constexpr
+	constexpr
 	dual(const value_type& r, const value_type& d):
 		n_{r,d}
 	{}
@@ -81,7 +81,7 @@ public:
 	/// @brief
 	template<class T1, class T2, class = typename std::enable_if<
 		is_non_narrowing<value_type,T1,T2>::value,T1>::type>
-	explicit constexpr
+	constexpr
 	dual(const T1& r, const T2& d):
 		n_{value_type(r), value_type(d)}
 	{}

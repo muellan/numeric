@@ -61,7 +61,7 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	explicit constexpr
+	constexpr
 	scomplex(const value_type& a, const value_type& b):
 		n_{a,b}
 	{}
@@ -70,7 +70,7 @@ public:
 	/// @brief
 	template<class T1, class T2, class = typename std::enable_if<
 		is_non_narrowing<value_type,T1,T2>::value,T1>::type>
-	explicit constexpr
+	constexpr
 	scomplex(const T1& a, const T2& b):
 		n_{value_type(a), value_type(b)}
 	{}
