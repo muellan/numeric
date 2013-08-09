@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#ifndef AM_NUM_NUMERIC_CONSTANTS_H_
-#define AM_NUM_NUMERIC_CONSTANTS_H_
+#ifndef AM_NUMERIC_CONSTANTS_H_
+#define AM_NUMERIC_CONSTANTS_H_
 
 #include <limits>
 
@@ -29,10 +29,10 @@ namespace num {
 //------------------------------------------------------------------
 /// @brief default floating point
 //------------------------------------------------------------------
-#ifdef PLI_EXTENDED_DOUBLE_PRECISION
+#ifdef AM_EXTENDED_DOUBLE_PRECISION
 	using real_t = long double;
 #else
-	#ifdef PLI_DOUBLE_PRECISION
+	#ifdef AM_DOUBLE_PRECISION
 		using real_t = double;
 	#else
 		using real_t = float;

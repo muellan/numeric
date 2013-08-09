@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#ifndef AM_NUM_NUMERIC_TESTS_H_
-#define AM_NUM_NUMERIC_TESTS_H_
+#ifndef AM_NUMERIC_TESTS_H_
+#define AM_NUMERIC_TESTS_H_
 
 #ifdef USE_TESTS
 

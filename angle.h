@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#ifndef AM_NUM_NUMERIC_ANGLE_H_
-#define AM_NUM_NUMERIC_ANGLE_H_
+#ifndef AM_NUMERIC_ANGLE_H_
+#define AM_NUMERIC_ANGLE_H_
 
 #include <cmath>
 #include <utility>

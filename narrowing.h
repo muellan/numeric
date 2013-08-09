@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#ifndef AM_NUM_NUMERIC_NARROWING_H_
-#define AM_NUM_NUMERIC_NARROWING_H_
+#ifndef AM_NUMERIC_NARROWING_H_
+#define AM_NUMERIC_NARROWING_H_
 
 #include <complex>
 

@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#ifndef AM_NUM_NUMERIC_DUAL_H_
-#define AM_NUM_NUMERIC_DUAL_H_
+#ifndef AM_NUMERIC_DUAL_H_
+#define AM_NUMERIC_DUAL_H_
 
 #include <cmath>
 #include <cfloat>

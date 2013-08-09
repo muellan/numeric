@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#ifndef AM_NUM_NUMERIC_CONCEPTS_H_
-#define AM_NUM_NUMERIC_CONCEPTS_H_
+#ifndef AM_NUMERIC_CONCEPTS_H_
+#define AM_NUMERIC_CONCEPTS_H_
 
 
 #include <type_traits>
