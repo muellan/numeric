@@ -73,7 +73,7 @@ struct is_non_narrowing_helper<true,To,From> :
 
 
 //-------------------------------------------------------------------
-///TODO get rid of is_non_narrowing_helper specializations for dual, std::cpmplex
+///TODO get rid of is_non_narrowing_helper specializations for dual, scomplex, std::complex
 template<class>
 class dual;
 
@@ -85,7 +85,37 @@ struct is_non_narrowing_helper<true, dual<To>, From> :
 
 //---------------------------------------------------------
 template<class To, class From>
+struct is_non_narrowing_helper<true, To, dual<From>> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
 struct is_non_narrowing_helper<true, dual<To>, dual<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+
+
+//-------------------------------------------------------------------
+template<class>
+class scomplex;
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, scomplex<To>, From> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, scomplex<From>> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, scomplex<To>, scomplex<From> > :
 	public is_non_narrowing_helper<true,To,From>
 {};
 
@@ -94,6 +124,12 @@ struct is_non_narrowing_helper<true, dual<To>, dual<From> > :
 //---------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, std::complex<To>, From> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, std::complex<From> > :
 	public is_non_narrowing_helper<true,To,From>
 {};
 

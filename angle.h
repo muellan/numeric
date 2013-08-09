@@ -22,7 +22,6 @@
 namespace num {
 
 
-
 /*****************************************************************************
  *
  *
@@ -161,6 +160,9 @@ class angle
 
 	static_assert(is_number<typename Turn::type>::value,
 		"angle<T>: T::type must be a number");
+
+	//befriend all angles
+	template<class T> friend class angle;
 
 public:
 	//---------------------------------------------------------------
@@ -394,25 +396,6 @@ public:
 
 
 	//---------------------------------------------------------------
-	// TODO no public angle::as<>
-	// but needs to be public so that other angle classes can access it...
-	template<class OutTurn, class = typename
-		std::enable_if<std::is_same<turn_type,OutTurn>::value>::type>
-	constexpr numeric_type
-	as() const {
-		return v_;
-	}
-	//-----------------------------------------------------
-	template<class OutTurn, class = typename
-		std::enable_if<!std::is_same<turn_type,OutTurn>::value>::type>
-	constexpr typename conversion<OutTurn>::type
-	as() const {
-		using res_t = typename conversion<OutTurn>::type;
-		return ( (res_t(OutTurn::value) / res_t(turn())) * v_);
-	}
-
-
-	//---------------------------------------------------------------
 	template<class OutTurn>
 	inline friend constexpr typename conversion<OutTurn>::type
 	angle_cast(const angle& a)	{
@@ -454,6 +437,21 @@ public:
 
 
 private:
+	//---------------------------------------------------------------
+	template<class OutTurn, class = typename
+		std::enable_if<std::is_same<turn_type,OutTurn>::value>::type>
+	constexpr numeric_type
+	as() const {
+		return v_;
+	}
+	//-----------------------------------------------------
+	template<class OutTurn, class = typename
+		std::enable_if<!std::is_same<turn_type,OutTurn>::value>::type>
+	constexpr typename conversion<OutTurn>::type
+	as() const {
+		using res_t = typename conversion<OutTurn>::type;
+		return ( (res_t(OutTurn::value) / res_t(turn())) * v_);
+	}
 
 	//---------------------------------------------------------------
 	numeric_type v_ = 0;
@@ -925,6 +923,7 @@ rad_atanh(T v)
 
 	return radians<res_t>{res_t(atanh(v))};
 }
+
 
 
 }  // namespace num

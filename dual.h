@@ -42,7 +42,6 @@ public:
 	// TYPES
 	//---------------------------------------------------------------
 	using value_type      = NumberType;
-	using reference       = value_type&;
 	using const_reference = const value_type&;
 
 
@@ -57,7 +56,7 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	constexpr
+	explicit constexpr
 	dual(const value_type& a):
 		n_{a,value_type(0)}
 	{}
@@ -73,18 +72,18 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	constexpr
-	dual(const value_type& a, const value_type& b):
-		n_{a,b}
+	explicit constexpr
+	dual(const value_type& r, const value_type& d):
+		n_{r,d}
 	{}
 
 	//-----------------------------------------------------
 	/// @brief
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<value_type,T>::value,T>::type>
-	constexpr
-	dual(const T& a, const T& b):
-		n_{value_type(a), value_type(b)}
+	template<class T1, class T2, class = typename std::enable_if<
+		is_non_narrowing<value_type,T1,T2>::value,T1>::type>
+	explicit constexpr
+	dual(const T1& r, const T2& d):
+		n_{value_type(r), value_type(d)}
 	{}
 
 	//-----------------------------------------------------
@@ -95,24 +94,20 @@ public:
 	//---------------------------------------------------------------
 	// ASSIGNMENT
 	//---------------------------------------------------------------
-	///@brief initializer list assignment
+	dual&
+	operator = (const dual&) = default;
+
+	//-----------------------------------------------------
 	template<class T, class =
 		typename std::enable_if<
 			is_number<T>::value &&
 			is_non_narrowing<value_type,T>::value>::type>
 	dual&
-	operator = (std::initializer_list<T> values)
-	{
-		auto it = values.begin();
-		n_[0] = *it;
-		++it;
-		n_[1] = *it;
+	operator = (const dual<T>& d) {
+		n_[0] = d.n_[0];
+		n_[1] = d.n_[1];
 		return *this;
 	}
-
-	//-----------------------------------------------------
-	dual&
-	operator = (const dual&) = default;
 
 	//-----------------------------------------------------
 	dual&
@@ -122,34 +117,42 @@ public:
 		return *this;
 	}
 
+	//-----------------------------------------------------
+	/// @brief
+	dual&
+	assign(const value_type& r, const value_type& d) {
+		n_[0] = r;
+		n_[1] = d;
+		return *this;
+	}
+
+	//-----------------------------------------------------
+	/// @brief
+	template<class T1, class T2, class = typename std::enable_if<
+		is_non_narrowing<value_type,T1,T2>::value,T1>::type>
+	dual&
+	assign(const T1& r, const T2& d) {
+		n_[0] = r;
+		n_[1] = d;
+		return *this;
+	}
+
 
 	//---------------------------------------------------------------
 	// ELEMENT ACCESS
 	//---------------------------------------------------------------
-	reference
-	operator [] (std::size_t index) {
-		return n_[index];
-	}
 	constexpr const_reference
 	operator [] (std::size_t index) const {
 		return n_[index];
 	}
 
 	//-----------------------------------------------------
-	reference
-	real() {
-		return n_[0];
-	}
 	constexpr const_reference
 	real() const {
 		return n_[0];
 	}
 
 	//-----------------------------------------------------
-	reference
-	imag() {
-		return n_[1];
-	}
 	constexpr const_reference
 	imag() const {
 		return n_[1];
@@ -159,6 +162,14 @@ public:
 	//---------------------------------------------------------------
 	dual&
 	conjugate() {
+		n_[1] = -n_[1];
+		return *this;
+	}
+
+	//---------------------------------------------------------
+	dual&
+	negate() noexcept {
+		n_[0] = -n_[0];
 		n_[1] = -n_[1];
 		return *this;
 	}
@@ -1281,7 +1292,6 @@ isnormal(const dual<T>& x)
 	using std::isnormal;
 	return (isnormal(x.real()) && isnormal(x.imag()));
 }
-
 
 
 }  // namespace num
