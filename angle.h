@@ -1,15 +1,4 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
-
-#ifndef AM_NUMERIC_ANGLE_H_
+﻿#ifndef AM_NUMERIC_ANGLE_H_
 #define AM_NUMERIC_ANGLE_H_
 
 #include <cmath>
@@ -17,6 +6,8 @@
 
 #include "constants.h"
 #include "narrowing.h"
+
+
 
 
 namespace num {
@@ -144,8 +135,8 @@ struct gon_ccs_turn
  *        supports automatic angle unit conversions
  *        supports constexpr compile-time evaluation
  *
- * @tparam Turn        policy class providing angle value of a full circle
- * @tparam NumberType  arithmetic type used for storing the angle value
+ * @tparam Turn  policy class providing angle value of a full circle
+ *               and the arithmetic type used for storing the angle value
  *
  *****************************************************************************/
 template<class Turn>
@@ -190,35 +181,47 @@ public:
 	//-----------------------------------------------------
 	/// @brief implicit conversion from simple values is not allowed
 	explicit constexpr
-	angle(numeric_type a):
+	angle(const numeric_type& a):
 		v_{a}
 	{}
 	//-----------------------------------------------------
-	/// @brief   implicit converions of angles is allowed and safe
-	/// @details may cause numerical problems with floating point arithmetic
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<numeric_type,typename T::type>::value>::type>
+	/// @brief implicit conversion from simple values is not allowed
+	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	explicit constexpr
+	angle(const T& a):
+		v_{numeric_type(a)}
+	{
+		AM_CHECK_NARROWING(numeric_type, T)
+	}
+	//-----------------------------------------------------
+	/// @brief   implicit conversion of angles is allowed
+	/// @details may cause numerical drift when performed repeatedly
+	template<class T>
 	constexpr
 	angle(const angle<T>& a):
 		v_{a.as<turn_type>()}
-	{}
+	{
+		AM_CHECK_NARROWING(numeric_type, typename T::type)
+	}
 
 	//-----------------------------------------------------
 	constexpr
 	angle(const angle&) = default;
 
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<numeric_type,typename T::type>::value>::type>
+	template<class T>
 	angle&
-	operator = (const angle<T>& a) {
+	operator = (const angle<T>& a)
+	{
+		AM_CHECK_NARROWING(numeric_type, typename T::type)
+
 		v_ = a.as<turn_type>();
 		return *this;
 	}
 
 
 	//---------------------------------------------------------------
-	/// @brief maps the stored value to the range [0, turn()]
+	/// @brief maps the stored value to the range [0, turn]
 	angle&
 	wrap() {
 		using std::fmod;
@@ -235,30 +238,42 @@ public:
 	//---------------------------------------------------------------
 	// ASSIGNING ARITHMETIC OPERATIONS
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<numeric_type,typename T::type>::value>::type>
+	template<class T>
 	angle&
-	operator += (const angle<T>& a) {
+	operator += (const angle<T>& a)
+	{
+		AM_CHECK_NARROWING(numeric_type, typename T::type)
+
 		v_ += a.as<turn_type>();
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<numeric_type,typename T::type>::value>::type>
+	template<class T>
 	angle&
-	operator -= (const angle<T>& a) {
+	operator -= (const angle<T>& a)
+	{
+		AM_CHECK_NARROWING(numeric_type, typename T::type)
+
 		v_ += a.as<turn_type>();
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	angle&
-	operator *= (numeric_type factor) {
+	operator *= (const T& factor)
+	{
+		AM_CHECK_NARROWING(numeric_type, typename T::type)
+
 		v_ *= factor;
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	angle&
-	operator /= (numeric_type factor) {
+	operator /= (const T& factor)
+	{
+		AM_CHECK_NARROWING(numeric_type, typename T::type)
+
 		v_ /= factor;
 		return *this;
 	}
@@ -267,17 +282,17 @@ public:
 	//---------------------------------------------------------------
 	// ARITHMETIC OPERATIONS
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<numeric_type,typename T::type>::value>::type>
+	template<class T>
 	constexpr angle
-	operator + (const angle<T>& a) const {
+	operator + (const angle<T>& a) const
+	{
 		return angle{v_ + a.as<turn_type>()};
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<numeric_type,typename T::type>::value>::type>
+	template<class T>
 	constexpr angle
-	operator - (const angle<T>& a) const {
+	operator - (const angle<T>& a) const
+	{
 		return angle{v_ - a.as<turn_type>()};
 	}
 	//-----------------------------------------------------
@@ -317,32 +332,28 @@ public:
 
 
 	//---------------------------------------------------------------
-	// increment/decrement operations for integral angles
+	// increment/decrement operations
 	//---------------------------------------------------------------
-	template<class V = numeric_type>
-	typename std::enable_if<std::is_integral<V>::value,angle>::type
+	angle
 	operator ++ () {
 		++v_;
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class V = numeric_type>
-	typename std::enable_if<std::is_integral<V>::value,angle>::type
+	angle
 	operator ++ (int) {
 		auto old = angle{*this};
 		operator++();
 		return old;
 	}
 	//-----------------------------------------------------
-	template<class V = numeric_type>
-	typename std::enable_if<std::is_integral<V>::value,angle>::type
+	angle
 	operator -- () {
 		--v_;
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class V = numeric_type>
-	typename std::enable_if<std::is_integral<V>::value,angle>::type
+	angle
 	operator -- (int) {
 		auto old = angle{*this};
 		operator--();
@@ -353,22 +364,17 @@ public:
 	//---------------------------------------------------------------
 	// COMPARISON
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_integral<typename T::type>::value &&
-		std::is_integral<numeric_type>::value,T>::type>
+	template<class T>
 	constexpr bool
 	operator == (const angle<T>& other) {
 		return (v_ == other.as<turn_type>());
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_integral<typename T::type>::value &&
-		std::is_integral<numeric_type>::value,T>::type>
+	template<class T>
 	constexpr bool
 	operator != (const angle<T>& other) {
 		return (v_ != other.as<turn_type>());
 	}
-
 	//-----------------------------------------------------
 	template<class T>
 	constexpr bool
@@ -409,30 +415,42 @@ public:
 		return a.as<radians_turn<T>>();
 	}
 
-	//---------------------------------------------------------
+	//-----------------------------------------------------
 	template<class T>
 	inline friend constexpr T
 	degrees_cast(const angle& a) {
 		return a.as<degrees_turn<T>>();
 	}
-	//---------------------------------------------------------
+	//-----------------------------------------------------
 	template<class T>
 	inline friend constexpr T
 	arcmins_cast(const angle& a) {
 		return a.as<arcmins_turn<T>>();
 	}
-	//---------------------------------------------------------
+	//-----------------------------------------------------
 	template<class T>
 	inline friend constexpr T
 	arcsecs_cast(const angle& a) {
 		return a.as<arcsecs_turn<T>>();
 	}
 
-	//---------------------------------------------------------
+	//-----------------------------------------------------
 	template<class T>
 	inline friend constexpr T
 	gons_cast(const angle& a) {
 		return a.as<gons_turn<T>>();
+	}
+	//-----------------------------------------------------
+	template<class T>
+	inline friend constexpr T
+	gon_cs_cast(const angle& a) {
+		return a.as<gon_cs_turn<T>>();
+	}
+	//-----------------------------------------------------
+	template<class T>
+	inline friend constexpr T
+	gon_ccs_cast(const angle& a) {
+		return a.as<gon_ccs_turn<T>>();
 	}
 
 
@@ -536,6 +554,26 @@ constexpr degrees<real_t> operator"" _deg (unsigned long long int x) {
 
 
 //-------------------------------------------------------------------
+constexpr arcmins<real_t> operator"" _arcmin (long double x) {
+    return arcmins<real_t>{real_t(x)};
+}
+//---------------------------------------------------------
+constexpr arcmins<real_t> operator"" _arcmin (unsigned long long int x) {
+    return arcmins<real_t>{real_t(x)};
+}
+
+
+//-------------------------------------------------------------------
+constexpr arcsecs<real_t> operator"" _arcsec (long double x) {
+    return arcsecs<real_t>{real_t(x)};
+}
+//---------------------------------------------------------
+constexpr arcsecs<real_t> operator"" _arcsec (unsigned long long int x) {
+    return arcsecs<real_t>{real_t(x)};
+}
+
+
+//-------------------------------------------------------------------
 constexpr radians<real_t> operator"" _rad (long double x) {
     return radians<real_t>{real_t(x)};
 }
@@ -552,6 +590,7 @@ constexpr radians<real_t> operator"" _pi_rad(unsigned long long int x) {
 	return radians<real_t>{real_t(x * pi)};
 }
 
+
 //-------------------------------------------------------------------
 constexpr gons<real_t> operator"" _gon (long double x) {
     return gons<real_t>{real_t(x)};
@@ -559,6 +598,26 @@ constexpr gons<real_t> operator"" _gon (long double x) {
 //---------------------------------------------------------
 constexpr gons<real_t> operator"" _gon (unsigned long long int x) {
     return gons<real_t>{real_t(x)};
+}
+
+
+//-------------------------------------------------------------------
+constexpr gons<real_t> operator"" _goncs (long double x) {
+    return gons<real_t>{real_t(x)};
+}
+//---------------------------------------------------------
+constexpr gons<real_t> operator"" _goncs (unsigned long long int x) {
+    return gons<real_t>{real_t(x)};
+}
+
+
+//-------------------------------------------------------------------
+constexpr gon_cs<real_t> operator"" _gonccs (long double x) {
+    return gon_cs<real_t>{real_t(x)};
+}
+//---------------------------------------------------------
+constexpr gon_ccs<real_t> operator"" _gonccs (unsigned long long int x) {
+    return gon_ccs<real_t>{real_t(x)};
 }
 
 
@@ -590,7 +649,7 @@ operator << (Ostream& os, const angle<T>& r)
 //-------------------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
-print(const angle<radians_turn<T>>& a, Ostream& os)
+print(Ostream& os, const angle<radians_turn<T>>& a)
 {
 	return (os << a << "rad");
 }
@@ -598,7 +657,7 @@ print(const angle<radians_turn<T>>& a, Ostream& os)
 //---------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
-print(const angle<degrees_turn<T>>& a, Ostream& os)
+print(Ostream& os, const angle<degrees_turn<T>>& a)
 {
 	return (os << a << "°");
 }
@@ -606,7 +665,7 @@ print(const angle<degrees_turn<T>>& a, Ostream& os)
 //---------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
-print(const angle<arcmins_turn<T>>& a, Ostream& os)
+print(Ostream& os, const angle<arcmins_turn<T>>& a)
 {
 	return (os << a << "'");
 }
@@ -614,7 +673,7 @@ print(const angle<arcmins_turn<T>>& a, Ostream& os)
 //---------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
-print(const angle<arcsecs_turn<T>>& a, Ostream& os)
+print(Ostream& os, const angle<arcsecs_turn<T>>& a)
 {
 	return (os << a << "''");
 }
@@ -622,9 +681,25 @@ print(const angle<arcsecs_turn<T>>& a, Ostream& os)
 //---------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
-print(const angle<gons_turn<T>>& a, Ostream& os)
+print(Ostream& os, const angle<gons_turn<T>>& a)
 {
 	return (os << a << "gon");
+}
+
+//---------------------------------------------------------
+template<class T, class Ostream>
+inline Ostream&
+print(Ostream& os, const angle<gon_cs_turn<T>>& a)
+{
+	return (os << a << "cs");
+}
+
+//---------------------------------------------------------
+template<class T, class Ostream>
+inline Ostream&
+print(Ostream& os, const angle<gon_ccs_turn<T>>& a)
+{
+	return (os << a << "ccs");
 }
 
 
@@ -925,8 +1000,9 @@ rad_atanh(T v)
 }
 
 
-
 }  // namespace num
+
+
 
 
 #endif

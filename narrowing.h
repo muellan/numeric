@@ -1,20 +1,10 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
-
 #ifndef AM_NUMERIC_NARROWING_H_
 #define AM_NUMERIC_NARROWING_H_
 
-#include <complex>
 
 #include "concepts.h"
+
+
 
 
 
@@ -45,8 +35,13 @@ struct is_non_narrowing_helper :
 template<class To, class F, class... Fs>
 struct is_non_narrowing_helper<true,To,F,Fs...> :
 	public std::integral_constant<bool,
-		is_non_narrowing_helper<true,To,F>::value &&
-		is_non_narrowing_helper<true,To,Fs...>::value>
+		is_non_narrowing_helper<true,
+			typename std::decay<To>::type,
+			typename std::decay<F>::type>::value
+		&&
+		is_non_narrowing_helper<true,
+			typename std::decay<To>::type,
+			typename std::decay<Fs>::type...>::value>
 {};
 
 //---------------------------------------------------------
@@ -72,20 +67,9 @@ struct is_non_narrowing_helper<true,To,From> :
 
 
 
-//-------------------------------------------------------------------
-///TODO get rid of is_non_narrowing_helper specializations for dual, scomplex, std::complex
-template<class>
-class dual;
-
 //---------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, dual<To>, From> :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, dual<From>> :
 	public is_non_narrowing_helper<true,To,From>
 {};
 
@@ -95,27 +79,9 @@ struct is_non_narrowing_helper<true, dual<To>, dual<From> > :
 	public is_non_narrowing_helper<true,To,From>
 {};
 
-
-
-//-------------------------------------------------------------------
-template<class>
-class scomplex;
-
 //---------------------------------------------------------
 template<class To, class From>
-struct is_non_narrowing_helper<true, scomplex<To>, From> :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, scomplex<From>> :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, scomplex<To>, scomplex<From> > :
+struct is_non_narrowing_helper<true, To, dual<From> > :
 	public is_non_narrowing_helper<true,To,From>
 {};
 
@@ -129,19 +95,80 @@ struct is_non_narrowing_helper<true, std::complex<To>, From> :
 
 //---------------------------------------------------------
 template<class To, class From>
-struct is_non_narrowing_helper<true, To, std::complex<From> > :
+struct is_non_narrowing_helper<true, std::complex<To>, std::complex<From> > :
 	public is_non_narrowing_helper<true,To,From>
 {};
 
 //---------------------------------------------------------
 template<class To, class From>
-struct is_non_narrowing_helper<true, std::complex<To>, std::complex<From> > :
+struct is_non_narrowing_helper<true, To, std::complex<From> > :
 	public is_non_narrowing_helper<true,To,From>
 {};
 
 
 
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, scomplex<To>, From> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, scomplex<To>, scomplex<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, scomplex<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, rational<To>, From> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, rational<To>, rational<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, rational<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+
+
+//---------------------------------------------------------
+template<class From>
+struct is_non_narrowing_helper<true, integer, From> :
+	public std::is_integral<From>
+{};
+
+//---------------------------------------------------------
+template<>
+struct is_non_narrowing_helper<true, integer, integer> :
+	public std::true_type
+{};
+
+//---------------------------------------------------------
+template<class To>
+struct is_non_narrowing_helper<true, To, integer> :
+	public std::false_type
+{};
+
+
+
 }  // namespace detail
+
 
 
 //-------------------------------------------------------------------
@@ -155,7 +182,44 @@ struct is_non_narrowing :
 {};
 
 
+
+//-------------------------------------------------------------------
+#ifndef AM_ALLOW_NARROWING
+
+#define AM_CHECK_NARROWING(TARGET,SOURCE) \
+	static_assert(is_non_narrowing< TARGET , SOURCE >::value, "narrowing!");
+
+
+#define AM_CHECK_NARROWING2(TARGET,S1,S2) \
+	static_assert(is_non_narrowing< TARGET , S1 , S2 >::value, "narrowing!");
+
+
+#define AM_CHECK_NARROWING3(TARGET,S1,S2,S3) \
+	static_assert(is_non_narrowing< TARGET , S1 , S2, S3 >::value, "narrowing!");
+
+
+#define AM_CHECK_NARROWING4(TARGET,S1,S2,S3,S4) \
+	static_assert(is_non_narrowing< TARGET , S1, S2, S3, S4 >::value, "narrowing!");
+
+
+#define AM_CHECK_NARROWING5(TARGET,S1,S2,S3,S4,S5) \
+	static_assert(is_non_narrowing< TARGET , S1 , S2 , S3 , S4 , S5 >::value, "narrowing!");
+
+
+#else
+
+#define AM_CHECK_NARROWING(TARGET,SOURCE)
+#define AM_CHECK_NARROWING2(TARGET,S1,S2)
+#define AM_CHECK_NARROWING3(TARGET,S1,S2,S3)
+#define AM_CHECK_NARROWING4(TARGET,S1,S2,S3,S4)
+#define AM_CHECK_NARROWING5(TARGET,S1,S2,S3,S4,S5)
+
+#endif
+
+
 }  // namespace num
+
+
 
 
 

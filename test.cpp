@@ -12,11 +12,13 @@
 #ifndef AM_NUMERIC_TESTS_H_
 #define AM_NUMERIC_TESTS_H_
 
-#ifdef USE_TESTS
+
+#ifdef AM_USE_TESTS
 
 #include <iostream>
 
 #include "angle_test.h"
+#include "choice_test.h"
 #include "quaternion_test.h"
 
 
@@ -25,13 +27,14 @@ namespace test {
 
 
 //-------------------------------------------------------------------
-/// TODO add dual<T> tests
 void report_correctness()
 {
 	std::cout << std::boolalpha
-		<< "angle      " << test::angle_correct() << '\n'
-//		<< "dual       " << test::dual_correct() << '\n'
-		<< "quaternion " << test::quaternion_correct() << '\n'
+		<< "-------------------------\n"
+		<< "numeric correctness\n"
+		<< "angle      " << angle_correct() << '\n'
+		<< "choice     " << choice_correct() << '\n'
+		<< "quaternion " << quaternion_correct() << '\n'
 		<< std::flush;
 }
 

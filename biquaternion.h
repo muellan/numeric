@@ -7,6 +7,8 @@
 #include "quaternion.h"
 
 
+
+
 namespace num {
 
 
@@ -178,12 +180,13 @@ real_product(const quaternion<T1>& p, const biquaternion<T2>& q)
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class T3, class =
-	typename std::enable_if<is_non_narrowing<T3,T1,T2>::value,T1>::type>
+template<class T1, class T2, class T3>
 void
 real_product(
 	const quaternion<T1>& p, const biquaternion<T2>& q,	quaternion<T3>& out)
 {
+	AM_CHECK_NARROWING2(T3,T2,T1)
+
 	out[0] = p[0]*q[0].real() - p[1]*q[1].real() - p[2]*q[2].real() - p[3]*q[3].real();
 	out[1] = p[0]*q[1].real() + p[1]*q[0].real() + p[2]*q[3].real() - p[3]*q[2].real();
 	out[2] = p[0]*q[2].real() - p[1]*q[3].real() + p[2]*q[0].real() + p[3]*q[1].real();
@@ -220,6 +223,8 @@ imag_product(const biquaternion<T1>& q1, const biquaternion<T2>& q2)
 
 
 }  // namespace num
+
+
 
 
 #endif

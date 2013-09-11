@@ -1,14 +1,3 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
-
 #ifndef AM_NUMERIC_DUAL_H_
 #define AM_NUMERIC_DUAL_H_
 
@@ -16,6 +5,8 @@
 #include <cfloat>
 
 #include "concepts.h"
+
+
 
 
 namespace num {
@@ -35,7 +26,8 @@ class dual
 {
 public:
 
-	static_assert(is_number<NumberType>::value, "dual<T>: T must be a number");
+	static_assert(is_number<NumberType>::value,
+		"dual<T>: T must be a number");
 
 
 	//---------------------------------------------------------------
@@ -63,28 +55,32 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	template<class T, class = typename std::enable_if<
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	explicit constexpr
 	dual(const T& a):
 		n_{value_type(a),value_type(0)}
-	{}
+	{
+		AM_CHECK_NARROWING(value_type,T)
+	}
 
 	//-----------------------------------------------------
 	/// @brief
 	constexpr
 	dual(const value_type& r, const value_type& d):
-		n_{r,d}
+		n_{r, d}
 	{}
 
 	//-----------------------------------------------------
 	/// @brief
-	template<class T1, class T2, class = typename std::enable_if<
-		is_non_narrowing<value_type,T1,T2>::value,T1>::type>
-	constexpr
+	template<class T1, class T2, class = typename
+		std::enable_if<is_number<T1,T2>::value>::type>
+	explicit constexpr
 	dual(const T1& r, const T2& d):
 		n_{value_type(r), value_type(d)}
-	{}
+	{
+		AM_CHECK_NARROWING2(value_type,T1,T2)
+	}
 
 	//-----------------------------------------------------
 	constexpr
@@ -99,30 +95,27 @@ public:
 
 	//-----------------------------------------------------
 	template<class T, class =
-		typename std::enable_if<
-			is_number<T>::value &&
-			is_non_narrowing<value_type,T>::value>::type>
+		typename std::enable_if<is_number<T>::value>::type>
 	dual&
-	operator = (const dual<T>& d) {
+	operator = (const dual<T>& d)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[0] = d.n_[0];
 		n_[1] = d.n_[1];
 		return *this;
 	}
 
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	dual&
-	operator = (const value_type& n) {
+	operator = (const T& n)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[0] = n;
 		n_[1] = value_type(0);
-		return *this;
-	}
-
-	//-----------------------------------------------------
-	/// @brief
-	dual&
-	assign(const value_type& r, const value_type& d) {
-		n_[0] = r;
-		n_[1] = d;
 		return *this;
 	}
 
@@ -131,7 +124,10 @@ public:
 	template<class T1, class T2, class = typename std::enable_if<
 		is_non_narrowing<value_type,T1,T2>::value,T1>::type>
 	dual&
-	assign(const T1& r, const T2& d) {
+	assign(const T1& r, const T2& d)
+	{
+		AM_CHECK_NARROWING2(value_type,T1,T2)
+
 		n_[0] = r;
 		n_[1] = d;
 		return *this;
@@ -142,19 +138,22 @@ public:
 	// ELEMENT ACCESS
 	//---------------------------------------------------------------
 	constexpr const_reference
-	operator [] (std::size_t index) const {
+	operator [] (std::size_t index) const noexcept
+	{
 		return n_[index];
 	}
 
 	//-----------------------------------------------------
 	constexpr const_reference
-	real() const {
+	real() const noexcept
+	{
 		return n_[0];
 	}
 
 	//-----------------------------------------------------
 	constexpr const_reference
-	imag() const {
+	imag() const noexcept
+	{
 		return n_[1];
 	}
 
@@ -176,36 +175,58 @@ public:
 
 
 	//---------------------------------------------------------------
-	// dual (op)= value_type
+	// dual (op)= number
 	//---------------------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	dual&
-	operator += (const value_type& v) {
+	operator += (const T& v)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[0] += v;
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	dual&
-	operator -= (const value_type& v) {
+	operator -= (const T& v) {
 		n_[0] -= v;
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	dual&
-	operator *= (const value_type& v) {
+	operator *= (const T& v)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[0] *= v;
 		n_[1] *= v;
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	dual&
-	operator /= (const value_type& v) {
+	operator /= (const T& v)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[0] /= v;
 		n_[1] /= v;
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	dual&
-	operator ^= (const value_type& e) {
+	operator ^= (const T& e)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		using std::pow;
 
 		auto a_ya_1 = pow(n_[0] , e-1);
@@ -218,75 +239,34 @@ public:
 
 
 	//---------------------------------------------------------------
-	// dual (op)= dual
-	//---------------------------------------------------------------
-	dual&
-	operator += (const dual& o) {
-		n_[0] += o.n_[0];
-		n_[1] += o.n_[1];
-		return *this;
-	}
-	//-----------------------------------------------------
-	dual&
-	operator -= (const dual& o) {
-		n_[0] -= o.n_[0];
-		n_[1] -= o.n_[1];
-		return *this;
-	}
-	//-----------------------------------------------------
-	dual&
-	operator *= (const dual& o) {
-		n_[1] = (n_[0] * o.n_[1]) + (o.n_[0] * n_[1]);
-		n_[0] *= o.n_[0];
-		return *this;
-	}
-	//-----------------------------------------------------
-	dual&
-	operator /= (const dual& o) {
-		n_[1] = ((n_[1] * o.n_[0]) - (n_[0] * o.n_[1])) / (o.n_[0] * o.n_[0]);
-		n_[0] /= o.n_[0];
-		return *this;
-	}
-	//-----------------------------------------------------
-	dual&
-	operator ^= (const dual& y) {
-		using std::pow;
-		using std::log;
-
-		auto a_ya_1 = pow(n_[0] , y.real()-1);
-
-		n_[0] *= a_ya_1 * (1 + (y.imag() * log(n_[0])));
-		n_[1] *= y.real() * a_ya_1;
-
-		return *this;
-	}
-
-
-	//---------------------------------------------------------------
 	// increment / decrement
 	//---------------------------------------------------------------
 	dual&
-	operator ++ () {
+	operator ++ ()
+	{
 		++n_[0];
 		return *this;
 	}
 	//-----------------------------------------------------
 	dual&
-	operator -- () {
+	operator -- ()
+	{
 		--n_[0];
 		return *this;
 	}
 
 	//-----------------------------------------------------
 	dual
-	operator ++ (int) {
+	operator ++ (int)
+	{
 		auto old = *this;
 		++*this;
 		return old;
 	}
 	//-----------------------------------------------------
 	dual
-	operator -- (int) {
+	operator -- (int)
+	{
 		auto old = *this;
 		--*this;
 		return old;
@@ -296,51 +276,56 @@ public:
 	//---------------------------------------------------------------
 	// dual (op)= dual with different value_type
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_arithmetic<T>::type &&
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T>
 	dual&
-	operator += (const dual<T>& o) {
+	operator += (const dual<T>& o)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[0] += o.real();
 		n_[1] += o.imag();
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_arithmetic<T>::type &&
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T>
 	dual&
-	operator -= (const dual<T>& o) {
+	operator -= (const dual<T>& o)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[0] -= o.real();
 		n_[1] -= o.imag();
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_arithmetic<T>::type &&
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T>
 	dual&
-	operator *= (const dual<T>& o) {
+	operator *= (const dual<T>& o)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[1] = (n_[0] * o.imag()) + (o.real() * n_[1]);
 		n_[0] *= o.real();
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_arithmetic<T>::type &&
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T>
 	dual&
-	operator /= (const dual<T>& o) {
+	operator /= (const dual<T>& o)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[1] = ((n_[1] * o.real()) - (n_[0] * o.imag())) / (o.real() * o.real());
 		n_[0] /= o.real();
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_arithmetic<T>::type &&
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T>
 	dual&
-	operator ^= (const dual<T>& y) {
+	operator ^= (const dual<T>& y)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		using std::pow;
 		using std::log;
 
@@ -353,21 +338,23 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_arithmetic<T>::type &&
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T>
 	dual&
-	times_conj(const dual<T>& o) {
+	times_conj(const dual<T>& o)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[1] = (n_[0] * (-o.imag())) + (o.real() * n_[1]);
 		n_[0] *= o.real();
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		std::is_arithmetic<T>::type &&
-		is_non_narrowing<value_type,T>::value,T>::type>
+	template<class T>
 	dual&
-	conj_times(const dual<T>& o) {
+	conj_times(const dual<T>& o)
+	{
+		AM_CHECK_NARROWING(value_type,T)
+
 		n_[1] = (n_[0] * o.imag()) + (o.real() * (-n_[1]));
 		n_[0] *= o.real();
 		return *this;
@@ -408,7 +395,7 @@ make_dual(const T1& a, const T2& b)
 
 //---------------------------------------------------------------
 template<class T, class = typename
-	std::enable_if<std::is_arithmetic<T>::value,T>::type>
+	std::enable_if<is_number<T>::value,T>::type>
 inline
 dual<T>
 make_dual(const T& x)
@@ -439,7 +426,7 @@ operator << (Ostream& os, const dual<T>& x)
 //---------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
-print(const dual<T>& d, Ostream& os)
+print(Ostream& os, const dual<T>& d)
 {
 	return (os << "(" << d.real() << "," << d.imag() << ")" );
 }
@@ -459,8 +446,9 @@ print(const dual<T>& d, Ostream& os)
 
 //-------------------------------------------------------------------
 template<class T>
-const T&
-real(const dual<T>& d) {
+inline constexpr auto
+real(const dual<T>& d) noexcept -> decltype(d.real())
+{
 	return d.real();
 }
 
@@ -468,8 +456,9 @@ real(const dual<T>& d) {
 
 //-------------------------------------------------------------------
 template<class T>
-const T&
-imag(const dual<T>& d) {
+inline constexpr auto
+imag(const dual<T>& d) noexcept -> decltype(d.imag())
+{
 	return d.imag();
 }
 
@@ -513,41 +502,35 @@ operator != (const dual<T1>& a, const dual<T2>& b)
 	return ((a.real() != b.real()) || (a.imag() != b.imag()));
 }
 
-//---------------------------------------------------------
-template<class T1, class T2, class T3>
-inline bool
-equal(const dual<T1>& a, const dual<T2>& b, const T3& tolerance = T1(0))
-{
-	using std::abs;
-	return ( (abs(a.real() - b.real()) < tolerance) &&
-		     (abs(a.imag() - b.imag()) < tolerance) );
-}
-
-
 
 //-------------------------------------------------------------------
-template<class T1, class T2>
+template<class T1, class T2, class T3 = typename std::common_type<T1,T2>::type>
 inline constexpr bool
-numerically_equal(const dual<T1>& a, const dual<T2>& b)
+approx_equal(const dual<T1>& a, const dual<T2>& b,
+	const T3& tolerance = epsilon<T3>::value)
 {
-	return (numerically_equal(a.real(), b.real()) &&
-		    numerically_equal(a.imag(), b.imag()) );
+	return (approx_equal(a.real(), b.real(), tolerance) &&
+		    approx_equal(a.imag(), b.imag(), tolerance) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-is_numerically_1(const dual<T>& x)
+approx_1(const dual<T>& x, const T& tolerance = epsilon<T>::value)
 {
-	return (is_numerically_1(x.real()) && is_numerically_0(x.imag()) );
+	return (
+		approx_1(x.real(), tolerance) &&
+		approx_0(x.imag(), tolerance) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-is_numerically_0(const dual<T>& x)
+approx_0(const dual<T>& x, const T& tolerance = epsilon<T>::value)
 {
-	return (is_numerically_0(x.real()) && is_numerically_0(x.imag()) );
+	return (
+		approx_0(x.real(), tolerance) &&
+		approx_0(x.imag(), tolerance) );
 }
 
 
@@ -556,7 +539,7 @@ is_numerically_0(const dual<T>& x)
 // COMPARISON WITH INTEGERS OR REAL NUMBERS
 //-------------------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator > (const dual<T1>& x, const T2& r)
 {
@@ -564,7 +547,7 @@ operator > (const dual<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator > (const T2& r, const dual<T1>& x)
 {
@@ -573,7 +556,7 @@ operator > (const T2& r, const dual<T1>& x)
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator >= (const dual<T1>& x, const T2& r)
 {
@@ -581,7 +564,7 @@ operator >= (const dual<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator >= (const T2& r, const dual<T1>& x)
 {
@@ -590,7 +573,7 @@ operator >= (const T2& r, const dual<T1>& x)
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator < (const dual<T1>& x, const T2& r)
 {
@@ -598,7 +581,7 @@ operator < (const dual<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator < (const T2& r, const dual<T1>& x)
 {
@@ -607,7 +590,7 @@ operator < (const T2& r, const dual<T1>& x)
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator <= (const dual<T1>& x, const T2& r)
 {
@@ -615,7 +598,7 @@ operator <= (const dual<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+	std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator <= (const T2& r, const dual<T1>& x)
 {
@@ -842,7 +825,7 @@ abs(const dual<T>& x)
 /// @brief magnitude squared
 template<class T>
 inline dual<T>
-abs_squared(const dual<T>& x)
+abs2(const dual<T>& x)
 {
 	return dual<T>{(x.real() * x.real()), 0};
 }
@@ -1294,7 +1277,9 @@ isnormal(const dual<T>& x)
 }
 
 
+
 }  // namespace num
+
 
 
 

@@ -6,6 +6,8 @@
 #include "dual.h"
 
 
+
+
 namespace num {
 
 
@@ -44,13 +46,13 @@ using dual_quat  = dual_quaternion<real_t>;
 //-------------------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
-print(const dual_quaternion<T>& q, Ostream& os)
+print(Ostream& os, const dual_quaternion<T>& q)
 {
 	os << "(";
-	print(q[0], os); os << ",";
-	print(q[1], os); os << ",";
-	print(q[2], os); os << ",";
-	print(q[3], os);
+	print(os, q[0]); os << ",";
+	print(os, q[1]); os << ",";
+	print(os, q[2]); os << ",";
+	print(os, q[3]);
 	os << ")";
 
 	return os;
@@ -196,13 +198,14 @@ real_product(const quaternion<T1>& p, const dual_quaternion<T2>& q)
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class T3, class =
-	typename std::enable_if<is_non_narrowing<T3,T1,T2>::value,T1>::type>
+template<class T1, class T2, class T3>
 void
 real_product(
 	const quaternion<T1>& p, const dual_quaternion<T2>& q,
 	quaternion<T3>& out)
 {
+	AM_CHECK_NARROWING2(T3,T2,T1)
+
 	out[0] = p[0]*q[0][0] - p[1]*q[1][0] - p[2]*q[2][0] - p[3]*q[3][0];
 	out[1] = p[0]*q[1][0] + p[1]*q[0][0] + p[2]*q[3][0] - p[3]*q[2][0];
 	out[2] = p[0]*q[2][0] - p[1]*q[3][0] + p[2]*q[0][0] + p[3]*q[1][0];
@@ -239,6 +242,8 @@ imag_product(const dual_quaternion<T1>& p, const dual_quaternion<T2>& q)
 
 
 }  // namespace num
+
+
 
 
 #endif
