@@ -6,6 +6,7 @@
 #include <cstdint>
 
 #include "constants.h"
+#include "narrowing.h"
 
 
 namespace num {
