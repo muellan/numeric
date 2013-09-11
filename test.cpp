@@ -12,7 +12,7 @@
 #ifndef AM_NUMERIC_TESTS_H_
 #define AM_NUMERIC_TESTS_H_
 
-
+//#define AM_USE_TESTS
 #ifdef AM_USE_TESTS
 
 #include <iostream>

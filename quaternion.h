@@ -8,8 +8,6 @@
 #include "constants.h"
 
 
-
-
 namespace num {
 
 
@@ -383,7 +381,7 @@ public:
 	//---------------------------------------------------------------
 	using numeric_type    = NumberT;
 	using value_type      = numeric_type;
-	using dimension_type  = std::uint_fast8_t;
+	using dimension_type  = std::int_fast8_t;
 
 	//-----------------------------------------------------
 	using pointer         = numeric_type*;
@@ -528,7 +526,8 @@ public:
 	// SPECIAL SETTERS
 	//---------------------------------------------------------------
 	quaternion&
-	identity() {
+	identity()
+	{
 		v_[0] = numeric_type(1);
 		v_[1] = numeric_type(0);
 		v_[2] = numeric_type(0);
@@ -559,8 +558,13 @@ public:
 	//---------------------------------------------------------------
 	// quaternion (op)= numeric_type
 	//---------------------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	quaternion&
-	operator += (const_reference v) {
+	operator += (const T& v)
+	{
+		AM_CHECK_NARROWING(numeric_type,T)
+
 		v_[0] += v;
 		v_[1] += v;
 		v_[2] += v;
@@ -568,8 +572,13 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	quaternion&
-	operator -= (const_reference v) {
+	operator -= (const T& v)
+	{
+		AM_CHECK_NARROWING(numeric_type,T)
+
 		v_[0] -= v;
 		v_[1] -= v;
 		v_[2] -= v;
@@ -577,8 +586,13 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	quaternion&
-	operator *= (const_reference v) {
+	operator *= (const T& v)
+	{
+		AM_CHECK_NARROWING(numeric_type,T)
+
 		v_[0] *= v;
 		v_[1] *= v;
 		v_[2] *= v;
@@ -586,20 +600,18 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	quaternion&
-	operator /= (const_reference v) {
+	operator /= (const T& v)
+	{
+		AM_CHECK_NARROWING(numeric_type,T)
+
 		v_[0] /= v;
 		v_[1] /= v;
 		v_[2] /= v;
 		v_[3] /= v;
 		return *this;
-	}
-
-	//---------------------------------------------------------------
-	friend constexpr quaternion
-	operator * (numeric_type s, const quaternion& q)
-	{
-		return quaternion{s*q.v_[0], s*q.v_[1], s*q.v_[2], s*q.v_[3]};
 	}
 
 
@@ -713,7 +725,7 @@ using quat  = quaternion<real_t>;
  *****************************************************************************/
 
 //-------------------------------------------------------------------
-template<std::uint_fast8_t index, class T>
+template<std::int_fast8_t index, class T>
 inline constexpr auto
 get(const quaternion<T>& q) noexcept -> decltype(q[index])
 {
@@ -722,7 +734,7 @@ get(const quaternion<T>& q) noexcept -> decltype(q[index])
 	return q[index];
 }
 //-----------------------------------------------------
-template<std::uint_fast8_t index, class T>
+template<std::int_fast8_t index, class T>
 inline auto
 get(quaternion<T>& q) -> decltype(q[index])
 {
@@ -911,6 +923,21 @@ print(Ostream& os, const quaternion<T>& q)
  *
  *
  *****************************************************************************/
+
+
+//-------------------------------------------------------------------
+// QUATERNION <-> SCALAR
+//-------------------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<is_number<T1>::value>::type
+>
+constexpr quaternion<typename std::common_type<T1,T2>::type>
+operator * (const T1& s, const quaternion<T2>& q)
+{
+	return quaternion<typename std::common_type<T1,T2>::type>
+		{s*q.v_[0], s*q.v_[1], s*q.v_[2], s*q.v_[3]};
+}
+
 
 
 //-------------------------------------------------------------------
@@ -1263,8 +1290,6 @@ pow(const quaternion<T>& q, const T& exponent)
 
 
 }  // namespace num
-
-
 
 
 #endif
