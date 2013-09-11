@@ -16,45 +16,6 @@ namespace num {
 /*****************************************************************************
  *
  *
- * BASIC CONVERSIONS
- *
- *
- *****************************************************************************/
-
-//-------------------------------------------------------------------
-template<class T>
-inline T
-deg_to_rad(const T& angle, bool wrap = true)
-{
-	using std::fmod;
-
-	if(wrap)
-		return fmod(angle*T(pi/180.0), T(2 * pi + 1e-10));
-	else
-		return (angle * T(pi/180.0));
-}
-
-//-------------------------------------------------------------------
-template<class T>
-inline T
-rad_to_deg(const T& angle, bool wrap = true)
-{
-	using std::fmod;
-
-	if(wrap)
-		return fmod(angle * T(180.0/pi), T(360));
-	else
-		return (angle * T(180.0/pi));
-}
-
-
-
-
-
-
-/*****************************************************************************
- *
- *
  * ANGLE UNITS
  *
  *
