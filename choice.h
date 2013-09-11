@@ -87,21 +87,21 @@ public:
 	//---------------------------------------------------------------
 	constexpr
 	value_type
-	operator * () const {
+	operator * () const noexcept {
 		return x_;
 	}
 
 	//-----------------------------------------------------
 	constexpr
 	value_type
-	value() const {
+	value() const noexcept {
 		return x_;
 	}
 
 	//-----------------------------------------------------
 	template<class T>
 	explicit
-	operator T () const
+	operator T () const noexcept
 	{
 		static_assert(is_integral_number<T>::value,
 			"T(choice) : T has to be an integral number type");
