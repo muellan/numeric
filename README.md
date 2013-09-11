@@ -4,15 +4,17 @@ AM numeric
 Collection of numeric facilities for C++
 
 
-Classes
-  - safe angle  	
+Generic classes
+  - safe angle 
+  - choice (provides arithmetic modulo N)
+  - interval (incl. interval arithmetic)
   - dual number
   - split-complex number
   - quaternion  
   - ordinary biquaternion
   - split-biquaternion
-  - dual quaternion (study biquaternion)
-  
+  - dual quaternion (study biquaternion)  
+    
 Other
   - number concept checking
   - checking for narrowing
