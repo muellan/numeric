@@ -122,7 +122,7 @@ public:
 	//-----------------------------------------------------
 	/// @brief
 	template<class T1, class T2, class = typename std::enable_if<
-		is_non_narrowing<value_type,T1,T2>::value,T1>::type>
+		is_number<T1,T2>::value>::type>
 	dual&
 	assign(const T1& r, const T2& d)
 	{

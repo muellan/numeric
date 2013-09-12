@@ -26,7 +26,8 @@ class scomplex
 {
 public:
 
-	static_assert(is_number<NumberType>::value, "scomplex<T>: T must be a number");
+	static_assert(is_number<NumberType>::value,
+		"scomplex<T>: T must be a number");
 
 
 	//---------------------------------------------------------------
@@ -120,7 +121,8 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	template<class T1, class T2>
+	template<class T1, class T2, class = typename std::enable_if<
+		is_number<T1,T2>::value>::type>
 	scomplex&
 	assign(const T1& r, const T2& d)
 	{
