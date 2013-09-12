@@ -58,22 +58,9 @@ template<class Quat, class RandomEngine>
 void
 make_random_unit_quat(RandomEngine& rnd)
 {
-	using std::cos;
-	using std::sin;
-	using std::sqrt;
-	using std::generate_canonical;
-	using std::numeric_limits;
-
-	using q_t = typename std::decay<decltype(std::declval<Quat>()[0])>::type;
-	using lim_t = numeric_limits<q_t>;
-
-	const auto u0 = generate_canonical<q_t,lim_t::digits>(rnd);
-	const auto u1 = generate_canonical<q_t,lim_t::digits>(rnd) * q_t(2*pi);
-	const auto u2 = generate_canonical<q_t,lim_t::digits>(rnd) * q_t(2*pi);
-	const auto uA = sqrt(q_t(1) - u0);
-	const auto uB = sqrt(u0);
-
-	return Quat{uA * sin(u1), uA * cos(u1), uB * sin(u2), uB * cos(u2)};
+	Quat q;
+	make_random_unit_quat(rnd,q);
+	return q;
 }
 
 
