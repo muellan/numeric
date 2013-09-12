@@ -8,6 +8,7 @@ Generic classes
   - safe angle 
   - choice (provides arithmetic modulo N)
   - interval (incl. interval arithmetic)
+  - rational number
   - dual number
   - split-complex number
   - quaternion  
