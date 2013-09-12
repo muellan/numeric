@@ -1109,7 +1109,7 @@ is_normalized(const quaternion<T>& q)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline typename std::common_type<T1,T2>::type
-distance2(const quaternion<T1>& a, const quaternion<T1>& b)
+norm2(const quaternion<T1>& a, const quaternion<T1>& b)
 {
 	return ( (a[0] - b[0]) * (a[0] - b[0]) +
 		     (a[1] - b[1]) * (a[1] - b[1]) +
@@ -1119,10 +1119,10 @@ distance2(const quaternion<T1>& a, const quaternion<T1>& b)
 //---------------------------------------------------------
 template<class T1, class T2>
 inline typename std::common_type<T1,T2,real_t>::type
-distance(const quaternion<T1>& a, const quaternion<T1>& b)
+norm(const quaternion<T1>& a, const quaternion<T1>& b)
 {
 	using real_t = typename std::common_type<T1,T2,real_t>::type ;
-	return sqrt(real_t(distance2(a, b)));
+	return sqrt(real_t(norm2(a, b)));
 }
 
 
