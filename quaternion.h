@@ -209,9 +209,9 @@ multiply_conj_quat_quat(const Quat1& p, const Quat2& q)
 //-------------------------------------------------------------------
 // linear interpolation
 //-------------------------------------------------------------------
-template<class Quat, class T>
+template<class Quat1, class Quat2, class QuatO, class T>
 void
-quat_linear_interpolation(const Quat& qFrom, const Quat& qTo, T t, Quat& out)
+quat_linear_interpolation(const Quat1& qFrom, const Quat2& qTo, T t, QuatO& out)
 {
 	assert((t >= 0) && (t <= 1));
 
@@ -228,9 +228,9 @@ quat_linear_interpolation(const Quat& qFrom, const Quat& qTo, T t, Quat& out)
 //-------------------------------------------------------------------
 // spherical linear interpolation
 //-------------------------------------------------------------------
-template<class Quat, class T>
+template<class Quat0, class Quat1, class QuatO, class T>
 void
-quat_slerp(const Quat& q0, const Quat& q1, T t, Quat& out)
+quat_slerp(const Quat0& q0, const Quat1& q1, T t, QuatO& out)
 {
 	assert((t >= 0) && (t <= 1));
 
@@ -283,12 +283,12 @@ quat_slerp(const Quat& q0, const Quat& q1, T t, Quat& out)
 //-------------------------------------------------------------------
 // spherical cubic interpolation
 //-------------------------------------------------------------------
-template<class Quat, class T>
+template<class Q0, class Q1, class Q2, class Q3, class T, class Qo>
 void
 quat_squad(
-	const Quat& q0, const Quat& q1, const Quat& q2, const Quat& q3,
+	const Q0& q0, const Q1& q1, const Q2& q2, const Q3& q3,
 	T t,
-	Quat& out)
+	Qo& out)
 {
 	assert((t >= 0) && (t <= 1));
 
@@ -300,9 +300,9 @@ quat_squad(
 //-------------------------------------------------------------------
 // log function application
 //-------------------------------------------------------------------
-template<class Quat>
+template<class Quat1, class Quat2>
 void
-quat_log(const Quat& qIn, Quat& qOut)
+quat_log(const Quat1& qIn, Quat2& qOut)
 {
 	using std::sin;
 	using std::acos;
@@ -327,9 +327,9 @@ quat_log(const Quat& qIn, Quat& qOut)
 //-------------------------------------------------------------------
 /// @brief e^quat = exp(v*phi) = [cos(phi),vsin(phi)]
 //-------------------------------------------------------------------
-template<class Quat>
+template<class Quat1, class Quat2>
 void
-quat_exp(const Quat& qIn, Quat& qOut)
+quat_exp(const Quat1& qIn, Quat2& qOut)
 {
 	using std::sin;
 	using std::cos;
@@ -1153,11 +1153,12 @@ dot(const quaternion<T1>& a, const quaternion<T2>& b)
 
 
 //-------------------------------------------------------------------
-template<class T>
-inline constexpr quaternion<T>
-make_quaternion(const T& w, const T& x, const T& y, const T& z)
+template<class T1, class T2, class T3, class T4, class = typename
+	std::enable_if<is_number<T1,T2,T3,T4>::value>::type>
+inline constexpr quaternion<typename std::common_type<T1,T2,T3,T4>::type>
+make_quaternion(const T1& w, const T2& x, const T3& y, const T4& z)
 {
-	return quaternion<T>{w,x,y,z};
+	return quaternion<typename std::common_type<T1,T2,T3,T4>::type>{w,x,y,z};
 }
 
 
@@ -1169,6 +1170,9 @@ template<class T, class RandomEngine>
 inline quaternion<T>
 make_random_unit_quaternion(RandomEngine& random)
 {
+	static_assert(is_number<T>::value,
+		"make_random_unit_quaternion<T> : T has to be a number type");
+
 	return low::make_random_unit_quat<quaternion<T>>(random);
 }
 
@@ -1185,19 +1189,27 @@ set_random_unit_quaternion(RandomEngine& random, quaternion<T>& q)
 //-------------------------------------------------------------------
 // spherical linear interpolation
 //-------------------------------------------------------------------
-template<class T>
+template<class T1, class T2, class T3, class T4,
+	class = typename std::enable_if<is_number<T3>::value>::type
+>
 inline void
-linear_interpolation(const quaternion<T>& qFrom, const quaternion<T>& qTo, T t,
-	quaternion<T>& out)
+linear_interpolation(
+	const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t,
+	quaternion<T4>& out)
 {
+	AM_CHECK_NARROWING3(T4,T3,T2,T1);
+
 	low::quat_linear_interpolation(qFrom, qTo, t, out);
 }
 //-----------------------------------------------------
-template<class T>
-inline quaternion<T>
-linear_interpolation(const quaternion<T>& qFrom, const quaternion<T>& qTo, T t)
+template<class T1, class T2, class T3,
+	class = typename std::enable_if<is_number<T3>::value>::type
+>
+inline quaternion<typename std::common_type<T1,T2,T3>::type>
+linear_interpolation(
+	const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
 {
-	quaternion<T> out;
+	quaternion<typename std::common_type<T1,T2,T3>::type> out;
 	low::quat_linear_interpolation(qFrom, qTo, t, out);
 	return out;
 }
@@ -1207,19 +1219,27 @@ linear_interpolation(const quaternion<T>& qFrom, const quaternion<T>& qTo, T t)
 //-------------------------------------------------------------------
 // spherical linear interpolation
 //-------------------------------------------------------------------
-template<class T>
+template<class T1, class T2, class T3, class T4,
+	class = typename std::enable_if<is_number<T3>::value>::type
+>
 inline void
-slerp(const quaternion<T>& qFrom, const quaternion<T>& qTo, T t,
-	quaternion<T>& out)
+slerp(
+	const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t,
+	quaternion<T4>& out)
 {
+	AM_CHECK_NARROWING3(T4,T3,T2,T1);
+
 	low::quat_slerp(qFrom, qTo, t, out);
 }
 //-----------------------------------------------------
-template<class T>
-inline quaternion<T>
-slerp(const quaternion<T>& qFrom, const quaternion<T>& qTo, T t)
+template<class T1, class T2, class T3,
+	class = typename std::enable_if<is_number<T3>::value>::type
+>
+inline quaternion<typename std::common_type<T1,T2,T3>::type>
+slerp(
+	const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
 {
-	quaternion<T> out;
+	quaternion<typename std::common_type<T1,T2,T3>::type> out;
 	low::quat_slerp(qFrom, qTo, t, out);
 	return out;
 }
@@ -1229,23 +1249,29 @@ slerp(const quaternion<T>& qFrom, const quaternion<T>& qTo, T t)
 //-------------------------------------------------------------------
 // spherical cubic interpolation
 //-------------------------------------------------------------------
-template<class T>
+template<class T0, class T1, class T2, class T3, class T4, class To, class =
+	typename std::enable_if<is_number<T4>::value>::type
+>
 inline void
 squad(
-	const quaternion<T>& q0, const quaternion<T>& q1,
-	const quaternion<T>& q2, const quaternion<T>& q3, T t,
-	quaternion<T>& out)
+	const quaternion<T0>& q0, const quaternion<T1>& q1,
+	const quaternion<T2>& q2, const quaternion<T3>& q3, T4 t,
+	quaternion<To>& out)
 {
+	AM_CHECK_NARROWING5(To,T0,T1,T2,T3,T4);
+
 	low::quat_squad(q0, q1, q2, q3, t, out);
 }
 //-----------------------------------------------------
-template<class T>
-inline quaternion<T>
+template<class T0, class T1, class T2, class T3, class T4, class =
+	typename std::enable_if<is_number<T4>::value>::type
+>
+inline quaternion<typename std::common_type<T0,T1,T2,T3,T4>::type>
 squad(
-	const quaternion<T>& q0, const quaternion<T>& q1,
-	const quaternion<T>& q2, const quaternion<T>& q3, T t)
+	const quaternion<T0>& q0, const quaternion<T1>& q1,
+	const quaternion<T2>& q2, const quaternion<T3>& q3, T4 t)
 {
-	quaternion<T> out;
+	quaternion<typename std::common_type<T0,T1,T2,T3,T4>::type> out;
 	low::quat_squad(q0, q1, q2, q3, t, out);
 	return out;
 }
@@ -1281,9 +1307,9 @@ exp(const quaternion<T>& q)
 //-------------------------------------------------------------------
 /// @brief e^quat = exp(v*phi) = [cos(phi),vsin(phi)]
 //-------------------------------------------------------------------
-template<class T>
-inline quaternion<T>
-pow(const quaternion<T>& q, const T& exponent)
+template<class T1, class T2>
+inline quaternion<typename std::common_type<T1,T2>::type>
+pow(const quaternion<T1>& q, const T2& exponent)
 {
 	return exp(log(q) * exponent);
 }
@@ -1291,6 +1317,7 @@ pow(const quaternion<T>& q, const T& exponent)
 
 
 }  // namespace num
+
 
 
 #endif
