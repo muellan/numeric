@@ -43,7 +43,8 @@ public:
 	{}
 
 	//-----------------------------------------------------
-	template<class T>
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	constexpr explicit
 	choice(const T& x):
 		x_{value_type(x % numChoices)}
@@ -71,7 +72,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T>
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	choice&
 	operator = (const T& x)
 	{
@@ -99,7 +101,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T>
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	explicit
 	operator T () const noexcept
 	{
@@ -139,22 +142,17 @@ public:
 
 	//---------------------------------------------------------------
 	choice&
-	operator -= (choice c) {
+	operator -= (const choice& c) {
 		if(x_ > c.x_)
 			x_ -= c.x_;
 		else
 			x_ = numChoices - c.x_ + x_;
 		return *this;
 	}
+
 	//-----------------------------------------------------
-	choice&
-	operator -= (const value_type& x) {
-		auto v = (x_ - x) % numChoices;
-		x_ = value_type((v >= 0) ? v : (numChoices+v));
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	choice&
 	operator -= (const T& x)
 	{
@@ -170,20 +168,16 @@ public:
 
 	//---------------------------------------------------------------
 	choice
-	operator + (choice c) const {
+	operator + (const choice& c) const {
 		auto nx = x_ + c.x_;
 		if(nx > numChoices) nx -= numChoices;
 		//use special non-mod ctor
 		return choice{value_type(nx), 0};
 	}
+
 	//-----------------------------------------------------
-	choice
-	operator + (const value_type& x) const {
-		//use special non-mod ctor
-		return choice{value_type((x_ + x) % numChoices), 0};
-	}
-	//-----------------------------------------------------
-	template<class T>
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	choice
 	operator + (const T& x) const
 	{
@@ -198,20 +192,14 @@ public:
 
 	//---------------------------------------------------------------
 	choice
-	operator - (choice c) const {
+	operator - (const choice& c) const {
 		//use special non-mod ctor
 		return choice{
 			value_type((x_ > c.x_) ? (x_ - c.x_) : (numChoices - c.x_ + x_)), 0};
 	}
 	//-----------------------------------------------------
-	choice
-	operator - (const value_type& x) const {
-		auto v = (int(x_) - x) % numChoices;
-		//use special non-mod ctor
-		return choice{value_type((v >= 0) ? v : (numChoices+v)), 0};
-	}
-	//-----------------------------------------------------
-	template<class T>
+	template<class T, class = typename
+		std::enable_if<is_number<T>::value>::type>
 	choice
 	operator - (const T& x) const
 	{
@@ -352,15 +340,13 @@ operator >= (choice<Int1,n> a, choice<Int2,m> b) {
 
 //-------------------------------------------------------------------
 template<std::uintmax_t n, class T>
-inline constexpr choice<typename std::make_unsigned<T>::type,n>
+inline constexpr choice<T,n>
 make_choice(const T& k)
 {
 	static_assert(is_integral_number<T>::value,
 			"make_choice(T) : T has to be an integral number type");
 
-	using res_t = typename std::make_unsigned<T>::type;
-
-	return choice<res_t,n>{res_t(k)};
+	return choice<T,n>{k};
 }
 
 
@@ -379,7 +365,7 @@ template<class Ostream, class Int, Int n>
 inline constexpr Ostream&
 operator << (Ostream& os, const choice<Int,n>& c)
 {
-	return (os << std::intmax_t(*c));
+	return (os << std::intmax_t(c));
 }
 
 //---------------------------------------------------------
@@ -388,7 +374,7 @@ inline constexpr
 Ostream&
 print(Ostream& os, const choice<Int,n>& c)
 {
-	return (os << "[" << std::intmax_t(*c) << "/" << std::intmax_t(n) << "]");
+	return (os << "[" << std::intmax_t(c) << "/" << std::intmax_t(n) << "]");
 }
 
 
@@ -408,6 +394,7 @@ inverse(choice<Int,n> c)
 
 
 }  // namespace num
+
 
 
 
