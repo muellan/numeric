@@ -30,7 +30,7 @@ namespace low {
 //-------------------------------------------------------------------
 template<class UNRG, class Quat>
 void
-make_random_unit_quat(UNRG& rnd, Quat& q)
+make_random_unit_quat(UNRG&& unrg, Quat& q)
 {
 	using std::cos;
 	using std::sin;
@@ -40,11 +40,12 @@ make_random_unit_quat(UNRG& rnd, Quat& q)
 	using q_t = typename std::decay<decltype(q[0])>::type;
 	using lim_t = numeric_limits<q_t>;
 
-	auto distr = std::uniform_real_distribution<q_t>{q_t(0), q_t(1)};
+	auto distr_0_1 = std::uniform_real_distribution<q_t>{q_t(0), q_t(1)};
+	auto distr_0_2pi = std::uniform_real_distribution<q_t>{q_t(0), q_t(2*pi)};
 
-	const auto u0 = distr(rnd);
-	const auto u1 = distr(rnd) * q_t(2*pi);
-	const auto u2 = distr(rnd) * q_t(2*pi);
+	const auto u0 = distr_0_1(unrg);
+	const auto u1 = distr_0_2pi(unrg);
+	const auto u2 = distr_0_2pi(unrg);
 	const auto uA = sqrt(q_t(1) - u0);
 	const auto uB = sqrt(u0);
 
@@ -56,11 +57,11 @@ make_random_unit_quat(UNRG& rnd, Quat& q)
 
 //---------------------------------------------------------
 template<class Quat, class UNRG>
-Quat
-make_random_unit_quat(UNRG& rnd)
+inline Quat
+make_random_unit_quat(UNRG&& unrg)
 {
 	Quat q;
-	make_random_unit_quat(rnd,q);
+	make_random_unit_quat(unrg,q);
 	return q;
 }
 
@@ -1156,21 +1157,14 @@ make_quaternion(const T1& w, const T2& x, const T3& y, const T4& z)
 //-------------------------------------------------------------------
 template<class T, class RandomEngine>
 inline quaternion<T>
-make_random_unit_quaternion(RandomEngine& random)
+make_random_unit_quaternion(RandomEngine& unrg)
 {
 	static_assert(is_number<T>::value,
 		"make_random_unit_quaternion<T> : T has to be a number type");
 
-	return low::make_random_unit_quat<quaternion<T>>(random);
+	return low::make_random_unit_quat<quaternion<T>>(unrg);
 }
 
-//---------------------------------------------------------
-template<class RandomEngine, class T>
-inline void
-set_random_unit_quaternion(RandomEngine& random, quaternion<T>& q)
-{
-	low::make_random_unit_quat(random, q);
-}
 
 
 
