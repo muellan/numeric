@@ -29,9 +29,9 @@ namespace low {
 //-------------------------------------------------------------------
 // random unit quaternion
 //-------------------------------------------------------------------
-template<class UNRG, class Quat>
+template<class URNG, class Quat>
 void
-make_random_unit_quat(UNRG&& unrg, Quat& q)
+make_random_unit_quat(URNG&& urng, Quat& q)
 {
 	using std::cos;
 	using std::sin;
@@ -41,12 +41,12 @@ make_random_unit_quat(UNRG&& unrg, Quat& q)
 	using q_t = typename std::decay<decltype(q[0])>::type;
 	using lim_t = numeric_limits<q_t>;
 
-	const auto d_0_1 = std::uniform_real_distribution<q_t>{q_t(0), q_t(1)};
-	const auto d_0_2pi = std::uniform_real_distribution<q_t>{q_t(0), q_t(2*pi)};
+	auto d_0_1 = std::uniform_real_distribution<q_t>{q_t(0), q_t(1)};
+	auto d_0_2pi = std::uniform_real_distribution<q_t>{q_t(0), q_t(2*pi)};
 
-	const auto u0 = d_0_1(unrg);
-	const auto u1 = d_0_2pi(unrg);
-	const auto u2 = d_0_2pi(unrg);
+	const auto u0 = d_0_1(urng);
+	const auto u1 = d_0_2pi(urng);
+	const auto u2 = d_0_2pi(urng);
 	const auto uA = sqrt(q_t(1) - u0);
 	const auto uB = sqrt(u0);
 
@@ -57,12 +57,12 @@ make_random_unit_quat(UNRG&& unrg, Quat& q)
 }
 
 //---------------------------------------------------------
-template<class Quat, class UNRG>
+template<class Quat, class URNG>
 inline Quat
-make_random_unit_quat(UNRG&& unrg)
+make_random_unit_quat(URNG&& urng)
 {
 	Quat q;
-	make_random_unit_quat(unrg,q);
+	make_random_unit_quat(urng,q);
 	return q;
 }
 
@@ -1158,12 +1158,12 @@ make_quaternion(const T1& w, const T2& x, const T3& y, const T4& z)
 //-------------------------------------------------------------------
 template<class T, class RandomEngine>
 inline quaternion<T>
-make_random_unit_quaternion(RandomEngine& unrg)
+make_random_unit_quaternion(RandomEngine& urng)
 {
 	static_assert(is_number<T>::value,
 		"make_random_unit_quaternion<T> : T has to be a number type");
 
-	return low::make_random_unit_quat<quaternion<T>>(unrg);
+	return low::make_random_unit_quat<quaternion<T>>(urng);
 }
 
 
