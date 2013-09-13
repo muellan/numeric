@@ -41,12 +41,12 @@ make_random_unit_quat(UNRG&& unrg, Quat& q)
 	using q_t = typename std::decay<decltype(q[0])>::type;
 	using lim_t = numeric_limits<q_t>;
 
-	auto distr_0_1 = std::uniform_real_distribution<q_t>{q_t(0), q_t(1)};
-	auto distr_0_2pi = std::uniform_real_distribution<q_t>{q_t(0), q_t(2*pi)};
+	const auto d_0_1 = std::uniform_real_distribution<q_t>{q_t(0), q_t(1)};
+	const auto d_0_2pi = std::uniform_real_distribution<q_t>{q_t(0), q_t(2*pi)};
 
-	const auto u0 = distr_0_1(unrg);
-	const auto u1 = distr_0_2pi(unrg);
-	const auto u2 = distr_0_2pi(unrg);
+	const auto u0 = d_0_1(unrg);
+	const auto u1 = d_0_2pi(unrg);
+	const auto u2 = d_0_2pi(unrg);
 	const auto uA = sqrt(q_t(1) - u0);
 	const auto uB = sqrt(u0);
 
