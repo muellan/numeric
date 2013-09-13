@@ -4,6 +4,7 @@
 #include <cmath>
 #include <random>
 #include <cstdint>
+#include <cassert>
 
 #include "constants.h"
 #include "narrowing.h"
