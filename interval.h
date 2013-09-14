@@ -9,7 +9,6 @@
 #include "narrowing.h"
 
 
-
 namespace num {
 
 
@@ -319,11 +318,11 @@ public:
 	//-----------------------------------------------------
 	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	void
-	width(const T& s)
+	width(const T& w)
 	{
 		AM_CHECK_NARROWING(value_type,T)
 
-		expand((s - width() / value_type(2)));
+		expand((w - width()) / value_type(2));
 	}
 
 	//-----------------------------------------------------
@@ -423,7 +422,15 @@ public:
 	{
 		AM_CHECK_NARROWING(value_type,T)
 
-		expand((r_-l_)*(factor-1)/value_type(2));
+		AM_CHECK_NARROWING(value_type,T)
+
+		auto omf = (value_type(1) - factor);
+		auto opf = (value_type(1) + factor);
+		auto l = l_;
+
+		l_ = omf * r_ + opf * l_;
+		r_ = opf * r_ + omf * l;
+
 		return *this;
 	}
 	//-----------------------------------------------------
@@ -433,7 +440,7 @@ public:
 	{
 		AM_CHECK_NARROWING(value_type,T)
 
-		return operator*=(value_type(1)/factor);
+		return operator *=(value_type(1)/factor);
 	}
 
 
@@ -1147,76 +1154,7 @@ struct interval_max_greater
 
 
 
-
-
-
-
-
-/*****************************************************************************
- *
- *
- *
- * FUNCTIONS WORKING ON COLLECTIONS OF INTERVALS
- *
- *
- *
- *****************************************************************************/
-
-/**
- * @brief
- * @param current list of intervals
- * @param toAdd   new interval to be merged with current intervals
- * @return false, if current intervals remain unchanged
- */
-template<class T>
-bool consolidate_intervals(
-	std::vector<interval<T>>& current, const interval<T>& toAdd)
-{
-
-	if(current.empty()) {
-		current.push_back(toAdd);
-		return true;
-	}
-
-	bool newMin = min(toAdd) < min(current.front());
-	bool newMax = max(toAdd) > max(current.back());
-
-	//does new interval define new minimum?
-	if(newMin) {
-		//does new interval contain all current intervals?
-		if(newMax) {
-			current.clear();
-			current.push_back(toAdd);
-			return true;
-		} else {
-			//remove old intervals as long as their maximum is smaller
-			auto i = begin(current);
-			auto e = end(current);
-			while((i != e) && (max(toAdd) > max(*i)) ) {
-				++i;
-			}
-			current.erase(current.begin(), i);
-			current.insert(current.begin(), toAdd);
-			return true;
-		}
-	}
-	//does new interval define new maximum?
-	else if(newMax) {
-		//remove old elements as long as their minimum is greater
-		while((!current.empty()) && (min(toAdd) < min(current.back())) ) {
-			current.pop_back();
-		}
-		current.push_back(toAdd);
-		return true;
-	}
-
-	return false;
-}
-
-
 }  // namespace num
-
-} //namespace pli
 
 
 #endif
