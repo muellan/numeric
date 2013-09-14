@@ -8,6 +8,7 @@
 #include "concepts.h"
 #include "constants.h"
 #include "narrowing.h"
+#include "equality.h"
 
 
 namespace num {
