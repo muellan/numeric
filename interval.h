@@ -353,32 +353,32 @@ public:
 	//---------------------------------------------------------------
 	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	void
-	expand_include(const interval<T>& interval)
+	expand_include(const interval<T>& interval, const T& offset = 0)
 	{
 		AM_CHECK_NARROWING(value_type,T)
 
-		if(interval.l_ < l_) l_ = interval.l_;
-		if(interval.r_ > r_) r_ = interval.r_;
+		if(interval.l_ < l_) l_ = interval.l_ - offset;
+		if(interval.r_ > r_) r_ = interval.r_ + offset;
 	}
 	//-----------------------------------------------------
 	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	void
-	expand_include(const T& bound)
+	expand_include(const T& bound, const T& offset = 0)
 	{
 		AM_CHECK_NARROWING(value_type,T)
 
-		if(bound < l_) l_ = bound;
-		if(bound > r_) r_ = bound;
+		if(bound < l_) l_ = bound - offset;
+		if(bound > r_) r_ = bound + offset;
 	}
 	//-----------------------------------------------------
 	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	void
-	shrink_exclude(const T& bound)
+	shrink_exclude(const T& bound, const T& offset = epsilon<T>::value)
 	{
 		AM_CHECK_NARROWING(value_type,T)
 
-		if(bound < l_) l_ = bound;
-		if(bound > r_) r_ = bound;
+		if(bound > l_) l_ = bound + offset;
+		if(bound < r_) r_ = bound - offset;
 	}
 
 	//-----------------------------------------------------
@@ -1155,6 +1155,5 @@ struct interval_max_greater
 
 
 }  // namespace num
-
 
 #endif
