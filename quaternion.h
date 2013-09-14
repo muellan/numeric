@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cassert>
 
+#include "concepts.h"
 #include "constants.h"
 #include "narrowing.h"
 
