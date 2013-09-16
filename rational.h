@@ -20,6 +20,8 @@
 #include "equality.h"
 
 
+namespace am {
+
 namespace num {
 
 
@@ -861,7 +863,8 @@ isnormal(const rational<T>& x)
 }
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 #endif

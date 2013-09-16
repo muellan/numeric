@@ -15,6 +15,8 @@
 #include "choice.h"
 
 
+namespace am {
+
 namespace num {
 namespace test {
 
@@ -91,7 +93,8 @@ bool choice_correct()
 }  // namespace
 
 }  // namespace test
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 #endif

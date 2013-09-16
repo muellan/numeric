@@ -17,6 +17,8 @@
 
 
 
+namespace am {
+
 namespace num {
 namespace test {
 namespace {
@@ -51,7 +53,8 @@ bool quaternion_correct()
 
 }  // anonymous namespace
 }  // namespace test
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

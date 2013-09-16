@@ -22,6 +22,8 @@
 
 
 
+namespace am {
+
 namespace num {
 
 
@@ -482,7 +484,8 @@ inverse(choice<Int,n> c)
 }
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

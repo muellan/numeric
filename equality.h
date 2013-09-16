@@ -21,6 +21,8 @@
 
 
 
+namespace am {
+
 namespace num {
 
 
@@ -173,7 +175,8 @@ approx_equal(
 }
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

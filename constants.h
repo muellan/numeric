@@ -14,6 +14,8 @@
 #include <limits>
 
 
+namespace am {
+
 namespace num {
 
 
@@ -140,7 +142,8 @@ struct epsilon<long double>
 
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 #endif

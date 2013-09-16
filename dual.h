@@ -20,6 +20,8 @@
 #include "equality.h"
 
 
+namespace am {
+
 namespace num {
 
 
@@ -1289,7 +1291,8 @@ isnormal(const dual<T>& x)
 
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

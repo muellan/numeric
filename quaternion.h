@@ -22,6 +22,8 @@
 #include "equality.h"
 
 
+namespace am {
+
 namespace num {
 
 
@@ -1269,7 +1271,8 @@ pow(const quaternion<T1>& q, const T2& exponent)
 
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

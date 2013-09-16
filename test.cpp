@@ -18,9 +18,25 @@
 #include <iostream>
 
 #include "angle_test.h"
+//#include "angle.h"
+//#include "biquaternion.h"
 #include "choice_test.h"
+//#include "choice.h"
+//#include "concepts.h"
+//#include "constants.h"
+//#include "dual_quaternion.h"
+//#include "dual.h"
+//#include "equality.h"
+//#include "interval.h"
+//#include "narrowing.h"
 #include "quaternion_test.h"
+//#include "quaternion.h"
+//#include "rational.h"
+//#include "scomplex.h"
+//#include "split_biquaternion.h"
 
+
+namespace am {
 
 namespace num {
 namespace test {
@@ -40,13 +56,14 @@ void report_correctness()
 
 
 }  // namespace test
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 //-------------------------------------------------------------------
 int main()
 {
-	num::test::report_correctness();
+	am::num::test::report_correctness();
 
 	return 0;
 }

@@ -19,6 +19,8 @@
 
 
 
+namespace am {
+
 namespace num {
 
 
@@ -402,7 +404,8 @@ struct is_floating_point_number<T> :
 {};
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

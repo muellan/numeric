@@ -18,6 +18,8 @@
 
 
 
+namespace am {
+
 namespace num {
 
 
@@ -251,7 +253,8 @@ imag_product(const split_biquaternion<T1>& p, const split_biquaternion<T2>& q)
 }
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 #endif

@@ -18,6 +18,8 @@
 
 
 
+namespace am {
+
 namespace num {
 
 
@@ -233,7 +235,8 @@ struct is_non_narrowing :
 #endif
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

@@ -20,6 +20,8 @@
 
 
 
+namespace am {
+
 namespace num {
 
 
@@ -971,7 +973,8 @@ rad_atanh(T v)
 }
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 

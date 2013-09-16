@@ -21,6 +21,8 @@
 #include "equality.h"
 
 
+namespace am {
+
 namespace num {
 
 
@@ -1166,6 +1168,7 @@ struct interval_max_greater
 
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 #endif

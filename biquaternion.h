@@ -19,6 +19,8 @@
 
 
 
+namespace am {
+
 namespace num {
 
 
@@ -232,7 +234,8 @@ imag_product(const biquaternion<T1>& q1, const biquaternion<T2>& q2)
 }
 
 
-}  // namespace num
+} //namespace num
+} //namespace am
 
 
 
