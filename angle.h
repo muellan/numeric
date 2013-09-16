@@ -1,4 +1,14 @@
-﻿#ifndef AM_NUMERIC_ANGLE_H_
+﻿/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2013 André Müller
+ *
+ *****************************************************************************/
+
+#ifndef AM_NUMERIC_ANGLE_H_
 #define AM_NUMERIC_ANGLE_H_
 
 #include <cmath>
