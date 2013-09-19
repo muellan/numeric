@@ -15,8 +15,8 @@
 #include <cfloat>
 
 #include "concepts.h"
-#include "narrowing.h"
 #include "constants.h"
+#include "narrowing.h"
 #include "equality.h"
 
 
@@ -644,12 +644,41 @@ operator + (const dual<T1> x, const dual<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator + (const dual<T1> x, const T2& y)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{x.real() + y, x.imag() + y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator + (const T2& y, const dual<T1> x)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{y + x.real(), y + x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 dual<T>
 operator + (const dual<T> x, const T& y)
 {
 	return dual<T>{x.real() + y, x.imag() + y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+dual<T>
+operator + (const T& y, const dual<T> x)
+{
+	return dual<T>{y + x.real(), y + x.imag()};
 }
 
 
@@ -667,12 +696,41 @@ operator - (const dual<T1> x, const dual<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator - (const dual<T1> x, const T2& y)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{x.real() - y, x.imag() - y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator - (const T2& y, const dual<T1> x)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{y - x.real(), y - x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 dual<T>
 operator - (const dual<T> x, const T& y)
 {
 	return dual<T>{x.real() - y, x.imag() - y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+dual<T>
+operator - (const T& y, const dual<T> x)
+{
+	return dual<T>{y - x.real(), y - x.imag()};
 }
 
 
@@ -691,12 +749,41 @@ operator * (const dual<T1> x, const dual<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator * (const dual<T1> x, const T2& y)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{x.real() * y, x.imag() * y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator * (const T2& y, const dual<T1> x)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{y * x.real(), y * x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 dual<T>
 operator * (const dual<T> x, const T& y)
 {
 	return dual<T>{x.real() * y, x.imag() * y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+dual<T>
+operator * (const T& y, const dual<T> x)
+{
+	return dual<T>{y * x.real(), y * x.imag()};
 }
 
 
@@ -716,12 +803,41 @@ operator / (const dual<T1> x, const dual<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator / (const dual<T1> x, const T2& y)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{x.real() / y, x.imag() / y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+dual<typename std::common_type<T1,T2>::type>
+operator / (const T2& y, const dual<T1> x)
+{
+	return dual<typename std::common_type<T1,T2>::type>
+		{y / x.real(), y / x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 dual<T>
 operator / (const dual<T> x, const T& y)
 {
 	return dual<T>{x.real() / y, x.imag() / y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+dual<T>
+operator / (const T& y, const dual<T> x)
+{
+	return dual<T>{y / x.real(), y / x.imag()};
 }
 
 
@@ -738,12 +854,39 @@ operator ^ (const dual<T1> b, const dual<T2>& e)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline
+dual<typename std::common_type<T1,T2>::type>
+operator ^ (const dual<T1> b, const T2& e)
+{
+	return pow(b,e);
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline
+dual<typename std::common_type<T1,T2>::type>
+operator ^ (const T2& b, const dual<T1> e)
+{
+	return pow(make_dual(b),e);
+}
+
+//---------------------------------------------------------
 template<class T>
 inline
 dual<T>
 operator ^ (const dual<T> b, const T& e)
 {
 	return pow(b,e);
+}
+//---------------------------------------------------------
+template<class T>
+inline
+dual<T>
+operator ^ (const T& b, const dual<T> e)
+{
+	return pow(make_dual(b),e);
 }
 
 
@@ -1291,10 +1434,9 @@ isnormal(const dual<T>& x)
 
 
 
-} //namespace num
-} //namespace am
+}  // namespace num
 
-
+}  // namespace am
 
 
 #endif

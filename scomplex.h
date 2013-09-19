@@ -39,8 +39,7 @@ class scomplex
 {
 public:
 
-	static_assert(is_number<NumberType>::value,
-		"scomplex<T>: T must be a number");
+	static_assert(is_number<NumberType>::value, "scomplex<T>: T must be a number");
 
 
 	//---------------------------------------------------------------
@@ -618,12 +617,41 @@ operator + (const scomplex<T1> x, const scomplex<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator + (const scomplex<T1> x, const T2& y)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{x.real() + y, x.imag() + y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator + (const T2& y, const scomplex<T1> x)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{y + x.real(), y + x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 scomplex<T>
 operator + (const scomplex<T> x, const T& y)
 {
 	return scomplex<T>{x.real() + y, x.imag() + y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+scomplex<T>
+operator + (const T& y, const scomplex<T> x)
+{
+	return scomplex<T>{y + x.real(), y + x.imag()};
 }
 
 
@@ -641,12 +669,41 @@ operator - (const scomplex<T1> x, const scomplex<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator - (const scomplex<T1> x, const T2& y)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{x.real() - y, x.imag() - y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<std::is_arithmetic<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator - (const T2& y, const scomplex<T1> x)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{y - x.real(), y - x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 scomplex<T>
 operator - (const scomplex<T> x, const T& y)
 {
 	return scomplex<T>{x.real() - y, x.imag() - y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+scomplex<T>
+operator - (const T& y, const scomplex<T> x)
+{
+	return scomplex<T>{y - x.real(), y - x.imag()};
 }
 
 
@@ -666,12 +723,41 @@ operator * (const scomplex<T1> x, const scomplex<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<is_number<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator * (const scomplex<T1> x, const T2& y)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{x.real() * y, x.imag() * y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<is_number<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator * (const scomplex<T1> x, const T2& y)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{y * x.real(), y * x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 scomplex<T>
 operator * (const scomplex<T> x, const T& y)
 {
 	return scomplex<T>{x.real() * y, x.imag() * y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+scomplex<T>
+operator * (const scomplex<T> x, const T& y)
+{
+	return scomplex<T>{y * x.real(), y * x.imag()};
 }
 
 
@@ -694,12 +780,41 @@ operator / (const scomplex<T1> x, const scomplex<T2>& y)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<is_number<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator / (const scomplex<T1> x, const T2& y)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{x.real() / y, x.imag() / y};
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<is_number<T2>::value>::type>
+inline constexpr
+scomplex<typename std::common_type<T1,T2>::type>
+operator / (const scomplex<T1> x, const T2& y)
+{
+	return scomplex<typename std::common_type<T1,T2>::type>
+		{y / x.real(), y / x.imag()};
+}
+
+//---------------------------------------------------------
 template<class T>
 inline constexpr
 scomplex<T>
 operator / (const scomplex<T> x, const T& y)
 {
 	return scomplex<T>{x.real() / y, x.imag() / y};
+}
+//---------------------------------------------------------
+template<class T>
+inline constexpr
+scomplex<T>
+operator / (const scomplex<T> x, const T& y)
+{
+	return scomplex<T>{y / x.real(), y / x.imag()};
 }
 
 
@@ -1165,10 +1280,9 @@ isnormal(const scomplex<T>& x)
 
 
 
-} //namespace num
-} //namespace am
+}  // namespace num
 
-
+}  // namespace am
 
 
 #endif
