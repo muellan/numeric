@@ -1,49 +1,18 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
-#ifndef AM_NUMERIC_CONCEPTS_H_
-#define AM_NUMERIC_CONCEPTS_H_
-
+#ifndef AM_NUMERIC_TRAITS_H_
+#define AM_NUMERIC_TRAITS_H_
 
 #include <type_traits>
 #include <utility>
 #include <limits>
 #include <complex>
+#include <array>
 
+#include "constants.h"
 
 
 namespace am {
 
 namespace num {
-
-
-/*****************************************************************************
- *
- *
- * FORWARD DECLARATIONS
- *
- *
- *****************************************************************************/
-template<class>
-class dual;
-
-template<class>
-class scomplex;
-
-template<class>
-class rational;
-
-class integer;
-
-
-
 
 
 
@@ -176,7 +145,284 @@ check_is_invertable(T, long)
 //	-> std::false_type;
 
 
+
+//-------------------------------------------------------------------
+template<class T>
+constexpr auto
+check_has_dimensions(T&& t, int)
+	-> decltype(t.dimensions(), std::true_type{});
+
+template<class T>
+constexpr auto
+check_has_dimensions(T&&, long) -> std::false_type;
+
+
 }  // namespace detail
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * FORWARD DECLARATIONS
+ *
+ *****************************************************************************/
+template<class>
+class dual;
+
+template<class>
+class scomplex;
+
+template<class>
+class rational;
+
+class integer;
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief common numeric type
+ *
+ *
+ *
+ *****************************************************************************/
+
+namespace detail {
+
+//-------------------------------------------------------------------
+template<class T1, class T2>
+struct common_numeric_type_helper
+{
+	using type = typename std::common_type<T1,T2>::type;
+};
+
+
+
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<std::complex<T>,T2>
+{
+	using type = std::complex<typename common_numeric_type_helper<T,T2>::type>;
+};
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<T2,std::complex<T>>
+{
+	using type = typename common_numeric_type_helper<std::complex<T>,T2>::type;
+};
+
+
+
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<scomplex<T>,T2>
+{
+	using type = scomplex<typename common_numeric_type_helper<T,T2>::type>;
+};
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<T2,scomplex<T>>
+{
+	using type = typename common_numeric_type_helper<scomplex<T>,T2>::type;
+};
+
+
+
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<dual<T>,T2>
+{
+	using type = dual<typename common_numeric_type_helper<T,T2>::type>;
+};
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<T2,dual<T>>
+{
+	using type = typename common_numeric_type_helper<dual<T>,T2>::type;
+};
+
+
+/*
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<rational<T>,T2>
+{
+	//TODO
+};
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<T2,rational<T>>
+{
+	using type = typename common_numeric_type_helper<rational<T>,T2>::type;
+};
+
+
+
+//---------------------------------------------------------
+template<class T>
+struct common_numeric_type_helper<integer,T>
+{
+	//TODO
+};
+//---------------------------------------------------------
+template<class T>
+struct common_numeric_type_helper<T,integer>
+{
+	using type = typename common_numeric_type_helper<integer,T>::type;
+};
+*/
+
+
+}  // namespace detail
+
+
+
+//-------------------------------------------------------------------
+template<class T, class... Ts>
+struct common_numeric_type
+{
+	using type = typename
+		detail::common_numeric_type_helper<
+			T, typename common_numeric_type<Ts...>::type>::type;
+};
+
+//---------------------------------------------------------
+template<class T>
+struct common_numeric_type<T>
+{
+	using type = T;
+};
+
+//---------------------------------------------------------
+template<class T1, class T2>
+struct common_numeric_type<T1,T2>
+{
+	using type = typename detail::common_numeric_type_helper<T1,T2>::type;
+};
+
+
+//---------------------------------------------------------
+template<class... T>
+using common_numeric_t = typename common_numeric_type<T...>::type;
+
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief underlying numeric type
+ *
+ *
+ *
+ *****************************************************************************/
+template<class T>
+struct numeric_type
+{
+	using type = typename T::numeric_type;
+};
+
+//---------------------------------------------------------
+template<class T>
+using numeric_t = typename numeric_type<T>::type;
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief dimensions
+ *
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+struct has_dimensions: public
+	decltype(detail::check_has_dimensions(std::declval<T>(), 0))
+{};
+
+
+
+//-------------------------------------------------------------------
+template<class T, bool hasdim = has_dimensions<T>::value>
+struct dimensions :
+	public std::integral_constant<dims_t, dims_t(0)>
+{};
+
+//---------------------------------------------------------
+template<class T>
+struct dimensions<T,true> :
+	public std::integral_constant<
+		typename std::decay<decltype(T::dimensions())>::type,
+		T::dimensions()>
+{};
+
+//-------------------------------------------------------------------
+template<class T, std::size_t n>
+struct dimensions<std::array<T,n>,false> :
+	public std::integral_constant<std::size_t,n>
+{};
+
+
+
+//-------------------------------------------------------------------
+//
+//-------------------------------------------------------------------
+template<dims_t n, class H, class... T>
+struct same_dimension :
+	public std::integral_constant<bool,
+		(same_dimension<n,H>::value &&
+		 same_dimension<n,T...>::value)>
+{
+};
+
+//---------------------------------------------------------
+template<dims_t n, class T>
+struct same_dimension<n,T> :
+	public std::integral_constant<bool, (dimensions<T>::value == n)>
+{};
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+struct dimension
+{
+	using type = typename std::decay<decltype(T::dimensions())>::type;
+};
+
+template<class T>
+using dimension_t = typename dimension<T>::type;
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+struct component
+{
+	using type =
+		typename std::decay<decltype(std::declval<T>()[0])>::type;
+};
+
+template<class T>
+using component_t = typename component<T>::type;
+
+
 
 
 
@@ -184,7 +430,40 @@ check_is_invertable(T, long)
 /*****************************************************************************
  *
  *
- * CONCEPT CHECKING BUILDING BLOCKS
+ * SPECIAL FUNCTION OVERLOADS FOR BUILTIN-TYPES
+ *
+ *
+ *****************************************************************************/
+
+
+//---------------------------------------------------------
+template<class T, class = typename std::enable_if<
+	std::is_arithmetic<typename std::decay<T>::type>::value>::type>
+inline constexpr auto
+real(T&& x) -> decltype(std::forward<T>(x))
+{
+	return std::forward<T>(x);
+}
+
+
+//---------------------------------------------------------
+template<class T, class = typename std::enable_if<
+	std::is_arithmetic<typename std::decay<T>::type>::value>::type>
+inline constexpr T
+imag(const T&)
+{
+	return T(0);
+}
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ * ARITHMETIC TRAITS
  *
  *
  *****************************************************************************/
@@ -231,6 +510,17 @@ struct is_invertable : public
 {};
 
 
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ * TYPE DOMAIN TRAITS
+ *
+ *
+ *****************************************************************************/
 
 //-------------------------------------------------------------------
 // INTEGRAL
@@ -300,7 +590,7 @@ struct is_floating_point<scomplex<T>> :
 /*****************************************************************************
  *
  *
- * CONCEPT CHECKING TRAITS CLASSES
+ * NUMBER CONCEPT
  *
  *
  *****************************************************************************/
@@ -404,10 +694,11 @@ struct is_floating_point_number<T> :
 {};
 
 
-} //namespace num
-} //namespace am
 
 
 
+}  // namespace num
+
+}  // namespace am
 
 #endif

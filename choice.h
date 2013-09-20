@@ -1,13 +1,3 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
 #ifndef AM_NUMERIC_CHOICE_H_
 #define AM_NUMERIC_CHOICE_H_
 
@@ -16,10 +6,8 @@
 #include <cstdint>
 
 
-#include "concepts.h"
-#include "constants.h"
+#include "traits.h"
 #include "narrowing.h"
-
 
 
 namespace am {
@@ -47,12 +35,13 @@ class choice
 
 public:
 	//---------------------------------------------------------------
-	using value_type = IntT;
+	using value_type   = IntT;
+	using numeric_type = value_type;
 
 
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	constexpr explicit
 	choice(const T& x):
 		x_((x < 0) ? (numChoices + (x % numChoices)) : (x % numChoices))
@@ -78,8 +67,8 @@ public:
 	operator = (const choice&) = default;
 
 		//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	choice&
 	operator = (const T& x)
 	{
@@ -154,8 +143,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	choice&
 	operator += (const T& x)
 	{
@@ -190,8 +179,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	choice&
 	operator -= (const T& x)
 	{
@@ -207,8 +196,8 @@ public:
 	//---------------------------------------------------------------
 	// * /
 	//---------------------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	choice&
 	operator *= (const T& x)
 	{
@@ -221,8 +210,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	choice&
 	operator /= (const T& x)
 	{
@@ -484,9 +473,9 @@ inverse(choice<Int,n> c)
 }
 
 
-} //namespace num
-} //namespace am
+}  // namespace num
 
+}  // namespace am
 
 
 #endif

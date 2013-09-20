@@ -1,13 +1,3 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
 #ifndef AM_NUMERIC_QUATERNION_H_
 #define AM_NUMERIC_QUATERNION_H_
 
@@ -16,10 +6,8 @@
 #include <cstdint>
 #include <cassert>
 
-#include "concepts.h"
 #include "constants.h"
 #include "narrowing.h"
-#include "equality.h"
 
 
 namespace am {
@@ -45,7 +33,7 @@ namespace low {
 //-------------------------------------------------------------------
 template<class URNG, class Quat>
 void
-make_random_unit_quat(URNG&& urng, Quat& q)
+make_random_unit_quat(URNG& urng, Quat& q)
 {
 	using std::cos;
 	using std::sin;
@@ -73,7 +61,7 @@ make_random_unit_quat(URNG&& urng, Quat& q)
 //---------------------------------------------------------
 template<class Quat, class URNG>
 inline Quat
-make_random_unit_quat(URNG&& urng)
+make_random_unit_quat(URNG& urng)
 {
 	Quat q;
 	make_random_unit_quat(urng,q);
@@ -384,9 +372,9 @@ public:
 	//---------------------------------------------------------------
 	// TYPES
 	//---------------------------------------------------------------
-	using numeric_type    = NumberT;
-	using value_type      = numeric_type;
-	using dimension_type  = std::int_fast8_t;
+	using numeric_type = NumberT;
+	using value_type   = numeric_type;
+	using dimension    = dims_t;
 
 	//-----------------------------------------------------
 	using pointer         = numeric_type*;
@@ -417,8 +405,9 @@ public:
 	{}
 
 	//-----------------------------------------------------
-	template<class W, class X, class Y, class Z, class =
-		typename std::enable_if<is_number<W,X,Y,Z>::value>::type>
+	template<class W, class X, class Y, class Z, class = typename
+		std::enable_if<
+			is_number<W,X,Y,Z>::value>::type>
 	explicit constexpr
 	quaternion(const W& w, const X& x, const Y& y, const Z& z):
 		v_{numeric_type(w), numeric_type(x), numeric_type(y), numeric_type(z)}
@@ -473,7 +462,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class W, class X, class Y, class Z>
+	template<class W, class X, class Y, class Z, class = typename
+		std::enable_if<is_number<W,X,Y,Z>::value>::type>
 	quaternion&
 	assign(const W& w, const X& x, const Y& y, const Z& z)
 	{
@@ -491,11 +481,11 @@ public:
 	// ELEMENT ACCESS
 	//---------------------------------------------------------------
 	reference
-	operator [] (dimension_type index) {
+	operator [] (dimension index) {
 		return v_[index];
 	}
 	constexpr const_reference
-	operator [] (dimension_type index) const noexcept {
+	operator [] (dimension index) const noexcept {
 		return v_[index];
 	}
 
@@ -521,7 +511,7 @@ public:
 	}
 
 	//---------------------------------------------------------------
-	static constexpr dimension_type
+	static constexpr dimension
 	dimensions() noexcept {
 		return 4;
 	}
@@ -563,8 +553,8 @@ public:
 	//---------------------------------------------------------------
 	// quaternion (op)= numeric_type
 	//---------------------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	quaternion&
 	operator += (const T& v)
 	{
@@ -577,8 +567,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	quaternion&
 	operator -= (const T& v)
 	{
@@ -591,8 +581,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	quaternion&
 	operator *= (const T& v)
 	{
@@ -605,8 +595,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	quaternion&
 	operator /= (const T& v)
 	{
@@ -730,7 +720,7 @@ using quat  = quaternion<real_t>;
  *****************************************************************************/
 
 //-------------------------------------------------------------------
-template<std::int_fast8_t index, class T>
+template<dims_t index, class T>
 inline constexpr auto
 get(const quaternion<T>& q) noexcept -> decltype(q[index])
 {
@@ -739,7 +729,7 @@ get(const quaternion<T>& q) noexcept -> decltype(q[index])
 	return q[index];
 }
 //-----------------------------------------------------
-template<std::int_fast8_t index, class T>
+template<dims_t index, class T>
 inline auto
 get(quaternion<T>& q) -> decltype(q[index])
 {
@@ -749,7 +739,8 @@ get(quaternion<T>& q) -> decltype(q[index])
 }
 
 
-//---------------------------------------------------------
+
+//-------------------------------------------------------------------
 template<class T>
 inline constexpr auto
 real(const quaternion<T>& q) noexcept -> decltype(q.real())
@@ -757,7 +748,9 @@ real(const quaternion<T>& q) noexcept -> decltype(q.real())
 	return q.real();
 }
 
-//---------------------------------------------------------
+
+
+//-------------------------------------------------------------------
 template<class T>
 inline constexpr auto
 imag_i(const quaternion<T>& q) noexcept -> decltype(q.imag_i())
@@ -936,10 +929,10 @@ print(Ostream& os, const quaternion<T>& q)
 template<class T1, class T2, class = typename
 	std::enable_if<is_number<T1>::value>::type
 >
-constexpr quaternion<typename std::common_type<T1,T2>::type>
+constexpr quaternion<common_numeric_t<T1,T2>>
 operator * (const T1& s, const quaternion<T2>& q)
 {
-	return quaternion<typename std::common_type<T1,T2>::type>
+	return quaternion<common_numeric_t<T1,T2>>
 		{s*q.v_[0], s*q.v_[1], s*q.v_[2], s*q.v_[3]};
 }
 
@@ -949,34 +942,34 @@ operator * (const T1& s, const quaternion<T2>& q)
 // QUATERNION <-> QUATERNION
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline constexpr quaternion<typename std::common_type<T1,T2>::type>
+inline constexpr quaternion<common_numeric_t<T1,T2>>
 operator * (const quaternion<T1>& p, const quaternion<T2>& q)
 {
 	return low::multiply_quat_quat<
-		quaternion<typename std::common_type<T1,T2>::type>>(p,q);
+		quaternion<common_numeric_t<T1,T2>>>(p,q);
 }
 //---------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-quaternion<typename std::common_type<T1,T2>::type>
+quaternion<common_numeric_t<T1,T2>>
 operator + (const quaternion<T1>& a, const quaternion<T2>& b)
 {
-	return quaternion<typename std::common_type<T1,T2>::type>{
+	return quaternion<common_numeric_t<T1,T2>>{
 		a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]};
 }
 //---------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-quaternion<typename std::common_type<T1,T2>::type>
+quaternion<common_numeric_t<T1,T2>>
 operator - (const quaternion<T1>& a, const quaternion<T2>& b)
 {
-	return quaternion<typename std::common_type<T1,T2>::type>{
+	return quaternion<common_numeric_t<T1,T2>>{
 		a[0]-b[0], a[1]-b[1], a[2]-b[2], a[3]-b[3]};
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-inline quaternion<typename std::common_type<T1,T2>::type>
+inline quaternion<common_numeric_t<T1,T2>>
 times_inverse(const quaternion<T1>& p, quaternion<T2> q)
 {
 	q.invert();
@@ -984,7 +977,7 @@ times_inverse(const quaternion<T1>& p, quaternion<T2> q)
 }
 //---------------------------------------------------------
 template<class T1, class T2>
-inline quaternion<typename std::common_type<T1,T2>::type>
+inline quaternion<common_numeric_t<T1,T2>>
 inverse_times(quaternion<T1> p, const quaternion<T2>& q)
 {
 	p.invert();
@@ -993,20 +986,20 @@ inverse_times(quaternion<T1> p, const quaternion<T2>& q)
 
 //---------------------------------------------------------
 template<class T1, class T2>
-inline constexpr quaternion<typename std::common_type<T1,T2>::type>
+inline constexpr quaternion<common_numeric_t<T1,T2>>
 times_conj(const quaternion<T1>& p, const quaternion<T2>& q)
 {
 	return low::multiply_quat_conj_quat<
-		quaternion<typename std::common_type<T1,T2>::type>>(p,q);
+		quaternion<common_numeric_t<T1,T2>>>(p,q);
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-inline constexpr quaternion<typename std::common_type<T1,T2>::type>
+inline constexpr quaternion<common_numeric_t<T1,T2>>
 conj_times(const quaternion<T1>& p, const quaternion<T2>& q)
 {
 	return low::multiply_conj_quat_quat<
-		quaternion<typename std::common_type<T1,T2>::type>>(p,q);
+		quaternion<common_numeric_t<T1,T2>>>(p,q);
 }
 
 
@@ -1079,11 +1072,11 @@ norm2(const quaternion<T>& q)
 
 //---------------------------------------------------------
 template<class T>
-inline typename std::common_type<T,real_t>::type
+inline common_numeric_t<T,real_t>
 norm(const quaternion<T>& q)
 {
 	using std::sqrt;
-	using real_t = typename std::common_type<T,real_t>::type ;
+	using real_t = common_numeric_t<T,real_t> ;
 	return sqrt(real_t(norm2(q)));
 }
 
@@ -1112,7 +1105,7 @@ is_normalized(const quaternion<T>& q)
 // DISTANCE
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline typename std::common_type<T1,T2>::type
+inline common_numeric_t<T1,T2>
 norm2(const quaternion<T1>& a, const quaternion<T1>& b)
 {
 	return ( (a[0] - b[0]) * (a[0] - b[0]) +
@@ -1122,10 +1115,10 @@ norm2(const quaternion<T1>& a, const quaternion<T1>& b)
 }
 //---------------------------------------------------------
 template<class T1, class T2>
-inline typename std::common_type<T1,T2,real_t>::type
+inline common_numeric_t<T1,T2,real_t>
 norm(const quaternion<T1>& a, const quaternion<T1>& b)
 {
-	using real_t = typename std::common_type<T1,T2,real_t>::type ;
+	using real_t = common_numeric_t<T1,T2,real_t> ;
 	return sqrt(real_t(norm2(a, b)));
 }
 
@@ -1136,10 +1129,74 @@ norm(const quaternion<T1>& a, const quaternion<T1>& b)
 // dot
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline typename std::common_type<T1,T2>::type
+inline common_numeric_t<T1,T2>
 dot(const quaternion<T1>& a, const quaternion<T2>& b)
 {
 	return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]);
+}
+
+
+
+//-------------------------------------------------------------------
+// REAL PRODUCT
+//-------------------------------------------------------------------
+template<class T1, class T2>
+quaternion<common_numeric_t<T1,T2>>
+real_product(const quaternion<T1>& p, const quaternion<T2>& q)
+{
+	return quaternion<common_numeric_t<T1,T2>>{
+		(real(p[0])*real(q[0])) - (real(p[1])*real(q[1])) - (real(p[2])*real(q[2])) - (real(p[3])*real(q[3])),
+		(real(p[0])*real(q[1])) + (real(p[1])*real(q[0])) + (real(p[2])*real(q[3])) - (real(p[3])*real(q[2])),
+		(real(p[0])*real(q[2])) - (real(p[1])*real(q[3])) + (real(p[2])*real(q[0])) + (real(p[3])*real(q[1])),
+		(real(p[0])*real(q[3])) + (real(p[1])*real(q[2])) - (real(p[2])*real(q[1])) + (real(p[3])*real(q[0]))
+	};
+}
+
+//---------------------------------------------------------
+template<class T1, class T2, class T3>
+void
+real_product(
+	const quaternion<T1>& p, const quaternion<T2>& q, quaternion<T3>& out)
+{
+	using num::real;
+
+	AM_CHECK_NARROWING2(T3,T2,T1)
+
+	out[0] = (real(p[0])*real(q[0])) - (real(p[1])*real(q[1])) - (real(p[2])*real(q[2])) - (real(p[3])*real(q[3]));
+	out[1] = (real(p[0])*real(q[1])) + (real(p[1])*real(q[0])) + (real(p[2])*real(q[3])) - (real(p[3])*real(q[2]));
+	out[2] = (real(p[0])*real(q[2])) - (real(p[1])*real(q[3])) + (real(p[2])*real(q[0])) + (real(p[3])*real(q[1]));
+	out[3] = (real(p[0])*real(q[3])) + (real(p[1])*real(q[2])) - (real(p[2])*real(q[1])) + (real(p[3])*real(q[0]));
+}
+
+
+
+//-------------------------------------------------------------------
+// IMAG PRODUCT
+//-------------------------------------------------------------------
+template<class T1, class T2>
+quaternion<common_numeric_t<T1,T2>>
+imag_product(const quaternion<T1>& p, const quaternion<T2>& q)
+{
+	return quaternion<common_numeric_t<T1,T2>>{
+		(imag(p[0])*imag(q[0])) - (imag(p[1])*imag(q[1])) - (imag(p[2])*imag(q[2])) - (imag(p[3])*imag(q[3])),
+		(imag(p[0])*imag(q[1])) + (imag(p[1])*imag(q[0])) + (imag(p[2])*imag(q[3])) - (imag(p[3])*imag(q[2])),
+		(imag(p[0])*imag(q[2])) - (imag(p[1])*imag(q[3])) + (imag(p[2])*imag(q[0])) + (imag(p[3])*imag(q[1])),
+		(imag(p[0])*imag(q[3])) + (imag(p[1])*imag(q[2])) - (imag(p[2])*imag(q[1])) + (imag(p[3])*imag(q[0]))
+	};
+}
+
+//---------------------------------------------------------
+template<class T1, class T2, class T3>
+void
+imag_product(
+	const quaternion<T1>& p, const quaternion<T2>& q, quaternion<T3>& out)
+{
+	AM_CHECK_NARROWING2(T3,T2,T1)
+
+	out[0] = (imag(p[0])*imag(q[0])) - (imag(p[1])*imag(q[1])) - (imag(p[2])*imag(q[2])) - (imag(p[3])*imag(q[3]));
+	out[1] = (imag(p[0])*imag(q[1])) + (imag(p[1])*imag(q[0])) + (imag(p[2])*imag(q[3])) - (imag(p[3])*imag(q[2]));
+	out[2] = (imag(p[0])*imag(q[2])) - (imag(p[1])*imag(q[3])) + (imag(p[2])*imag(q[0])) + (imag(p[3])*imag(q[1]));
+	out[3] = (imag(p[0])*imag(q[3])) + (imag(p[1])*imag(q[2])) - (imag(p[2])*imag(q[1])) + (imag(p[3])*imag(q[0]));
 }
 
 
@@ -1159,10 +1216,10 @@ dot(const quaternion<T1>& a, const quaternion<T2>& b)
 //-------------------------------------------------------------------
 template<class T1, class T2, class T3, class T4, class = typename
 	std::enable_if<is_number<T1,T2,T3,T4>::value>::type>
-inline constexpr quaternion<typename std::common_type<T1,T2,T3,T4>::type>
+inline constexpr quaternion<common_numeric_t<T1,T2,T3,T4>>
 make_quaternion(const T1& w, const T2& x, const T3& y, const T4& z)
 {
-	return quaternion<typename std::common_type<T1,T2,T3,T4>::type>{w,x,y,z};
+	return quaternion<common_numeric_t<T1,T2,T3,T4>>{w,x,y,z};
 }
 
 
@@ -1170,9 +1227,9 @@ make_quaternion(const T1& w, const T2& x, const T3& y, const T4& z)
 //-------------------------------------------------------------------
 // RANDOM UNIFORM
 //-------------------------------------------------------------------
-template<class T, class RandomEngine>
+template<class T, class URNG>
 inline quaternion<T>
-make_random_unit_quaternion(RandomEngine& urng)
+make_random_unit_quaternion(URNG& urng)
 {
 	static_assert(is_number<T>::value,
 		"make_random_unit_quaternion<T> : T has to be a number type");
@@ -1182,17 +1239,17 @@ make_random_unit_quaternion(RandomEngine& urng)
 
 
 
-
 //-------------------------------------------------------------------
 // spherical linear interpolation
 //-------------------------------------------------------------------
 template<class T1, class T2, class T3,
 	class = typename std::enable_if<is_number<T3>::value>::type
 >
-inline quaternion<typename std::common_type<T1,T2,T3>::type>
-lerp(const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
+inline quaternion<common_numeric_t<T1,T2,T3>>
+lerp(
+	const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
 {
-	quaternion<typename std::common_type<T1,T2,T3>::type> out;
+	quaternion<common_numeric_t<T1,T2,T3>> out;
 	low::quat_lerp(qFrom, qTo, t, out);
 	return out;
 }
@@ -1205,10 +1262,11 @@ lerp(const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
 template<class T1, class T2, class T3,
 	class = typename std::enable_if<is_number<T3>::value>::type
 >
-inline quaternion<typename std::common_type<T1,T2,T3>::type>
-slerp(const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
+inline quaternion<common_numeric_t<T1,T2,T3>>
+slerp(
+	const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
 {
-	quaternion<typename std::common_type<T1,T2,T3>::type> out;
+	quaternion<common_numeric_t<T1,T2,T3>> out;
 	low::quat_slerp(qFrom, qTo, t, out);
 	return out;
 }
@@ -1221,12 +1279,12 @@ slerp(const quaternion<T1>& qFrom, const quaternion<T2>& qTo, T3 t)
 template<class T0, class T1, class T2, class T3, class T4, class =
 	typename std::enable_if<is_number<T4>::value>::type
 >
-inline quaternion<typename std::common_type<T0,T1,T2,T3,T4>::type>
+inline quaternion<common_numeric_t<T0,T1,T2,T3,T4>>
 squad(
 	const quaternion<T0>& q0, const quaternion<T1>& q1,
 	const quaternion<T2>& q2, const quaternion<T3>& q3, T4 t)
 {
-	quaternion<typename std::common_type<T0,T1,T2,T3,T4>::type> out;
+	quaternion<common_numeric_t<T0,T1,T2,T3,T4>> out;
 	low::quat_squad(q0, q1, q2, q3, t, out);
 	return out;
 }
@@ -1263,7 +1321,7 @@ exp(const quaternion<T>& q)
 /// @brief e^quat = exp(v*phi) = [cos(phi),vsin(phi)]
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline quaternion<typename std::common_type<T1,T2>::type>
+inline quaternion<common_numeric_t<T1,T2>>
 pow(const quaternion<T1>& q, const T2& exponent)
 {
 	return exp(log(q) * exponent);
@@ -1271,9 +1329,9 @@ pow(const quaternion<T1>& q, const T2& exponent)
 
 
 
-} //namespace num
-} //namespace am
+}  // namespace num
 
+}  // namespace am
 
 
 #endif

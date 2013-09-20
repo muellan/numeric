@@ -1,20 +1,8 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
 #ifndef AM_NUMERIC_NARROWING_H_
 #define AM_NUMERIC_NARROWING_H_
 
 
-#include "concepts.h"
-
-
+#include "traits.h"
 
 
 
@@ -198,29 +186,28 @@ struct is_non_narrowing :
 //-------------------------------------------------------------------
 #ifndef AM_ALLOW_NARROWING
 
-
 #define AM_CHECK_NARROWING(TARGET,SOURCE) \
-	static_assert(is_non_narrowing< TARGET , SOURCE >::value, \
+	static_assert(num::is_non_narrowing< TARGET , SOURCE >::value, \
 		"narrowing conversion");
 
 
 #define AM_CHECK_NARROWING2(TARGET,S1,S2) \
-	static_assert(is_non_narrowing< TARGET , S1 , S2 >::value, \
+	static_assert(num::is_non_narrowing< TARGET , S1 , S2 >::value, \
 		"narrowing conversion");
 
 
 #define AM_CHECK_NARROWING3(TARGET,S1,S2,S3) \
-	static_assert(is_non_narrowing< TARGET , S1 , S2, S3 >::value, \
+	static_assert(num::is_non_narrowing< TARGET , S1 , S2, S3 >::value, \
 		"narrowing conversion");
 
 
 #define AM_CHECK_NARROWING4(TARGET,S1,S2,S3,S4) \
-	static_assert(is_non_narrowing< TARGET , S1, S2, S3, S4 >::value, \
+	static_assert(num::is_non_narrowing< TARGET , S1, S2, S3, S4 >::value, \
 		"narrowing conversion");
 
 
 #define AM_CHECK_NARROWING5(TARGET,S1,S2,S3,S4,S5) \
-	static_assert(is_non_narrowing< TARGET , S1 , S2 , S3 , S4 , S5 >::value, \
+	static_assert(num::is_non_narrowing< TARGET , S1 , S2 , S3 , S4 , S5 >::value, \
 		"narrowing conversion");
 
 
@@ -235,10 +222,9 @@ struct is_non_narrowing :
 #endif
 
 
-} //namespace num
-} //namespace am
+}  // namespace num
 
-
+}  // namespace am
 
 
 

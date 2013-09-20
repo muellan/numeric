@@ -1,28 +1,56 @@
-﻿/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
-#ifndef AM_NUMERIC_ANGLE_H_
+﻿#ifndef AM_NUMERIC_ANGLE_H_
 #define AM_NUMERIC_ANGLE_H_
 
 #include <cmath>
 #include <utility>
 
-#include "concepts.h"
+#include "traits.h"
 #include "constants.h"
 #include "narrowing.h"
-
 
 
 namespace am {
 
 namespace num {
+
+
+/*****************************************************************************
+ *
+ *
+ * BASIC CONVERSIONS
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+inline T
+deg_to_rad(const T& angle, bool wrap = true)
+{
+	using std::fmod;
+
+	if(wrap)
+		return fmod(angle*T(pi/180.0), T(2 * pi + 1e-10));
+	else
+		return (angle * T(pi/180.0));
+}
+
+//-------------------------------------------------------------------
+template<class T>
+inline T
+rad_to_deg(const T& angle, bool wrap = true)
+{
+	using std::fmod;
+
+	if(wrap)
+		return fmod(angle * T(180.0/pi), T(360));
+	else
+		return (angle * T(180.0/pi));
+}
+
+
+
+
 
 
 /*****************************************************************************
@@ -117,10 +145,8 @@ class angle
 {
 	//---------------------------------------------------------
 	template<class T>
-	struct conversion {
-		using type = typename std::common_type<
+	using conversion_t = typename std::common_type<
 			typename T::type, typename Turn::type>::type;
-	};
 
 	static_assert(is_number<typename Turn::type>::value,
 		"angle<T>: T::type must be a number");
@@ -159,7 +185,8 @@ public:
 	{}
 	//-----------------------------------------------------
 	/// @brief implicit conversion from simple values is not allowed
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	explicit constexpr
 	angle(const T& a):
 		v_{numeric_type(a)}
@@ -231,21 +258,23 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	angle&
 	operator *= (const T& factor)
 	{
-		AM_CHECK_NARROWING(numeric_type, typename T::type)
+		AM_CHECK_NARROWING(numeric_type, T)
 
 		v_ *= factor;
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	angle&
 	operator /= (const T& factor)
 	{
-		AM_CHECK_NARROWING(numeric_type, typename T::type)
+		AM_CHECK_NARROWING(numeric_type, T)
 
 		v_ /= factor;
 		return *this;
@@ -269,27 +298,26 @@ public:
 		return angle{v_ - a.as<turn_type>()};
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	constexpr angle
-	operator * (numeric_type factor) const {
+	operator * (const T& factor) const
+	{
 		return angle{v_ * factor};
 	}
 	//-----------------------------------------------------
+	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	constexpr angle
-	operator / (numeric_type factor) const {
+	operator / (const T& factor) const
+	{
 		return angle{v_ / factor};
 	}
 
 	//-----------------------------------------------------
-	/// @brief power
-	constexpr angle
-	operator ^ (numeric_type factor) const {
-		return angle{std::pow(v_,factor)};
-	}
-
-	//-----------------------------------------------------
 	/// @brief pre-multiplication
+	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
 	inline friend constexpr angle
-	operator * (numeric_type factor, const angle& a) {
+	operator * (const T& factor, const angle& a)
+	{
 		return angle{factor * a.v_};
 	}
 
@@ -297,8 +325,9 @@ public:
 	//---------------------------------------------------------------
 	// inversion (works only on signed domains)
 	//---------------------------------------------------------------
-	template<class V = numeric_type>
-	constexpr typename std::enable_if<!std::is_unsigned<V>::value, angle>::type
+	template<class T = numeric_type, class =
+		typename std::enable_if<!std::is_unsigned<T>::value>::type>
+	constexpr angle
 	operator - () const {
 		return angle{-v_};
 	}
@@ -376,7 +405,7 @@ public:
 
 	//---------------------------------------------------------------
 	template<class OutTurn>
-	inline friend constexpr typename conversion<OutTurn>::type
+	inline friend constexpr conversion_t<OutTurn>
 	angle_cast(const angle& a)	{
 		return (a.as<OutTurn>());
 	}
@@ -438,9 +467,9 @@ private:
 	//-----------------------------------------------------
 	template<class OutTurn, class = typename
 		std::enable_if<!std::is_same<turn_type,OutTurn>::value>::type>
-	constexpr typename conversion<OutTurn>::type
+	constexpr conversion_t<OutTurn>
 	as() const {
-		using res_t = typename conversion<OutTurn>::type;
+		using res_t = conversion_t<OutTurn>;
 		return ( (res_t(OutTurn::value) / res_t(turn())) * v_);
 	}
 
@@ -766,10 +795,10 @@ make_radians(const T& t)
 }
 //---------------------------------------------------------
 template<class U>
-inline constexpr radians<typename angle<U>::numeric_type>
+inline constexpr radians<numeric_t<angle<U>>>
 make_radians(const angle<U>& a)
 {
-	return radians<typename angle<U>::numeric_type>{a};
+	return radians<numeric_t<angle<U>>>{a};
 }
 
 //---------------------------------------------------------
@@ -781,10 +810,10 @@ make_degrees(const T& t)
 }
 //---------------------------------------------------------
 template<class U>
-inline constexpr degrees<typename angle<U>::numeric_type>
+inline constexpr degrees<numeric_t<angle<U>>>
 make_degrees(const angle<U>& a)
 {
-	return degrees<typename angle<U>::numeric_type>{a};
+	return degrees<numeric_t<angle<U>>>{a};
 }
 
 //---------------------------------------------------------
@@ -796,10 +825,10 @@ make_gons(const T& t)
 }
 //---------------------------------------------------------
 template<class U>
-inline constexpr gons<typename angle<U>::numeric_type>
+inline constexpr gons<numeric_t<angle<U>>>
 make_gons(const angle<U>& a)
 {
-	return gons<typename angle<U>::numeric_type>{a};
+	return gons<numeric_t<angle<U>>>{a};
 }
 
 
@@ -893,44 +922,44 @@ tanh(const angle<T>& r)
 // INVERSE TRIGONOMETRIC FUNCTIONS
 //-------------------------------------------------------------------
 template<class T>
-inline radians<typename std::common_type<T,real_t>::type>
+inline radians<common_numeric_t<T,real_t>>
 rad_asin(T v)
 {
 	using std::asin;
-	using res_t = typename std::common_type<T,real_t>::type;
+	using res_t = common_numeric_t<T,real_t>;
 
 	return radians<res_t>{res_t(asin(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<typename std::common_type<T,real_t>::type>
+inline radians<common_numeric_t<T,real_t>>
 rad_acos(T v)
 {
 	using std::acos;
-	using res_t = typename std::common_type<T,real_t>::type;
+	using res_t = common_numeric_t<T,real_t>;
 
 	return radians<res_t>{res_t(acos(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<typename std::common_type<T,real_t>::type>
+inline radians<common_numeric_t<T,real_t>>
 rad_atan(T v)
 {
 	using std::atan;
-	using res_t = typename std::common_type<T,real_t>::type;
+	using res_t = common_numeric_t<T,real_t>;
 
 	return radians<res_t>{res_t(atan(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<typename std::common_type<T,real_t>::type>
+inline radians<common_numeric_t<T,real_t>>
 rad_atan2(T x, T y)
 {
 	using std::atan2;
-	using res_t = typename std::common_type<T,real_t>::type;
+	using res_t = common_numeric_t<T,real_t>;
 
 	return radians<res_t>{res_t(atan2(x,y))};
 }
@@ -941,42 +970,41 @@ rad_atan2(T x, T y)
 // INVERSE HYPERBOLIC FUNCTIONS
 //-------------------------------------------------------------------
 template<class T>
-inline radians<typename std::common_type<T,real_t>::type>
+inline radians<common_numeric_t<T,real_t>>
 rad_asinh(T v)
 {
 	using std::asinh;
-	using res_t = typename std::common_type<T,real_t>::type;
+	using res_t = common_numeric_t<T,real_t>;
 
 	return radians<res_t>{res_t(asinh(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<typename std::common_type<T,real_t>::type>
+inline radians<common_numeric_t<T,real_t>>
 rad_acosh(T v)
 {
 	using std::acosh;
-	using res_t = typename std::common_type<T,real_t>::type;
+	using res_t = common_numeric_t<T,real_t>;
 
 	return radians<res_t>{res_t(acosh(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<typename std::common_type<T,real_t>::type>
+inline radians<common_numeric_t<T,real_t>>
 rad_atanh(T v)
 {
 	using std::atanh;
-	using res_t = typename std::common_type<T,real_t>::type;
+	using res_t = common_numeric_t<T,real_t>;
 
 	return radians<res_t>{res_t(atanh(v))};
 }
 
 
-} //namespace num
-} //namespace am
+}  // namespace num
 
-
+}  // namespace am
 
 
 #endif

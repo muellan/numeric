@@ -139,7 +139,7 @@ bool angle_functions_correct()
 		(abs(sin(rad{real_t(pi)/2}) - 1) < eps) &&
 		(abs(sin(deg{0}) ) < eps) &&
 		(abs(sin(deg{90}) - 1) < eps) &&
-		(abs(degrees_cast<real_t>(deg{5}^2) - 25) < eps) );
+		(abs(degrees_cast<real_t>(deg{5}) - 25) < eps) );
 
 }
 

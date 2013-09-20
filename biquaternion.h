@@ -1,13 +1,3 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
 #ifndef AM_NUMERIC_BIQUATERNION_H_
 #define AM_NUMERIC_BIQUATERNION_H_
 
@@ -15,8 +5,6 @@
 #include <complex>
 
 #include "quaternion.h"
-
-
 
 
 namespace am {
@@ -128,12 +116,12 @@ template<
 	class T5, class T6, class T7, class T8
 >
 inline constexpr
-biquaternion<typename std::common_type<T1,T2,T3,T4,T5,T6,T7,T8>::type>
+biquaternion<common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>>
 make_biquaternion(
 	const T1& aw, const T2& ax, const T3& ay, const T4& az,
 	const T5& bw, const T6& bx, const T7& by, const T8& bz)
 {
-	using res_t = typename std::common_type<T1,T2,T3,T4,T5,T6,T7,T8>::type;
+	using res_t = common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>;
 
 	return biquaternion<res_t>{
 		std::complex<res_t>{aw,bw},
@@ -145,10 +133,10 @@ make_biquaternion(
 //---------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-biquaternion<typename std::common_type<T1,T2>::type>
+biquaternion<common_numeric_t<T1,T2>>
 make_biquaternion(const quaternion<T1>& real, const quaternion<T2>& imag)
 {
-	using res_t = typename std::common_type<T1,T2>::type;
+	using res_t = common_numeric_t<T1,T2>;
 
 	return biquaternion<res_t>{
 		std::complex<res_t>{real[0], imag[0]},
@@ -166,78 +154,9 @@ make_biquaternion(const quaternion<T>& q)
 }
 
 
+}  // namespace num
 
-
-
-
-/*****************************************************************************
- *
- *
- * SPECIAL ARITHMETIC
- *
- *
- *****************************************************************************/
-
-//-------------------------------------------------------------------
-template<class T1, class T2>
-quaternion<typename std::common_type<T1,T2>::type>
-real_product(const quaternion<T1>& p, const biquaternion<T2>& q)
-{
-	return quaternion<typename std::common_type<T1,T2>::type>{
-		p[0]*q[0].real() - p[1]*q[1].real() - p[2]*q[2].real() - p[3]*q[3].real(),
-		p[0]*q[1].real() + p[1]*q[0].real() + p[2]*q[3].real() - p[3]*q[2].real(),
-		p[0]*q[2].real() - p[1]*q[3].real() + p[2]*q[0].real() + p[3]*q[1].real(),
-		p[0]*q[3].real() + p[1]*q[2].real() - p[2]*q[1].real() + p[3]*q[0].real()
-	};
-}
-
-//---------------------------------------------------------
-template<class T1, class T2, class T3>
-void
-real_product(
-	const quaternion<T1>& p, const biquaternion<T2>& q,	quaternion<T3>& out)
-{
-	AM_CHECK_NARROWING2(T3,T2,T1)
-
-	out[0] = p[0]*q[0].real() - p[1]*q[1].real() - p[2]*q[2].real() - p[3]*q[3].real();
-	out[1] = p[0]*q[1].real() + p[1]*q[0].real() + p[2]*q[3].real() - p[3]*q[2].real();
-	out[2] = p[0]*q[2].real() - p[1]*q[3].real() + p[2]*q[0].real() + p[3]*q[1].real();
-	out[3] = p[0]*q[3].real() + p[1]*q[2].real() - p[2]*q[1].real() + p[3]*q[0].real();
-}
-
-//-------------------------------------------------------------------
-template<class T1, class T2>
-biquaternion<typename std::common_type<T1,T2>::type>
-real_product(const biquaternion<T1>& q1, const biquaternion<T2>& q2)
-{
-	return biquaternion<typename std::common_type<T1,T2>::type> {
-		q1[0].real()*q2[0].real() - q1[1].real()*q2[1].real() - q1[2].real()*q2[2].real() - q1[3].real()*q2[3].real(),
-		q1[0].real()*q2[1].real() + q1[1].real()*q2[0].real() + q1[2].real()*q2[3].real() - q1[3].real()*q2[2].real(),
-		q1[0].real()*q2[2].real() - q1[1].real()*q2[3].real() + q1[2].real()*q2[0].real() + q1[3].real()*q2[1].real(),
-		q1[0].real()*q2[3].real() + q1[1].real()*q2[2].real() - q1[2].real()*q2[1].real() + q1[3].real()*q2[0].real()
-	};
-}
-
-
-
-//-------------------------------------------------------------------
-template<class T1, class T2>
-biquaternion<typename std::common_type<T1,T2>::type>
-imag_product(const biquaternion<T1>& q1, const biquaternion<T2>& q2)
-{
-	return biquaternion<typename std::common_type<T1,T2>::type> {
-		q1[0].imag()*q2[0].imag() - q1[1].imag()*q2[1].imag() - q1[2].imag()*q2[2].imag() - q1[3].imag()*q2[3].imag(),
-		q1[0].imag()*q2[1].imag() + q1[1].imag()*q2[0].imag() + q1[2].imag()*q2[3].imag() - q1[3].imag()*q2[2].imag(),
-		q1[0].imag()*q2[2].imag() - q1[1].imag()*q2[3].imag() + q1[2].imag()*q2[0].imag() + q1[3].imag()*q2[1].imag(),
-		q1[0].imag()*q2[3].imag() + q1[1].imag()*q2[2].imag() - q1[2].imag()*q2[1].imag() + q1[3].imag()*q2[0].imag()
-	};
-}
-
-
-} //namespace num
-} //namespace am
-
-
+}  // namespace am
 
 
 #endif

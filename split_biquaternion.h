@@ -1,21 +1,9 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
 #ifndef AM_NUMERIC_SPLIT_BIQUATERNION_H_
 #define AM_NUMERIC_SPLIT_BIQUATERNION_H_
 
 
 #include "quaternion.h"
 #include "scomplex.h"
-
-
 
 
 namespace am {
@@ -145,12 +133,12 @@ template<
 	class T5, class T6, class T7, class T8
 >
 inline constexpr
-split_biquaternion<typename std::common_type<T1,T2,T3,T4,T5,T6,T7,T8>::type>
+split_biquaternion<common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>>
 make_split_biquaternion(
 	const T1& aw, const T2& ax, const T3& ay, const T4& az,
 	const T5& bw, const T6& bx, const T7& by, const T8& bz)
 {
-	using res_t = typename std::common_type<T1,T2,T3,T4,T5,T6,T7,T8>::type;
+	using res_t = common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>;
 
 	return split_biquaternion<res_t>{
 		scomplex<res_t>{aw,bw},
@@ -162,10 +150,10 @@ make_split_biquaternion(
 //---------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-split_biquaternion<typename std::common_type<T1,T2>::type>
+split_biquaternion<common_numeric_t<T1,T2>>
 make_split_biquaternion(const quaternion<T1>& real, const quaternion<T2>& imag)
 {
-	using res_t = typename std::common_type<T1,T2>::type;
+	using res_t = common_numeric_t<T1,T2>;
 
 	return split_biquaternion<res_t>{
 		scomplex<res_t>{real[0], imag[0]},
@@ -184,77 +172,7 @@ make_split_biquaternion(const quaternion<T>& q)
 }
 
 
-
-
-
-
-/*****************************************************************************
- *
- *
- * SPECIAL ARITHMETIC
- *
- *
- *****************************************************************************/
-
-//-------------------------------------------------------------------
-template<class T1, class T2>
-quaternion<typename std::common_type<T1,T2>::type>
-real_product(const quaternion<T1>& p, const split_biquaternion<T2>& q)
-{
-	return quaternion<typename std::common_type<T1,T2>::type>{
-		p[0]*q[0][0] - p[1]*q[1][0] - p[2]*q[2][0] - p[3]*q[3][0],
-		p[0]*q[1][0] + p[1]*q[0][0] + p[2]*q[3][0] - p[3]*q[2][0],
-		p[0]*q[2][0] - p[1]*q[3][0] + p[2]*q[0][0] + p[3]*q[1][0],
-		p[0]*q[3][0] + p[1]*q[2][0] - p[2]*q[1][0] + p[3]*q[0][0]
-	};
-}
-
-//---------------------------------------------------------
-template<class T1, class T2, class T3>
-void
-real_product(
-	const quaternion<T1>& p, const split_biquaternion<T2>& q,
-	quaternion<T3>& out)
-{
-	AM_CHECK_NARROWING2(T3,T2,T1)
-
-	out[0] = p[0]*q[0][0] - p[1]*q[1][0] - p[2]*q[2][0] - p[3]*q[3][0];
-	out[1] = p[0]*q[1][0] + p[1]*q[0][0] + p[2]*q[3][0] - p[3]*q[2][0];
-	out[2] = p[0]*q[2][0] - p[1]*q[3][0] + p[2]*q[0][0] + p[3]*q[1][0];
-	out[3] = p[0]*q[3][0] + p[1]*q[2][0] - p[2]*q[1][0] + p[3]*q[0][0];
-}
-
-//---------------------------------------------------------
-template<class T1, class T2>
-split_biquaternion<typename std::common_type<T1,T2>::type>
-real_product(const split_biquaternion<T1>& p, const split_biquaternion<T2>& q)
-{
-	return split_biquaternion<typename std::common_type<T1,T2>::type>{
-		p[0][0]*q[0][0] - p[1][0]*q[1][0] - p[2][0]*q[2][0] - p[3][0]*q[3][0],
-		p[0][0]*q[1][0] + p[1][0]*q[0][0] + p[2][0]*q[3][0] - p[3][0]*q[2][0],
-		p[0][0]*q[2][0] - p[1][0]*q[3][0] + p[2][0]*q[0][0] + p[3][0]*q[1][0],
-		p[0][0]*q[3][0] + p[1][0]*q[2][0] - p[2][0]*q[1][0] + p[3][0]*q[0][0]
-	};
-}
-
-
-
-//-------------------------------------------------------------------
-template<class T1, class T2>
-split_biquaternion<typename std::common_type<T1,T2>::type>
-imag_product(const split_biquaternion<T1>& p, const split_biquaternion<T2>& q)
-{
-	return split_biquaternion<typename std::common_type<T1,T2>::type>{
-		p[0][1]*q[0][1] - p[1][1]*q[1][1] - p[2][1]*q[2][1] - p[3][1]*q[3][1],
-		p[0][1]*q[1][1] + p[1][1]*q[0][1] + p[2][1]*q[3][1] - p[3][1]*q[2][1],
-		p[0][1]*q[2][1] - p[1][1]*q[3][1] + p[2][1]*q[0][1] + p[3][1]*q[1][1],
-		p[0][1]*q[3][1] + p[1][1]*q[2][1] - p[2][1]*q[1][1] + p[3][1]*q[0][1]
-	};
-}
-
-
-} //namespace num
-} //namespace am
-
+}  // namespace num
+}  // namespace am
 
 #endif

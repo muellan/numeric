@@ -1,20 +1,9 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
 #ifndef AM_NUMERIC_DUAL_H_
 #define AM_NUMERIC_DUAL_H_
 
 #include <cmath>
 #include <cfloat>
 
-#include "concepts.h"
 #include "constants.h"
 #include "narrowing.h"
 #include "equality.h"
@@ -47,6 +36,7 @@ public:
 	// TYPES
 	//---------------------------------------------------------------
 	using value_type      = NumberType;
+	using numeric_type    = value_type;
 	using const_reference = const value_type&;
 
 
@@ -61,15 +51,8 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	explicit constexpr
-	dual(const value_type& a):
-		n_{a,value_type(0)}
-	{}
-
-	//-----------------------------------------------------
-	/// @brief
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	explicit constexpr
 	dual(const T& a):
 		n_{value_type(a),value_type(0)}
@@ -86,8 +69,8 @@ public:
 
 	//-----------------------------------------------------
 	/// @brief
-	template<class T1, class T2, class = typename
-		std::enable_if<is_number<T1,T2>::value>::type>
+	template<class T1, class T2, class = typename std::enable_if<
+		is_number<T1,T2>::value>::type>
 	explicit constexpr
 	dual(const T1& r, const T2& d):
 		n_{value_type(r), value_type(d)}
@@ -99,6 +82,15 @@ public:
 	constexpr
 	dual(const dual&) = default;
 
+	//-----------------------------------------------------
+	template<class T>
+	constexpr
+	dual(const dual<T>& src):
+		n_{value_type(src.real()), value_type(src.imag())}
+	{
+		AM_CHECK_NARROWING(value_type,T)
+	}
+
 
 	//---------------------------------------------------------------
 	// ASSIGNMENT
@@ -107,8 +99,8 @@ public:
 	operator = (const dual&) = default;
 
 	//-----------------------------------------------------
-	template<class T, class =
-		typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	dual&
 	operator = (const dual<T>& d)
 	{
@@ -120,8 +112,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	dual&
 	operator = (const T& n)
 	{
@@ -190,8 +182,8 @@ public:
 	//---------------------------------------------------------------
 	// dual (op)= number
 	//---------------------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	dual&
 	operator += (const T& v)
 	{
@@ -201,16 +193,16 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	dual&
 	operator -= (const T& v) {
 		n_[0] -= v;
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	dual&
 	operator *= (const T& v)
 	{
@@ -221,8 +213,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	dual&
 	operator /= (const T& v)
 	{
@@ -233,8 +225,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	dual&
 	operator ^= (const T& e)
 	{
@@ -400,10 +392,10 @@ private:
 //---------------------------------------------------------------
 template<class T1, class T2>
 inline
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 make_dual(const T1& a, const T2& b)
 {
-	return dual<typename std::common_type<T1,T2>::type>{a,b};
+	return dual<common_numeric_t<T1,T2>>{a,b};
 }
 
 //---------------------------------------------------------------
@@ -517,7 +509,7 @@ operator != (const dual<T1>& a, const dual<T2>& b)
 
 
 //-------------------------------------------------------------------
-template<class T1, class T2, class T3 = typename std::common_type<T1,T2>::type>
+template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const dual<T1>& a, const dual<T2>& b,
 	const T3& tolerance = epsilon<T3>::value)
@@ -636,10 +628,10 @@ operator <= (const T2& r, const dual<T1>& x)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator + (const dual<T1> x, const dual<T2>& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>{
+	return dual<common_numeric_t<T1,T2>>{
 		x.real() + y.real(), x.imag() + y.imag()};
 }
 
@@ -647,20 +639,20 @@ operator + (const dual<T1> x, const dual<T2>& y)
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator + (const dual<T1> x, const T2& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{x.real() + y, x.imag() + y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator + (const T2& y, const dual<T1> x)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{y + x.real(), y + x.imag()};
 }
 
@@ -688,10 +680,10 @@ operator + (const T& y, const dual<T> x)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator - (const dual<T1> x, const dual<T2>& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>{
+	return dual<common_numeric_t<T1,T2>>{
 		x.real() - y.real(), x.imag() - y.imag()};
 }
 
@@ -699,20 +691,20 @@ operator - (const dual<T1> x, const dual<T2>& y)
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator - (const dual<T1> x, const T2& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{x.real() - y, x.imag() - y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator - (const T2& y, const dual<T1> x)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{y - x.real(), y - x.imag()};
 }
 
@@ -740,10 +732,10 @@ operator - (const T& y, const dual<T> x)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator * (const dual<T1> x, const dual<T2>& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>{
+	return dual<common_numeric_t<T1,T2>>{
 		x.real() * y.real(),
 		(x.real() * y.imag()) + (y.real() * x.imag()) };
 }
@@ -752,20 +744,20 @@ operator * (const dual<T1> x, const dual<T2>& y)
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator * (const dual<T1> x, const T2& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{x.real() * y, x.imag() * y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator * (const T2& y, const dual<T1> x)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{y * x.real(), y * x.imag()};
 }
 
@@ -793,10 +785,10 @@ operator * (const T& y, const dual<T> x)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator / (const dual<T1> x, const dual<T2>& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>{
+	return dual<common_numeric_t<T1,T2>>{
 		x.real() / y.real(),
 		((x.imag() * y.real()) - (x.real() * y.imag())) / (y.real() * y.real())
 	};
@@ -806,20 +798,20 @@ operator / (const dual<T1> x, const dual<T2>& y)
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator / (const dual<T1> x, const T2& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{x.real() / y, x.imag() / y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator / (const T2& y, const dual<T1> x)
 {
-	return dual<typename std::common_type<T1,T2>::type>
+	return dual<common_numeric_t<T1,T2>>
 		{y / x.real(), y / x.imag()};
 }
 
@@ -847,7 +839,7 @@ operator / (const T& y, const dual<T> x)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator ^ (const dual<T1> b, const dual<T2>& e)
 {
 	return pow(b,e);
@@ -857,7 +849,7 @@ operator ^ (const dual<T1> b, const dual<T2>& e)
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator ^ (const dual<T1> b, const T2& e)
 {
 	return pow(b,e);
@@ -866,7 +858,7 @@ operator ^ (const dual<T1> b, const T2& e)
 template<class T1, class T2, class = typename
 	std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 operator ^ (const T2& b, const dual<T1> e)
 {
 	return pow(make_dual(b),e);
@@ -908,20 +900,20 @@ operator - (const dual<T> x)
 // SPECIAL MULTIPLICATIONS
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline dual<typename std::common_type<T1,T2>::type>
+inline dual<common_numeric_t<T1,T2>>
 times_conj(const dual<T1>& x, const dual<T2>& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>{
+	return dual<common_numeric_t<T1,T2>>{
 		x.real() * y.real(),
 		(x.real() * (-y.imag())) + (y.real() * x.imag()) };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-inline dual<typename std::common_type<T1,T2>::type>
+inline dual<common_numeric_t<T1,T2>>
 conj_times(const dual<T1>& x, const dual<T2>& y)
 {
-	return dual<typename std::common_type<T1,T2>::type>{
+	return dual<common_numeric_t<T1,T2>>{
 		x.real() * y.real(),
 		(x.real() * y.imag()) + (y.real() * (-x.imag())) };
 }
@@ -1021,7 +1013,7 @@ cbrt(const dual<T>& x)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline
-dual<typename std::common_type<T1,T2>::type>
+dual<common_numeric_t<T1,T2>>
 pow(const dual<T1> b, const dual<T2>& e)
 {
 	using std::pow;
@@ -1029,7 +1021,7 @@ pow(const dual<T1> b, const dual<T2>& e)
 
 	auto ba_ea_1 = pow(b.real(), e.real()-1);
 
-	return dual<typename std::common_type<T1,T2>::type>{
+	return dual<common_numeric_t<T1,T2>>{
 		b.real() * ba_ea_1 * (1 + (e.imag() * log(b.real()))),
 		b.imag() * e.real() * ba_ea_1 };
 }

@@ -1,13 +1,3 @@
-/*****************************************************************************
- *
- * AM numeric facilities
- *
- * released under MIT license
- *
- * 2008-2013 André Müller
- *
- *****************************************************************************/
-
 #ifndef AM_NUMERIC_RANGE_H_
 #define AM_NUMERIC_RANGE_H_
 
@@ -15,10 +5,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "concepts.h"
-#include "constants.h"
+#include "traits.h"
 #include "narrowing.h"
-#include "equality.h"
 
 
 namespace am {
@@ -183,8 +171,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T1, class T2, class =
-		typename std::enable_if<is_number<T1,T2>::value>::type>
+	template<class T1, class T2, class = typename std::enable_if<
+		is_number<T1,T2>::value>::type>
 	explicit
 	interval(const T1& left, const T2& right):
 		l_(left), r_(right)
@@ -227,9 +215,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T1, class T2, class =
-		typename std::enable_if<is_number<T1,T2>::value>::type
-	>
+	template<class T1, class T2, class = typename std::enable_if<
+		is_number<T1,T2>::value>::type>
 	void
 	min_max(const T1& left, const T2& right)
 	{
@@ -248,7 +235,8 @@ public:
 	//---------------------------------------------------------------
 	// BOUNDS
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	min(const T& left)
 	{
@@ -265,7 +253,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	max(const T& right)
 	{
@@ -292,7 +281,8 @@ public:
 	//---------------------------------------------------------------
 	// DERIVED VALUES
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	center(const T& c)
 	{
@@ -308,7 +298,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	half_width(const T& w)
 	{
@@ -330,7 +321,8 @@ public:
 		return value_type{r_ - l_};
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	width(const T& w)
 	{
@@ -340,8 +332,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T1, class T2, class = typename
-		std::enable_if<is_number<T1,T2>::value>::type>
+	template<class T1, class T2, class = typename std::enable_if<
+		is_number<T1,T2>::value>::type>
 	void
 	center_half_width(const T1& c, const T2& w)
 	{
@@ -351,8 +343,8 @@ public:
 		r_ = c + w;
 	}
 	//-----------------------------------------------------
-	template<class T1, class T2, class = typename
-		std::enable_if<is_number<T1,T2>::value>::type>
+	template<class T1, class T2, class = typename std::enable_if<
+		is_number<T1,T2>::value>::type>
 	void
 	center_width(const T1& c, const T2& s)
 	{
@@ -365,7 +357,8 @@ public:
 	//---------------------------------------------------------------
 	// SHRINK / EXPAND
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	expand_include(const interval<T>& interval, const T& offset = 0)
 	{
@@ -375,7 +368,8 @@ public:
 		if(interval.r_ > r_) r_ = interval.r_ + offset;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	expand_include(const T& bound, const T& offset = 0)
 	{
@@ -385,7 +379,8 @@ public:
 		if(bound > r_) r_ = bound + offset;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	shrink_exclude(const T& bound, const T& offset = epsilon<T>::value)
 	{
@@ -396,7 +391,8 @@ public:
 	}
 
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	void
 	expand (const T& amount)
 	{
@@ -408,7 +404,8 @@ public:
 
 
 	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	interval&
 	operator += (const T& amount)
 	{
@@ -419,7 +416,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	interval&
 	operator -= (const T& amount)
 	{
@@ -430,7 +428,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	interval&
 	operator *= (const T& factor)
 	{
@@ -448,7 +447,8 @@ public:
 		return *this;
 	}
 	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+	template<class T, class = typename std::enable_if<
+		is_number<T>::value>::type>
 	interval&
 	operator /= (const T& factor)
 	{
@@ -551,21 +551,21 @@ public:
 	// INTERACTION
 	//---------------------------------------------------------------
 	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
-	typename std::common_type<value_type,T>::type
+	common_numeric_t<value_type,T>
 	penetration_depth(const T& v) const
 	{
 		using std::min;
-		using res_t = typename std::common_type<value_type,T>::type;
+		using res_t = common_numeric_t<value_type,T>;
 
 		if(v <= l_ || v >= r_) return res_t(0);
 		return min(res_t(v) - res_t(l_), res_t(r_) - res_t(v));
 	}
 	//-----------------------------------------------------
 	template<class T>
-	typename std::common_type<value_type,T>::type
+	common_numeric_t<value_type,T>
 	penetration_depth(const interval<T>& o) const
 	{
-		using res_t = typename std::common_type<value_type,T>::type;
+		using res_t = common_numeric_t<value_type,T>;
 
 		if(o.l_ > l_) {
 			auto p {r_ - o.l_};
@@ -578,21 +578,21 @@ public:
 
 	//-----------------------------------------------------
 	template<class T, class = typename std::enable_if<is_number<T>::value>::type>
-	typename std::common_type<value_type,T>::type
+	common_numeric_t<value_type,T>
 	distance(const T& v) const
 	{
 		using std::min;
-		using res_t = typename std::common_type<value_type,T>::type;
+		using res_t = common_numeric_t<value_type,T>;
 
 		if(v >= l_ || v <= r_) return res_t(0);
 		return min(res_t(l_) - res_t(v), res_t(v) - res_t(r_));
 	}
 	//-----------------------------------------------------
 	template<class T>
-	typename std::common_type<value_type,T>::type
+	common_numeric_t<value_type,T>
 	distance(const interval<T>& o) const
 	{
-		using res_t = typename std::common_type<value_type,T>::type;
+		using res_t = common_numeric_t<value_type,T>;
 
 		if(o.l_ > l_) {
 			auto p {o.l_ - r_};
@@ -669,10 +669,10 @@ public:
 
 //-------------------------------------------------------------------
 template<class Min, class Max>
-inline constexpr interval<typename std::common_type<Min,Max>::type>
+inline constexpr interval<common_numeric_t<Min,Max>>
 make_interval(Min&& min, Max&& max)
 {
-	return interval<typename std::common_type<Min,Max>::type>
+	return interval<common_numeric_t<Min,Max>>
 		{std::forward<Min>(min), std::forward<Max>(max)};
 }
 
@@ -802,30 +802,30 @@ centroid(const interval<T>& i) -> decltype(i.center())
 // +
 //-------------------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator + (const interval<T1>& a, const interval<T2>& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res += b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator + (interval<T1> a, const T2& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res += b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator + (const T1& b, interval<T2> a)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res += b;
 	return res;
 }
@@ -836,30 +836,30 @@ operator + (const T1& b, interval<T2> a)
 // -
 //-------------------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator - (const interval<T1>& a, const interval<T2>& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res -= b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator - (interval<T1> a, const T2& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res -= b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator - (const T1& b, interval<T2> a)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res -= b;
 	return res;
 }
@@ -870,30 +870,30 @@ operator - (const T1& b, interval<T2> a)
 // *
 //-------------------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator * (const interval<T1>& a, const interval<T2>& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res *= b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator * (interval<T1> a, const T2& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res *= b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator * (const T1& b, interval<T2> a)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res *= b;
 	return res;
 }
@@ -903,30 +903,30 @@ operator * (const T1& b, interval<T2> a)
 // /
 //-------------------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator / (const interval<T1>& a, const interval<T2>& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res /= b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator / (interval<T1> a, const T2& b)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res /= b;
 	return res;
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-interval<typename std::common_type<T1,T2>::type>
+interval<common_numeric_t<T1,T2>>
 operator / (const T1& b, interval<T2> a)
 {
-	auto res = interval<typename std::common_type<T1,T2>::type>{a};
+	auto res = interval<common_numeric_t<T1,T2>>{a};
 	res /= b;
 	return res;
 }
@@ -1041,12 +1041,12 @@ distance(const interval<T1>& a, const interval<T2>& b)
 
 //-----------------------------------------------------
 template<class T1, class T2>
-inline interval<typename std::common_type<T1,T2>::type>
+inline interval<common_numeric_t<T1,T2>>
 intersection(interval<T1> a, const interval<T2>& b)
 {
 	using std::min;
 	using std::max;
-	using num_t = typename std::common_type<T1,T2>::type;
+	using num_t = common_numeric_t<T1,T2>;
 
 	//no intersection -> empty interval
 	if(a.min() > b.max() || a.max() < b.min())
@@ -1088,7 +1088,7 @@ operator != (const interval<T>& a, const interval<T>& b) {
 
 
 //-------------------------------------------------------------------
-template<class T1, class T2, class T3 = typename std::common_type<T1,T2>::type>
+template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const interval<T1>& a, const interval<T2>& b,
 	const T3& tolerance = epsilon<T3>::value)
@@ -1168,7 +1168,76 @@ struct interval_max_greater
 
 
 
-} //namespace num
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ * FUNCTIONS WORKING ON COLLECTIONS OF INTERVALS
+ *
+ *
+ *
+ *****************************************************************************/
+
+/**
+ * @brief
+ * @param current list of intervals
+ * @param toAdd   new interval to be merged with current intervals
+ * @return false, if current intervals remain unchanged
+ */
+template<class T>
+bool consolidate_intervals(
+	std::vector<interval<T>>& current, const interval<T>& toAdd)
+{
+
+	if(current.empty()) {
+		current.push_back(toAdd);
+		return true;
+	}
+
+	bool newMin = min(toAdd) < min(current.front());
+	bool newMax = max(toAdd) > max(current.back());
+
+	//does new interval define new minimum?
+	if(newMin) {
+		//does new interval contain all current intervals?
+		if(newMax) {
+			current.clear();
+			current.push_back(toAdd);
+			return true;
+		} else {
+			//remove old intervals as long as their maximum is smaller
+			auto i = begin(current);
+			auto e = end(current);
+			while((i != e) && (max(toAdd) > max(*i)) ) {
+				++i;
+			}
+			current.erase(current.begin(), i);
+			current.insert(current.begin(), toAdd);
+			return true;
+		}
+	}
+	//does new interval define new maximum?
+	else if(newMax) {
+		//remove old elements as long as their minimum is greater
+		while((!current.empty()) && (min(toAdd) < min(current.back())) ) {
+			current.pop_back();
+		}
+		current.push_back(toAdd);
+		return true;
+	}
+
+	return false;
+}
+
+
+}  // namespace num
+
 } //namespace am
+
 
 #endif
