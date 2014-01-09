@@ -1,8 +1,18 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2013 André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AM_NUMERIC_RANGE_H_
 #define AM_NUMERIC_RANGE_H_
 
-#include <initializer_list>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "traits.h"
@@ -12,6 +22,35 @@
 namespace am {
 
 namespace num {
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T1, class T2>
+inline typename std::common_type<T1,T2>::type
+min(const std::pair<T1,T2>& p)
+{
+	return (p.first < p.second) ? p.first : p.second;
+}
+
+
+//-------------------------------------------------------------------
+template<class T1, class T2>
+inline typename std::common_type<T1,T2>::type
+max(const std::pair<T1,T2>& p)
+{
+	return (p.first > p.second) ? p.first : p.second;
+}
+
+
+
+
 
 
 /*****************************************************************************
@@ -133,10 +172,8 @@ interval_div(const T& al, const T& ar, const T& bl, const T& br, T& l, T& r)
 
 /*****************************************************************************
  *
+ * @brief N-dimensional interval represented by two numbers
  *
- *
- * N-dimensional interval represented by two bounding
- * vectors (N>1) or numbers (N=1)
  *
  *
  *
@@ -184,6 +221,19 @@ public:
 	}
 
 	//-----------------------------------------------------
+	template<class T1, class T2, class = typename std::enable_if<
+		is_number<T1,T2>::value>::type>
+	explicit
+	interval(const std::pair<T1,T2>& p):
+		l_(p.first), r_(p.second)
+	{
+		AM_CHECK_NARROWING2(value_type,T1,T2)
+
+		using std::swap;
+		if(l_ > r_) swap(l_,r_);
+	}
+
+	//-----------------------------------------------------
 	constexpr
 	interval(const interval& source) = default;
 
@@ -215,10 +265,18 @@ public:
 	}
 
 	//-----------------------------------------------------
+	template<class T1, class T2>
+	interval& operator = (const std::pair<T1,T2>& source)
+	{
+		assign(source.first, source.second);
+		return *this;
+	}
+
+	//-----------------------------------------------------
 	template<class T1, class T2, class = typename std::enable_if<
 		is_number<T1,T2>::value>::type>
 	void
-	min_max(const T1& left, const T2& right)
+	assign(const T1& left, const T2& right)
 	{
 		AM_CHECK_NARROWING2(value_type,T1,T2)
 
@@ -668,12 +726,23 @@ public:
  *****************************************************************************/
 
 //-------------------------------------------------------------------
-template<class Min, class Max>
-inline constexpr interval<common_numeric_t<Min,Max>>
-make_interval(Min&& min, Max&& max)
+template<class T1, class T2>
+inline constexpr interval<common_numeric_t<T1,T2>>
+make_interval(T1&& a, T2&& b)
 {
-	return interval<common_numeric_t<Min,Max>>
-		{std::forward<Min>(min), std::forward<Max>(max)};
+	return interval<common_numeric_t<T1,T2>>
+		{std::forward<T1>(a), std::forward<T2>(b)};
+}
+
+
+
+//---------------------------------------------------------
+template<class T1, class T2, class = typename
+	std::enable_if<is_number<T1,T2>::value>::type>
+inline constexpr interval<common_numeric_t<T1,T2>>
+make_interval(const std::pair<T1,T2>& p)
+{
+	return interval<common_numeric_t<T1,T2>>{p};
 }
 
 
@@ -703,37 +772,6 @@ print(Ostream& os, const interval<T>& r)
 {
 	return (os << "[" << r.min() << "," << r.max() << "]");
 }
-
-
-
-
-
-
-/*****************************************************************************
- *
- *
- *
- *
- *****************************************************************************/
-
-//-------------------------------------------------------------------
-template<class T, class... R>
-struct is_interval :
-	public std::integral_constant<bool,
-		is_interval<T>::value && is_interval<R...>::value>
-{};
-
-//---------------------------------------------------------
-template<class T>
-struct is_interval<T> :
-	public std::false_type
-{};
-
-//---------------------------------------------------------
-template<class T>
-struct is_interval<interval<T> > :
-	public std::true_type
-{};
 
 
 

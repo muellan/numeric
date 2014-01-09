@@ -1,3 +1,13 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2013 André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AM_NUMERIC_TRAITS_H_
 #define AM_NUMERIC_TRAITS_H_
 
@@ -7,12 +17,29 @@
 #include <complex>
 #include <array>
 
+
+#include "param.h"
+
 #include "constants.h"
 
 
 namespace am {
 
 namespace num {
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+
+template<class T>
+using decay_t = typename std::decay<T>::type;
+
+
+
 
 
 
@@ -155,6 +182,31 @@ check_has_dimensions(T&& t, int)
 template<class T>
 constexpr auto
 check_has_dimensions(T&&, long) -> std::false_type;
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+constexpr auto
+check_has_min(T&& t, int)
+	-> decltype(min(t), std::true_type{});
+
+template<class T>
+constexpr auto
+check_has_min(T&&, long) -> std::false_type;
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+constexpr auto
+check_has_max(T&& t, int)
+	-> decltype(max(t), std::true_type{});
+
+template<class T>
+constexpr auto
+check_has_max(T&&, long) -> std::false_type;
+
 
 
 }  // namespace detail
@@ -309,8 +361,14 @@ struct common_numeric_type<T1,T2>
 
 
 //---------------------------------------------------------
-template<class... T>
-using common_numeric_t = typename common_numeric_type<T...>::type;
+template<class... Ts>
+using common_numeric_t = typename common_numeric_type<Ts...>::type;
+
+
+
+//-------------------------------------------------------------------
+template<class... Ts>
+using floating_point_t = common_numeric_t<real_t,Ts...>;
 
 
 
@@ -327,10 +385,17 @@ using common_numeric_t = typename common_numeric_type<T...>::type;
  *
  *
  *****************************************************************************/
-template<class T>
+template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_type
 {
 	using type = typename T::numeric_type;
+};
+
+//---------------------------------------------------------
+template<class T>
+struct numeric_type<T,true>
+{
+	using type = T;
 };
 
 //---------------------------------------------------------
@@ -401,13 +466,13 @@ struct same_dimension<n,T> :
 
 //-------------------------------------------------------------------
 template<class T>
-struct dimension
+struct dimension_type
 {
-	using type = typename std::decay<decltype(T::dimensions())>::type;
+	using type = typename std::decay<decltype(dimensions<T>::value)>::type;
 };
 
 template<class T>
-using dimension_t = typename dimension<T>::type;
+using dimension_t = typename dimension_type<T>::type;
 
 
 
@@ -694,6 +759,44 @@ struct is_floating_point_number<T> :
 {};
 
 
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+struct has_min: public
+	decltype(detail::check_has_min(std::declval<T>(), 0))
+{};
+
+//-------------------------------------------------------------------
+template<class T>
+struct has_max: public
+	decltype(detail::check_has_max(std::declval<T>(), 0))
+{};
+
+
+//-------------------------------------------------------------------
+template<class T, class... R>
+struct is_interval :
+	public std::integral_constant<bool,
+		is_interval<T>::value && is_interval<R...>::value>
+{};
+
+//---------------------------------------------------------
+template<class T>
+struct is_interval<T> :
+	public std::integral_constant<bool,
+		has_min<T>::value &&
+		has_max<T>::value>
+{};
 
 
 

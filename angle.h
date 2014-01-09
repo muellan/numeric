@@ -1,11 +1,21 @@
-﻿#ifndef AM_NUMERIC_ANGLE_H_
+﻿/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2013 André Müller
+ *
+ *****************************************************************************/
+
+#ifndef AM_NUMERIC_ANGLE_H_
 #define AM_NUMERIC_ANGLE_H_
 
 #include <cmath>
 #include <utility>
+#include <random>
 
 #include "traits.h"
-#include "constants.h"
 #include "narrowing.h"
 
 
@@ -506,6 +516,8 @@ using goni = angle<gons_turn<int>>;
  *
  *****************************************************************************/
 
+namespace {
+
 //-------------------------------------------------------------------
 constexpr degrees<real_t> operator"" _deg (long double x) {
     return degrees<real_t>{real_t(x)};
@@ -582,6 +594,8 @@ constexpr gon_cs<real_t> operator"" _gonccs (long double x) {
 constexpr gon_ccs<real_t> operator"" _gonccs (unsigned long long int x) {
     return gon_ccs<real_t>{real_t(x)};
 }
+
+}  // anonymous namespace
 
 
 
@@ -883,44 +897,44 @@ tanh(const angle<T>& r)
 // INVERSE TRIGONOMETRIC FUNCTIONS
 //-------------------------------------------------------------------
 template<class T>
-inline radians<common_numeric_t<T,real_t>>
+inline radians<floating_point_t<T>>
 rad_asin(T v)
 {
 	using std::asin;
-	using res_t = common_numeric_t<T,real_t>;
+	using res_t = floating_point_t<T>;
 
 	return radians<res_t>{res_t(asin(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<common_numeric_t<T,real_t>>
+inline radians<floating_point_t<T>>
 rad_acos(T v)
 {
 	using std::acos;
-	using res_t = common_numeric_t<T,real_t>;
+	using res_t = floating_point_t<T>;
 
 	return radians<res_t>{res_t(acos(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<common_numeric_t<T,real_t>>
+inline radians<floating_point_t<T>>
 rad_atan(T v)
 {
 	using std::atan;
-	using res_t = common_numeric_t<T,real_t>;
+	using res_t = floating_point_t<T>;
 
 	return radians<res_t>{res_t(atan(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<common_numeric_t<T,real_t>>
+inline radians<floating_point_t<T>>
 rad_atan2(T x, T y)
 {
 	using std::atan2;
-	using res_t = common_numeric_t<T,real_t>;
+	using res_t = floating_point_t<T>;
 
 	return radians<res_t>{res_t(atan2(x,y))};
 }
@@ -931,36 +945,181 @@ rad_atan2(T x, T y)
 // INVERSE HYPERBOLIC FUNCTIONS
 //-------------------------------------------------------------------
 template<class T>
-inline radians<common_numeric_t<T,real_t>>
+inline radians<floating_point_t<T>>
 rad_asinh(T v)
 {
 	using std::asinh;
-	using res_t = common_numeric_t<T,real_t>;
+	using res_t = floating_point_t<T>;
 
 	return radians<res_t>{res_t(asinh(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<common_numeric_t<T,real_t>>
+inline radians<floating_point_t<T>>
 rad_acosh(T v)
 {
 	using std::acosh;
-	using res_t = common_numeric_t<T,real_t>;
+	using res_t = floating_point_t<T>;
 
 	return radians<res_t>{res_t(acosh(v))};
 }
 
 //-----------------------------------------------------
 template<class T>
-inline radians<common_numeric_t<T,real_t>>
+inline radians<floating_point_t<T>>
 rad_atanh(T v)
 {
 	using std::atanh;
-	using res_t = common_numeric_t<T,real_t>;
+	using res_t = floating_point_t<T>;
 
 	return radians<res_t>{res_t(atanh(v))};
 }
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief distribution adapter producing angles from random numbers
+ *
+ *
+ *
+ *****************************************************************************/
+template<class Turn, class ValueDistr>
+class angle_distribution
+{
+	AM_CHECK_NARROWING(typename Turn::type,typename ValueDistr::result_type)
+
+public:
+	using param_type   = gen::param_t<ValueDistr>;
+	using numeric_type = typename ValueDistr::result_type;
+	using result_type  = angle<Turn>;
+
+
+	//---------------------------------------------------------------
+	explicit
+	angle_distribution(const param_type& par = param_type{}):
+		distr_{par}
+	{}
+
+
+	//---------------------------------------------------------------
+	void
+	reset() {
+		distr_.reset();
+	}
+
+	//-----------------------------------------------------
+	auto
+	param() const -> decltype(std::declval<const ValueDistr&>().param()) {
+		return distr_.param();
+	}
+	//-----------------------------------------------------
+	void
+	param(const param_type& par) {
+		distr_.param(par);
+	}
+
+	//-----------------------------------------------------
+	result_type
+	min() const {
+		return result_type{distr_.min()};
+	}
+	//-----------------------------------------------------
+	result_type
+	max() const {
+		return result_type{distr_.max()};
+	}
+
+	//---------------------------------------------------------------
+	template<class URNG>
+	result_type
+	operator() (URNG& urng) {
+		return result_type{distr_(urng)};
+	}
+	//-----------------------------------------------------
+	template<class URNG>
+	result_type
+	operator() (URNG& urng, const param_type& par) {
+		return result_type{distr_(urng,par)};
+	}
+
+
+	//---------------------------------------------------------------
+	// I/O
+	//---------------------------------------------------------------
+	friend std::istream&
+	operator >> (std::istream& is, angle_distribution& o) {
+		return (is >> o.distr_);
+	}
+	friend std::ostream&
+	operator << (std::ostream& os, const angle_distribution& o) {
+		return (os << o.distr_);
+	}
+
+private:
+	ValueDistr distr_;
+};
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief produces uniformly distributed angles
+ *
+ *
+ *****************************************************************************/
+template<class Turn>
+class uniform_angle_distribution :
+	public angle_distribution<Turn,
+		std::uniform_real_distribution<typename Turn::type>>
+{
+
+	using base__ = angle_distribution<Turn,
+		std::uniform_real_distribution<typename Turn::type>>;
+
+public:
+	//---------------------------------------------------------------
+	using numeric_type = typename Turn::type;
+	using param_type = gen::param_t<base__>;
+
+	//---------------------------------------------------------------
+	explicit
+	uniform_angle_distribution(
+		const numeric_type& min = numeric_type(0),
+		const numeric_type& max = numeric_type(Turn::value))
+	:
+		base__{param_type{min,max}}
+	{}
+	//-----------------------------------------------------
+	explicit
+	uniform_angle_distribution(const param_type& par):
+		base__{par}
+	{}
+};
+
+
+
+//-------------------------------------------------------------------
+template<class T = real_t>
+using uniform_radian_distribution = uniform_angle_distribution<radians_turn<T>>;
+
+//---------------------------------------------------------
+template<class T = real_t>
+using uniform_degree_distribution = uniform_angle_distribution<degrees_turn<T>>;
+
+//---------------------------------------------------------
+template<class T = real_t>
+using uniform_gon_distribution = uniform_angle_distribution<gons_turn<T>>;
+
 
 
 }  // namespace num

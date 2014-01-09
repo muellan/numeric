@@ -1,3 +1,13 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2013 André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AM_NUMERIC_QUATERNION_H_
 #define AM_NUMERIC_QUATERNION_H_
 
@@ -33,7 +43,7 @@ namespace low {
 //-------------------------------------------------------------------
 template<class URNG, class Quat>
 void
-make_random_unit_quat(URNG& urng, Quat& q)
+random_unit_quat(URNG& urng, Quat& q)
 {
 	using std::cos;
 	using std::sin;
@@ -61,10 +71,10 @@ make_random_unit_quat(URNG& urng, Quat& q)
 //---------------------------------------------------------
 template<class Quat, class URNG>
 inline Quat
-make_random_unit_quat(URNG& urng)
+random_unit_quat(URNG& urng)
 {
 	Quat q;
-	make_random_unit_quat(urng,q);
+	random_unit_quat(urng,q);
 	return q;
 }
 
@@ -374,7 +384,7 @@ public:
 	//---------------------------------------------------------------
 	using numeric_type = NumberT;
 	using value_type   = numeric_type;
-	using dimension    = dims_t;
+	using dimension_type    = dims_t;
 
 	//-----------------------------------------------------
 	using pointer         = numeric_type*;
@@ -424,7 +434,11 @@ public:
 	template<class T>
 	explicit constexpr
 	quaternion(const quaternion<T>& q):
-		v_{q[0], q[1], q[2], q[3]}
+		v_{
+			numeric_type(q[0]),
+			numeric_type(q[1]),
+			numeric_type(q[2]),
+			numeric_type(q[3]) }
 	{
 		AM_CHECK_NARROWING(numeric_type,T)
 	}
@@ -481,11 +495,11 @@ public:
 	// ELEMENT ACCESS
 	//---------------------------------------------------------------
 	reference
-	operator [] (dimension index) {
+	operator [] (dimension_type index) {
 		return v_[index];
 	}
 	constexpr const_reference
-	operator [] (dimension index) const noexcept {
+	operator [] (dimension_type index) const noexcept {
 		return v_[index];
 	}
 
@@ -511,7 +525,7 @@ public:
 	}
 
 	//---------------------------------------------------------------
-	static constexpr dimension
+	static constexpr dimension_type
 	dimensions() noexcept {
 		return 4;
 	}
@@ -1072,11 +1086,11 @@ norm2(const quaternion<T>& q)
 
 //---------------------------------------------------------
 template<class T>
-inline common_numeric_t<T,real_t>
+inline floating_point_t<T>
 norm(const quaternion<T>& q)
 {
 	using std::sqrt;
-	using real_t = common_numeric_t<T,real_t> ;
+	using real_t = floating_point_t<T> ;
 	return sqrt(real_t(norm2(q)));
 }
 
@@ -1115,10 +1129,10 @@ norm2(const quaternion<T1>& a, const quaternion<T1>& b)
 }
 //---------------------------------------------------------
 template<class T1, class T2>
-inline common_numeric_t<T1,T2,real_t>
+inline floating_point_t<T1,T2>
 norm(const quaternion<T1>& a, const quaternion<T1>& b)
 {
-	using real_t = common_numeric_t<T1,T2,real_t> ;
+	using real_t = floating_point_t<T1,T2> ;
 	return sqrt(real_t(norm2(a, b)));
 }
 
@@ -1229,12 +1243,12 @@ make_quaternion(const T1& w, const T2& x, const T3& y, const T4& z)
 //-------------------------------------------------------------------
 template<class T, class URNG>
 inline quaternion<T>
-make_random_unit_quaternion(URNG& urng)
+random_unit_quaternion(URNG& urng)
 {
 	static_assert(is_number<T>::value,
-		"make_random_unit_quaternion<T> : T has to be a number type");
+		"random_unit_quaternion<T> : T has to be a number type");
 
-	return low::make_random_unit_quat<quaternion<T>>(urng);
+	return low::random_unit_quat<quaternion<T>>(urng);
 }
 
 

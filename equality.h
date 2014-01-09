@@ -17,12 +17,10 @@
 #include <iterator>
 #include <utility>
 
-#include "constants.h"
-
+#include "traits.h"
 
 
 namespace am {
-
 namespace num {
 
 
@@ -175,9 +173,8 @@ approx_equal(
 }
 
 
-} //namespace num
-} //namespace am
-
+}  // namespace num
+}  // namespace am
 
 
 #endif

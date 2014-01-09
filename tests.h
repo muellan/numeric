@@ -8,24 +8,29 @@
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_QUATERNION_TEST_H_
-#define AM_NUMERIC_QUATERNION_TEST_H_
+#ifndef AM_NUMERIC_TESTS_H_
+#define AM_NUMERIC_TESTS_H_
 
 #ifdef AM_USE_TESTS
 
 
+#include "angle_test.h"
+#include "choice_test.h"
+//#include "rational_test.h"
+//#include "dual_test.h"
+//#include "scomplex_test.h"
+#include "quaternion_test.h"
+
+
 namespace am {
-namespace num {
 namespace test {
 
 
-void quaternion_assignment_correctness();
-
-void quaternion_correctness();
+//-------------------------------------------------------------------
+void numeric_correctness();
 
 
 }  // namespace test
-}  // namespace num
 }  // namespace am
 
 

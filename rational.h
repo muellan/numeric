@@ -1,3 +1,13 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2013 André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AM_NUMERIC_RATIONAL_H_
 #define AM_NUMERIC_RATIONAL_H_
 
@@ -62,7 +72,7 @@ public:
 	rational(const T& wholes):
 		n_{wholes}, d_{value_type(1)}
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 	}
 
 
@@ -81,7 +91,7 @@ public:
 	rational(const T1& numerator, const T2& denominator):
 		n_{value_type(numerator)}, d_{value_type(denominator)}
 	{
-		PLI_CHECK_NARROWING2(value_type,T1,T2)
+		AM_CHECK_NARROWING2(value_type,T1,T2)
 	}
 
 	//-----------------------------------------------------
@@ -101,7 +111,7 @@ public:
 	rational&
 	operator = (const T& n)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ = n;
 		d_ = value_type(0);
@@ -115,7 +125,7 @@ public:
 	rational&
 	assign(const T1& numerator, const T2& denominator)
 	{
-		PLI_CHECK_NARROWING2(value_type,T1,T2)
+		AM_CHECK_NARROWING2(value_type,T1,T2)
 
 		n_ = numerator;
 		d_ = denominator;
@@ -172,7 +182,7 @@ public:
 	rational&
 	operator += (const T& v)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ += (v * d_);
 		return *this;
@@ -183,7 +193,7 @@ public:
 	rational&
 	operator -= (const T& v)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ -= (v * d_);
 		return *this;
@@ -194,7 +204,7 @@ public:
 	rational&
 	operator *= (const T& v)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ *= v;
 		return *this;
@@ -205,7 +215,7 @@ public:
 	rational&
 	operator /= (const T& v)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		d_ *= v;
 		return *this;
@@ -250,7 +260,7 @@ public:
 	rational&
 	operator += (const rational<T>& o)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ = n_ * o.denom() + o.numer() * d_;
 		d_ *= o.denom();
@@ -261,7 +271,7 @@ public:
 	rational&
 	operator -= (const rational<T>& o)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ = n_ * o.denom() - o.numer() * d_;
 		d_ *= o.denom();
@@ -272,7 +282,7 @@ public:
 	rational&
 	operator *= (const rational<T>& o)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ *= o.numer();
 		d_ *= o.denom();
@@ -284,7 +294,7 @@ public:
 	rational&
 	operator /= (const rational<T>& o)
 	{
-		PLI_CHECK_NARROWING(value_type,T)
+		AM_CHECK_NARROWING(value_type,T)
 
 		n_ *= o.denom();
 		d_ *= o.numer();
@@ -321,7 +331,6 @@ private:
 	//---------------------------------------------------------------
 	value_type n_;
 	value_type d_;
-
 };
 
 
@@ -365,8 +374,106 @@ make_rational(const T& x)
 
 
 //-------------------------------------------------------------------
+// CONVERSION FROM FLOATING-POINT NUMBER
+//-------------------------------------------------------------------
+template<class IntT, class FpT>
+rational<IntT>
+to_rational(FpT f)
+{
+	using std::modf;
+	using std::fmod;
+	using std::floor;
+
+	constexpr auto base = std::numeric_limits<FpT>::radix;
+
+	auto rb = rational<IntT>{IntT(0)};
+
+	auto digits = std::vector<rational<IntT> >{};
+	digits.resize(base, IntT(0));
+	for(auto& d : digits) {
+		d = rb++;
+	}
+
+	auto intgr = FpT(0);
+
+	int sign = (f < 0);
+	auto frac = FpT(sign ? modf(-f, &intgr) : modf(f, &intgr));
+
+	auto rc = rational<IntT>{IntT(1)};
+	auto ri = rational<IntT>{IntT(0)};
+	while(floor(intgr) != 0) {
+		ri += digits[std::size_t(fmod(intgr, base))];
+		intgr /= base;
+		ri /= rb;
+		rc *= rb;
+	}
+
+	ri *= rc;
+	rc = IntT(1);
+	auto rf = rational<IntT>{IntT(0)};
+	while(!approx_0(frac)) {
+		rf *= rb;
+		rc /= rb;
+		frac *= base;
+		frac = modf(frac, &intgr);
+		rf += digits[std::size_t(intgr)];
+	}
+	rf *= rc;
+
+	return (sign ? (-ri - rf) : (ri + rf));
+}
+
+//---------------------------------------------------------
+inline rational<int>
+make_rational(float f)
+{
+	return to_rational<int>(f);
+}
+
+//---------------------------------------------------------
+inline rational<int>
+make_rational(double f)
+{
+	return to_rational<int>(f);
+}
+
+//---------------------------------------------------------
+inline rational<int>
+make_rational(long double f)
+{
+	return to_rational<int>(f);
+}
+
+
+
+//-------------------------------------------------------------------
 // I/O
 //-------------------------------------------------------------------
+template<class Istream, class T>
+inline Istream&
+operator >> (Istream& is, rational<T>& x)
+{
+	is.clear();
+
+	auto numer = T(0);
+	auto denom = T(1);
+
+	is >> numer;
+	if(!is.good()) return is;
+
+	char c = is.peek();
+	if(c == '/') {
+		c = is.get();
+		is >> denom;
+		if(!is.good()) {
+			is.clear(is.rdstate() | std::ios::badbit);
+		}
+	}
+	x.assign(numer,denom);
+	return is;
+}
+
+//---------------------------------------------------------
 template<class Ostream, class T>
 inline Ostream&
 operator << (Ostream& os, const rational<T>& x)

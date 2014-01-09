@@ -11,6 +11,8 @@
 #ifndef AM_NUMERIC_CONSTANTS_H_
 #define AM_NUMERIC_CONSTANTS_H_
 
+
+#include <cstdint>
 #include <limits>
 
 
@@ -45,7 +47,15 @@ namespace num {
 //-------------------------------------------------------------------
 /// @brief default dimension type
 //-------------------------------------------------------------------
-using dims_t = std::int_fast8_t;
+#ifdef AM_DIMENSIONS_HUGE
+	using dims_t = std::int_fast32_t;
+#else
+	#ifdef AM_DIMENSIONS_MANY
+		using dims_t = std::int_fast16_t;
+	#else
+		using dims_t = std::int_fast8_t;
+	#endif
+#endif
 
 
 
@@ -59,10 +69,10 @@ using dims_t = std::int_fast8_t;
  *
  *
  *****************************************************************************/
-//TODO C++14 constants as variable templates
 
 //---------------------------------------------------------------
 /// @brief mathematical constants
+//  TODO C++14 replace with variable templates
 //---------------------------------------------------------------
 constexpr long double pi = 3.141592653589793238462643383279500;
 
@@ -113,14 +123,14 @@ constexpr long double operator "" _e(unsigned long long int x)
 /*****************************************************************************
  *
  *
- * PRECISION
+ * PRECISION CONTROL
  *
  *
  *****************************************************************************/
 template<class T>
 struct epsilon
 {
-	static constexpr T value = std::numeric_limits<T>::epsilon * T(100);
+	static constexpr T value = (T(100) * std::numeric_limits<T>::epsilon());
 };
 
 
@@ -149,8 +159,9 @@ struct epsilon<long double>
 
 
 
-} //namespace num
-} //namespace am
+}  // namespace num
+
+}  // namespace am
 
 
 #endif
