@@ -15,6 +15,8 @@
 #include <cfloat>
 
 #include "constants.h"
+#include "traits.h"
+#include "limits.h"
 #include "narrowing.h"
 #include "equality.h"
 
@@ -522,7 +524,7 @@ operator != (const dual<T1>& a, const dual<T2>& b)
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const dual<T1>& a, const dual<T2>& b,
-	const T3& tolerance = epsilon<T3>::value)
+	const T3& tolerance = tolerance<T3>::value)
 {
 	return (approx_equal(a.real(), b.real(), tolerance) &&
 		    approx_equal(a.imag(), b.imag(), tolerance) );
@@ -531,7 +533,7 @@ approx_equal(const dual<T1>& a, const dual<T2>& b,
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const dual<T>& x, const T& tolerance = epsilon<T>::value)
+approx_1(const dual<T>& x, const T& tolerance = tolerance<T>::value)
 {
 	return (
 		approx_1(x.real(), tolerance) &&
@@ -541,7 +543,7 @@ approx_1(const dual<T>& x, const T& tolerance = epsilon<T>::value)
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const dual<T>& x, const T& tolerance = epsilon<T>::value)
+approx_0(const dual<T>& x, const T& tolerance = tolerance<T>::value)
 {
 	return (
 		approx_0(x.real(), tolerance) &&
@@ -1433,6 +1435,74 @@ isnormal(const dual<T>& x)
 	using std::isnormal;
 	return (isnormal(x.real()) && isnormal(x.imag()));
 }
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ * TRAITS SPECIALIZATIONS
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_number<dual<T>> : public std::true_type
+{};
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_floating_point<dual<T>> :
+    public std::integral_constant<bool, is_floating_point<T>::value>
+{};
+
+
+
+namespace detail {
+
+//-------------------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<dual<T>,T2>
+{
+    using type = dual<typename common_numeric_type_helper<T,T2>::type>;
+};
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<T2,dual<T>>
+{
+    using type = typename common_numeric_type_helper<dual<T>,T2>::type;
+};
+
+
+
+//-------------------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, dual<To>, From> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, dual<To>, dual<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, dual<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+
+}  // namespace detail
 
 
 

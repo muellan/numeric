@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "traits.h"
+#include "limits.h"
 
 
 namespace am {
@@ -38,11 +39,11 @@ inline constexpr bool
 approx_equal(const T1& a, const T2& b)
 {
 	return (
-		(epsilon<T1>::value < epsilon<T2>::value)
-			? ((a > (b - epsilon<T2>::value)) &&
-			   (a < (b + epsilon<T2>::value)) )
-			: ((b > (a - epsilon<T1>::value)) &&
-			   (b < (a + epsilon<T1>::value)) )
+		(tolerance<T1>::value < tolerance<T2>::value)
+			? ((a >= (b - tolerance<T2>::value)) &&
+			   (a <= (b + tolerance<T2>::value)) )
+			: ((b >= (a - tolerance<T1>::value)) &&
+			   (b <= (a + tolerance<T1>::value)) )
 		);
 }
 
@@ -51,8 +52,8 @@ template<class T1, class T2, class T3>
 inline constexpr bool
 approx_equal(const T1& a, const T2& b, const T3& tolerance)
 {
-	return ((a > (b - tolerance)) &&
-			(a < (b + tolerance)) );
+	return ((a >= (b - tolerance)) &&
+			(a <= (b + tolerance)) );
 }
 
 
@@ -107,17 +108,17 @@ abs_approx_equal(const T1& a, const T2& b, const T3& tolerance)
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const T& a, const T& tolerance = epsilon<T>::value)
+approx_0(const T& a, const T& tolerance = tolerance<T>::value)
 {
 	return (
-		(a > (T(0) - tolerance)) &&
-		(a < (T(0) + tolerance)) );
+		(a >= (T(0) - tolerance)) &&
+		(a <= (T(0) + tolerance)) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const std::complex<T>& a, const T& tolerance = epsilon<T>::value)
+approx_0(const std::complex<T>& a, const T& tolerance = tolerance<T>::value)
 {
 	return (
 		approx_0(a.real(), tolerance) &&
@@ -130,17 +131,17 @@ approx_0(const std::complex<T>& a, const T& tolerance = epsilon<T>::value)
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const T& a, const T& tolerance = epsilon<T>::value)
+approx_1(const T& a, const T& tolerance = tolerance<T>::value)
 {
 	return (
-		(a > (T(1) - tolerance)) &&
-		(a < (T(1) + tolerance)) );
+		(a >= (T(1) - tolerance)) &&
+		(a <= (T(1) + tolerance)) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const std::complex<T>& a, const T& tolerance = epsilon<T>::value)
+approx_1(const std::complex<T>& a, const T& tolerance = tolerance<T>::value)
 {
 	return (
 		approx_1(a.real(), tolerance) &&

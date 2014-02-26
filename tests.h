@@ -20,6 +20,7 @@
 //#include "dual_test.h"
 //#include "scomplex_test.h"
 #include "quaternion_test.h"
+#include "sequence_test.h"
 
 
 namespace am {

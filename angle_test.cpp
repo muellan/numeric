@@ -14,6 +14,7 @@
 
 #include "angle.h"
 #include "angle_test.h"
+#include "limits.h"
 
 
 namespace am {
@@ -31,7 +32,7 @@ struct angle_tester {
 void angle_init_correctness()
 {
 	using std::abs;
-	constexpr auto eps = epsilon<float>::value;
+	constexpr auto eps = tolerance<float>::value;
 
 	auto d0 = deg{15};
 	deg  d1 {45.0f};
@@ -57,7 +58,7 @@ void angle_init_correctness()
 void angle_conversion_correctness()
 {
 	using std::abs;
-	constexpr auto eps = epsilon<float>::value;
+	constexpr auto eps = tolerance<float>::value;
 
 	auto a = deg{90};
 	auto b = rad{real_t(0.5_pi)};
@@ -78,7 +79,7 @@ void angle_conversion_correctness()
 void angle_arithmetic_correctness()
 {
 	using std::abs;
-	constexpr auto eps = epsilon<float>::value;
+	constexpr auto eps = tolerance<float>::value;
 
 	auto a = degi{20};
 	auto b = degi{30};
@@ -130,7 +131,7 @@ void angle_static_eval_correctness()
 void angle_functions_correctness()
 {
 	using std::abs;
-	constexpr auto eps = epsilon<float>::value;
+	constexpr auto eps = tolerance<float>::value;
 
 	if(!(
 		(abs(cos(rad{0}) -  1) < eps) &&

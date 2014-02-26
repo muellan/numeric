@@ -13,7 +13,6 @@
 
 
 #include <cstdint>
-#include <limits>
 
 
 namespace am {
@@ -114,49 +113,6 @@ constexpr long double operator "" _e(unsigned long long int x)
 {
 	return (x * euler_e);
 }
-
-
-
-
-
-
-/*****************************************************************************
- *
- *
- * PRECISION CONTROL
- *
- *
- *****************************************************************************/
-template<class T>
-struct epsilon
-{
-	static constexpr T value = (T(100) * std::numeric_limits<T>::epsilon());
-};
-
-
-//-------------------------------------------------------------------
-template<>
-struct epsilon<float>
-{
-	static constexpr float value = 10e-5;
-};
-
-
-//-------------------------------------------------------------------
-template<>
-struct epsilon<double>
-{
-	static constexpr double value = 10e-12;
-};
-
-
-//-------------------------------------------------------------------
-template<>
-struct epsilon<long double>
-{
-	static constexpr long double value = 10e-16;
-};
-
 
 
 }  // namespace num

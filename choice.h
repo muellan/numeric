@@ -37,7 +37,7 @@ namespace num {
 template<class IntT, IntT numChoices>
 class choice
 {
-	static_assert(is_integral_number<IntT>::value,
+	static_assert(is_integral<IntT>::value,
 		"choice<T,n> : T has to be an integral number type");
 
 	static_assert(numChoices > 0,
@@ -56,7 +56,7 @@ public:
 	choice(const T& x):
 		x_((x < 0) ? (numChoices + (x % numChoices)) : (x % numChoices))
 	{
-		static_assert(is_integral_number<T>::value,
+		static_assert(is_integral<T>::value,
 			"choice::choice(N) : N has to be an integral number type");
 	}
 
@@ -82,7 +82,7 @@ public:
 	choice&
 	operator = (const T& x)
 	{
-		static_assert(is_integral_number<T>::value,
+		static_assert(is_integral<T>::value,
 			"choice::operator=(N) : N has to be an integral number type");
 
 		x_ = value_type(
@@ -158,7 +158,7 @@ public:
 	choice&
 	operator += (const T& x)
 	{
-		static_assert(is_integral_number<T>::value,
+		static_assert(is_integral<T>::value,
 			"choice::operator+=(T) : T has to be an integral number type");
 
 		auto v = (x_ + x) % numChoices;
@@ -194,7 +194,7 @@ public:
 	choice&
 	operator -= (const T& x)
 	{
-		static_assert(is_integral_number<T>::value,
+		static_assert(is_integral<T>::value,
 			"choice::operator-=(T) : T has to be an integral number type");
 
 		auto v = (x_ - x) % numChoices;
@@ -211,7 +211,7 @@ public:
 	choice&
 	operator *= (const T& x)
 	{
-		static_assert(is_integral_number<T>::value,
+		static_assert(is_integral<T>::value,
 			"choice::operator*=(T) : T has to be an integral number type");
 
 		auto v = (x_ * x) % numChoices;
@@ -225,7 +225,7 @@ public:
 	choice&
 	operator /= (const T& x)
 	{
-		static_assert(is_integral_number<T>::value,
+		static_assert(is_integral<T>::value,
 			"choice::operator/=(T) : T has to be an integral number type");
 
 		auto v = (x_ / x) % numChoices;
@@ -331,7 +331,7 @@ template<class T, class IntT, IntT n, class = typename \
 inline constexpr choice<IntT,n> \
 operator OPERATOR (const T& x, const choice<IntT,n>& c) \
 { \
-	static_assert(is_integral_number<T>::value, \
+	static_assert(is_integral<T>::value, \
 		"T has to be an integral number type"); \
 \
 	return choice<IntT,n>{x OPERATOR (*c)}; \
@@ -344,7 +344,7 @@ template<class T, class IntT, IntT n, class = typename \
 inline constexpr choice<IntT,n> \
 operator OPERATOR (const choice<IntT,n>& c, const T& x) \
 { \
-	static_assert(is_integral_number<T>::value, \
+	static_assert(is_integral<T>::value, \
 		"T has to be an integral number type"); \
 \
 	return choice<IntT,n>{(*c) OPERATOR x}; \
@@ -433,7 +433,7 @@ template<std::uintmax_t n, class T>
 inline constexpr choice<T,n>
 make_choice(const T& k)
 {
-	static_assert(is_integral_number<T>::value,
+	static_assert(is_integral<T>::value,
 			"make_choice(T) : T has to be an integral number type");
 
 	return choice<T,n>{k};

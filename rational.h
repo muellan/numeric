@@ -37,7 +37,7 @@ namespace num {
 template<class IntT>
 class rational
 {
-	static_assert(is_integral_number<IntT>::value,
+	static_assert(is_integral<IntT>::value,
 		"rational<T>: T must be an integral number");
 
 public:
@@ -67,7 +67,7 @@ public:
 	//-----------------------------------------------------
 	/// @brief
 	template<class T, class = typename
-		std::enable_if<is_integral_number<T>::value>::type>
+		std::enable_if<is_integral<T>::value>::type>
 	explicit constexpr
 	rational(const T& wholes):
 		n_{wholes}, d_{value_type(1)}
@@ -86,7 +86,7 @@ public:
 	//-----------------------------------------------------
 	/// @brief
 	template<class T1, class T2, class = typename
-		std::enable_if<is_integral_number<T1,T2>::value>::type>
+		std::enable_if<is_integral<T1,T2>::value>::type>
 	constexpr
 	rational(const T1& numerator, const T2& denominator):
 		n_{value_type(numerator)}, d_{value_type(denominator)}
@@ -107,7 +107,7 @@ public:
 
 	//-----------------------------------------------------
 	template<class T, class = typename
-		std::enable_if<is_integral_number<T>::value>::type>
+		std::enable_if<is_integral<T>::value>::type>
 	rational&
 	operator = (const T& n)
 	{
@@ -121,7 +121,7 @@ public:
 	//-----------------------------------------------------
 	/// @brief
 	template<class T1, class T2, class = typename
-		std::enable_if<is_integral_number<T1,T2>::value>::type>
+		std::enable_if<is_integral<T1,T2>::value>::type>
 	rational&
 	assign(const T1& numerator, const T2& denominator)
 	{
@@ -178,7 +178,7 @@ public:
 	// rational (op)= value_type
 	//---------------------------------------------------------------
 	template<class T, class = typename
-		std::enable_if<is_integral_number<T>::value>::type>
+		std::enable_if<is_integral<T>::value>::type>
 	rational&
 	operator += (const T& v)
 	{
@@ -189,7 +189,7 @@ public:
 	}
 	//-----------------------------------------------------
 	template<class T, class = typename
-		std::enable_if<is_integral_number<T>::value>::type>
+		std::enable_if<is_integral<T>::value>::type>
 	rational&
 	operator -= (const T& v)
 	{
@@ -200,7 +200,7 @@ public:
 	}
 	//-----------------------------------------------------
 	template<class T, class = typename
-		std::enable_if<is_integral_number<T>::value>::type>
+		std::enable_if<is_integral<T>::value>::type>
 	rational&
 	operator *= (const T& v)
 	{
@@ -211,7 +211,7 @@ public:
 	}
 	//-----------------------------------------------------
 	template<class T, class = typename
-		std::enable_if<is_integral_number<T>::value>::type>
+		std::enable_if<is_integral<T>::value>::type>
 	rational&
 	operator /= (const T& v)
 	{
@@ -352,8 +352,8 @@ private:
 //-------------------------------------------------------------------
 template<class T1, class T2, class = typename
 	std::enable_if<
-		is_integral_number<T1>::value &&
-		is_integral_number<T2>::value,T1>::type>
+		is_integral<T1>::value &&
+		is_integral<T2>::value,T1>::type>
 inline constexpr
 rational<common_numeric_t<T1,T2>>
 make_rational(const T1& a, const T2& b)
@@ -487,7 +487,7 @@ operator != (const rational<T1>& x, const rational<T2>& y)
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const rational<T1>& a, const rational<T2>& b,
-	const T3& tolerance = epsilon<T3>::value)
+	const T3& tolerance = tolerance<T3>::value)
 {
 	return approx_equal(a.numer() * b.denom(), b.numer() * a.denom(), tolerance);
 }
@@ -495,7 +495,7 @@ approx_equal(const rational<T1>& a, const rational<T2>& b,
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const rational<T>& x, const T& tolerance = epsilon<T>::value)
+approx_1(const rational<T>& x, const T& tolerance = tolerance<T>::value)
 {
 	return approx_1(real_t(x.numer()) / real_t(x.denom()), tolerance);
 }
@@ -503,7 +503,7 @@ approx_1(const rational<T>& x, const T& tolerance = epsilon<T>::value)
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const rational<T>& x, const T& tolerance = epsilon<T>::value)
+approx_0(const rational<T>& x, const T& tolerance = tolerance<T>::value)
 {
 	return approx_0(x.numer(), tolerance);
 }
@@ -550,7 +550,7 @@ operator <= (const rational<T1>& x, const rational<T2>& y)
 // COMPARISON WITH PLAIN NUMBERS
 //-------------------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator > (const rational<T1>& x, const T2& r)
 {
@@ -558,7 +558,7 @@ operator > (const rational<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator > (const T2& r, const rational<T1>& x)
 {
@@ -567,7 +567,7 @@ operator > (const T2& r, const rational<T1>& x)
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator >= (const rational<T1>& x, const T2& r)
 {
@@ -575,7 +575,7 @@ operator >= (const rational<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator >= (const T2& r, const rational<T1>& x)
 {
@@ -584,7 +584,7 @@ operator >= (const T2& r, const rational<T1>& x)
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator < (const rational<T1>& x, const T2& r)
 {
@@ -592,7 +592,7 @@ operator < (const rational<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator < (const T2& r, const rational<T1>& x)
 {
@@ -601,7 +601,7 @@ operator < (const T2& r, const rational<T1>& x)
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator <= (const rational<T1>& x, const T2& r)
 {
@@ -609,7 +609,7 @@ operator <= (const rational<T1>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral_number<T2>::value>::type>
+	std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator <= (const T2& r, const rational<T1>& x)
 {
@@ -860,6 +860,64 @@ isnormal(const rational<T>& x)
 	using std::isnormal;
 	return (isnormal(x.numer()) && isnormal(x.denom()));
 }
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ * TRAITS SPECIALIZATIONS
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_number<rational<T>> : public std::true_type
+{};
+
+
+namespace detail {
+
+//-------------------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, rational<To>, From> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, rational<To>, rational<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, rational<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+
+
+//-------------------------------------------------------------------
+//template<class T, class T2>
+//struct common_numeric_type_helper<rational<T>,T2>
+//{
+//	//TODO
+//};
+////---------------------------------------------------------
+//template<class T, class T2>
+//struct common_numeric_type_helper<T2,rational<T>>
+//{
+//	using type = typename common_numeric_type_helper<rational<T>,T2>::type;
+//};
+
+}  // namespace detail
 
 
 }  // namespace num

@@ -495,7 +495,7 @@ template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(
 	const scomplex<T1>& a, const scomplex<T2>& b,
-	const T3& tolerance = epsilon<T3>::value)
+	const T3& tolerance = tolerance<T3>::value)
 {
 	return (approx_equal(a.real(), b.real(), tolerance) &&
 		    approx_equal(a.imag(), b.imag(), tolerance) );
@@ -504,7 +504,7 @@ approx_equal(
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const scomplex<T>& x, const T& tolerance = epsilon<T>::value)
+approx_1(const scomplex<T>& x, const T& tolerance = tolerance<T>::value)
 {
 	return (
 		approx_1(x.real(), tolerance) &&
@@ -514,7 +514,7 @@ approx_1(const scomplex<T>& x, const T& tolerance = epsilon<T>::value)
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const scomplex<T>& x, const T& tolerance = epsilon<T>::value)
+approx_0(const scomplex<T>& x, const T& tolerance = tolerance<T>::value)
 {
 	return (
 		approx_0(x.real(), tolerance) &&
@@ -1279,6 +1279,74 @@ isnormal(const scomplex<T>& x)
 	using std::isnormal;
 	return (isnormal(x.real()) && isnormal(x.imag()));
 }
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ * TRAITS SPECIALIZATIONS
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_number<scomplex<T>> : public std::true_type
+{};
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_floating_point<scomplex<T>> :
+    public std::integral_constant<bool, is_floating_point<T>::value>
+{};
+
+
+
+namespace detail {
+
+//-------------------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<scomplex<T>,T2>
+{
+    using type = scomplex<typename common_numeric_type_helper<T,T2>::type>;
+};
+
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type_helper<T2,scomplex<T>>
+{
+    using type = typename common_numeric_type_helper<scomplex<T>,T2>::type;
+};
+
+
+
+//-------------------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, scomplex<To>, From> :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, scomplex<To>, scomplex<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, scomplex<From> > :
+	public is_non_narrowing_helper<true,To,From>
+{};
+
+}  // namespace detail
 
 
 

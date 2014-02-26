@@ -77,25 +77,6 @@ struct is_non_narrowing_helper<true,To,From> :
 
 
 
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, dual<To>, From> :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, dual<To>, dual<From> > :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, dual<From> > :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-
 
 //---------------------------------------------------------
 template<class To, class From>
@@ -114,67 +95,6 @@ template<class To, class From>
 struct is_non_narrowing_helper<true, To, std::complex<From> > :
 	public is_non_narrowing_helper<true,To,From>
 {};
-
-
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, scomplex<To>, From> :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, scomplex<To>, scomplex<From> > :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, scomplex<From> > :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, rational<To>, From> :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, rational<To>, rational<From> > :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, rational<From> > :
-	public is_non_narrowing_helper<true,To,From>
-{};
-
-
-
-//---------------------------------------------------------
-template<class From>
-struct is_non_narrowing_helper<true, integer, From> :
-	public std::is_integral<From>
-{};
-
-//---------------------------------------------------------
-template<>
-struct is_non_narrowing_helper<true, integer, integer> :
-	public std::true_type
-{};
-
-//---------------------------------------------------------
-template<class To>
-struct is_non_narrowing_helper<true, To, integer> :
-	public std::false_type
-{};
-
 
 
 }  // namespace detail

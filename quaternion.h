@@ -17,6 +17,7 @@
 #include <cassert>
 
 #include "constants.h"
+#include "limits.h"
 #include "narrowing.h"
 
 
@@ -245,7 +246,7 @@ quat_slerp(const Quat0& q0, const Quat1& q1, T t, QuatO& out)
 
 	if(cosPhi < 0) {
 		q_t from, to;
-		if((1 + cosPhi) > epsilon<q_t>::value) {
+		if((1 + cosPhi) > tolerance<q_t>::value) {
 			auto phi = acos(-cosPhi);
 			auto sinPhi = sin(phi);
 			from = sin((1 - t) * phi) / sinPhi;
@@ -262,7 +263,7 @@ quat_slerp(const Quat0& q0, const Quat1& q1, T t, QuatO& out)
 	}
 	else {
 		q_t from, to;
-		if((1 - cosPhi) > epsilon<q_t>::value) {
+		if((1 - cosPhi) > tolerance<q_t>::value) {
 			auto phi = acos(cosPhi);
 			auto sinPhi = sin(phi);
 			from = sin((1 - t) * phi) / sinPhi;
@@ -375,7 +376,7 @@ template<class NumberT>
 class quaternion
 {
 	static_assert(
-		is_floating_point_number<NumberT>::value,
+		is_floating_point<NumberT>::value,
 		"quaternion<T>: T must be a floating-point number");
 
 public:

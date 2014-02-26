@@ -13,13 +13,11 @@
 
 #include <type_traits>
 #include <utility>
-#include <limits>
 #include <complex>
 #include <array>
 
 
 #include "param.h"
-
 #include "constants.h"
 
 
@@ -214,30 +212,6 @@ check_has_max(T&&, long) -> std::false_type;
 
 
 
-
-
-
-/*****************************************************************************
- *
- * FORWARD DECLARATIONS
- *
- *****************************************************************************/
-template<class>
-class dual;
-
-template<class>
-class scomplex;
-
-template<class>
-class rational;
-
-class integer;
-
-
-
-
-
-
 /*****************************************************************************
  *
  * @brief common numeric type
@@ -269,67 +243,6 @@ struct common_numeric_type_helper<T2,std::complex<T>>
 {
 	using type = typename common_numeric_type_helper<std::complex<T>,T2>::type;
 };
-
-
-
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<scomplex<T>,T2>
-{
-	using type = scomplex<typename common_numeric_type_helper<T,T2>::type>;
-};
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<T2,scomplex<T>>
-{
-	using type = typename common_numeric_type_helper<scomplex<T>,T2>::type;
-};
-
-
-
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<dual<T>,T2>
-{
-	using type = dual<typename common_numeric_type_helper<T,T2>::type>;
-};
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<T2,dual<T>>
-{
-	using type = typename common_numeric_type_helper<dual<T>,T2>::type;
-};
-
-
-/*
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<rational<T>,T2>
-{
-	//TODO
-};
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<T2,rational<T>>
-{
-	using type = typename common_numeric_type_helper<rational<T>,T2>::type;
-};
-
-
-
-//---------------------------------------------------------
-template<class T>
-struct common_numeric_type_helper<integer,T>
-{
-	//TODO
-};
-//---------------------------------------------------------
-template<class T>
-struct common_numeric_type_helper<T,integer>
-{
-	using type = typename common_numeric_type_helper<integer,T>::type;
-};
-*/
 
 
 }  // namespace detail
@@ -590,16 +503,18 @@ struct is_invertable : public
 //-------------------------------------------------------------------
 // INTEGRAL
 //-------------------------------------------------------------------
-template<class T>
+template<class H, class... T>
 struct is_integral :
-	public std::is_integral<T>
+	public std::integral_constant<bool,
+		is_integral<typename std::decay<H>::type>::value &&
+		is_integral<typename std::decay<T>::type...>::value>
 {};
 
 //-----------------------------------------------------
-class integer;
-template<>
-struct is_integral<integer> :
-	public std::true_type
+template<class T>
+struct is_integral<T> :
+	public std::integral_constant<bool,
+		std::is_integral<typename std::decay<T>::type>::value>
 {};
 
 
@@ -609,7 +524,7 @@ struct is_integral<integer> :
 //-------------------------------------------------------------------
 template<class T>
 struct is_unsigned :
-	public std::is_unsigned<T>
+	public std::is_unsigned<typename std::decay<T>::type>
 {};
 
 
@@ -617,9 +532,17 @@ struct is_unsigned :
 //-------------------------------------------------------------------
 // FLOATING POINT
 //-------------------------------------------------------------------
-template<class T>
+template<class H, class... T>
 struct is_floating_point :
-	public std::is_floating_point<T>
+	public std::integral_constant<bool,
+		is_floating_point<typename std::decay<H>::type>::value &&
+		is_floating_point<typename std::decay<T>::type...>::value>
+{};
+
+//-----------------------------------------------------
+template<class T>
+struct is_floating_point<T> :
+	public std::is_floating_point<typename std::decay<T>::type>
 {};
 
 //-----------------------------------------------------
@@ -635,17 +558,6 @@ struct is_floating_point<std::complex<T>> :
 	public std::integral_constant<bool, is_floating_point<T>::value>
 {};
 
-//-----------------------------------------------------
-template<class T>
-struct is_floating_point<dual<T>> :
-	public std::integral_constant<bool, is_floating_point<T>::value>
-{};
-
-//-----------------------------------------------------
-template<class T>
-struct is_floating_point<scomplex<T>> :
-	public std::integral_constant<bool, is_floating_point<T>::value>
-{};
 
 
 
@@ -682,27 +594,6 @@ template<class T>
 struct is_number<std::complex<T>> : public std::true_type
 {};
 
-//-----------------------------------------------------
-template<class T>
-struct is_number<scomplex<T>> : public std::true_type
-{};
-
-//-----------------------------------------------------
-template<class T>
-struct is_number<dual<T>> : public std::true_type
-{};
-
-//-----------------------------------------------------
-template<class T>
-struct is_number<rational<T>> : public std::true_type
-{};
-
-//-----------------------------------------------------
-template<>
-struct is_number<integer> :
-	public std::true_type
-{};
-
 
 //-----------------------------------------------------
 /*
@@ -718,45 +609,6 @@ struct is_number<T> :
 		>
 {};
 */
-
-
-//-------------------------------------------------------------------
-// INTEGRAL NUMBER
-//-------------------------------------------------------------------
-template<class H, class... T>
-struct is_integral_number :
-	public std::integral_constant<bool,
-		is_integral_number<typename std::decay<H>::type>::value &&
-		is_integral_number<typename std::decay<T>::type...>::value>
-{};
-
-//-----------------------------------------------------
-template<class T>
-struct is_integral_number<T> :
-	public std::integral_constant<bool,
-		is_number<typename std::decay<T>::type>::value &&
-		is_integral<typename std::decay<T>::type>::value>
-{};
-
-
-
-//-------------------------------------------------------------------
-// FLOTING POINT NUMBER
-//-------------------------------------------------------------------
-template<class H, class... T>
-struct is_floating_point_number :
-	public std::integral_constant<bool,
-		is_floating_point_number<typename std::decay<H>::type>::value &&
-		is_floating_point_number<typename std::decay<T>::type...>::value>
-{};
-
-//-----------------------------------------------------
-template<class T>
-struct is_floating_point_number<T> :
-	public std::integral_constant<bool, true
-		&& is_number<typename std::decay<T>::type>::value
-		&& is_floating_point<typename std::decay<T>::type>::value>
-{};
 
 
 

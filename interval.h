@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "limits.h"
 #include "traits.h"
 #include "narrowing.h"
 
@@ -440,7 +441,7 @@ public:
 	template<class T, class = typename std::enable_if<
 		is_number<T>::value>::type>
 	void
-	shrink_exclude(const T& bound, const T& offset = epsilon<T>::value)
+	shrink_exclude(const T& bound, const T& offset = tolerance<T>::value)
 	{
 		AM_CHECK_NARROWING(value_type,T)
 
@@ -564,7 +565,7 @@ public:
 
 	//-----------------------------------------------------------------
 	constexpr bool
-	empty(const value_type& tolerance = epsilon<value_type>::value) const
+	empty(const value_type& tolerance = tolerance<value_type>::value) const
 	{
 		using std::abs;
 		//we have to use abs even if l_ should always be smaller than r_
@@ -1129,7 +1130,7 @@ operator != (const interval<T>& a, const interval<T>& b) {
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const interval<T1>& a, const interval<T2>& b,
-	const T3& tolerance = epsilon<T3>::value)
+	const T3& tolerance = tolerance<T3>::value)
 {
 	return (approx_equal(a.min(), b.min(), tolerance) &&
 		    approx_equal(a.max(), b.max(), tolerance) );

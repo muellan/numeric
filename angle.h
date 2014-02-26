@@ -1083,13 +1083,13 @@ class uniform_angle_distribution :
 		std::uniform_real_distribution<typename Turn::type>>
 {
 
-	using base__ = angle_distribution<Turn,
+	using base_t_ = angle_distribution<Turn,
 		std::uniform_real_distribution<typename Turn::type>>;
 
 public:
 	//---------------------------------------------------------------
 	using numeric_type = typename Turn::type;
-	using param_type = gen::param_t<base__>;
+	using param_type = gen::param_t<base_t_>;
 
 	//---------------------------------------------------------------
 	explicit
@@ -1097,12 +1097,12 @@ public:
 		const numeric_type& min = numeric_type(0),
 		const numeric_type& max = numeric_type(Turn::value))
 	:
-		base__{param_type{min,max}}
+		base_t_{param_type{min,max}}
 	{}
 	//-----------------------------------------------------
 	explicit
 	uniform_angle_distribution(const param_type& par):
-		base__{par}
+		base_t_{par}
 	{}
 };
 
