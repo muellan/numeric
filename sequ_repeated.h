@@ -1,5 +1,5 @@
-#ifndef AM_SIM_PARAMETER_BOUNCY_ANNEALER_H_
-#define AM_SIM_PARAMETER_BOUNCY_ANNEALER_H_
+#ifndef AM_NUMERIC_REPEATED_SEQUENCE_GENERATOR_H_
+#define AM_NUMERIC_REPEATED_SEQUENCE_GENERATOR_H_
 
 
 #include <cstdint>
@@ -40,21 +40,21 @@ public:
 	//---------------------------------------------------------------
 	constexpr explicit
 	repeated_sequence(
-		const sequence_type& sequence = sequence_type(),
+		sequence_type sequence = sequence_type(),
 		size_type repetitions = 0)
 	:
 		reps_(0), maxReps_(repetitions),
-		curSequ_{sequence}, repSequ_{sequence}
+		curSequ_{std::move(sequence)}, repSequ_{curSequ_}
 	{}
 	//-----------------------------------------------------
 	constexpr explicit
 	repeated_sequence(
-		const sequence_type& first,
-		const sequence_type& repeat,
+		sequence_type first,
+		sequence_type repeat,
 		size_type repetitions = 0)
 	:
 		reps_(0), maxReps_(repetitions),
-		curSequ_{first}, repSequ_{repeat}
+		curSequ_{std::move(first)}, repSequ_{std::move(repeat)}
 	{}
 
 
@@ -73,9 +73,9 @@ public:
 	value_type
 	operator [] (size_type offset) const
 	{
-		if(offset >= curSequ_.size()) {
-			offset -= curSequ_.size();
-			return repSequ_[offset];
+		const auto nfst = curSequ_.size();
+		if(offset >= nfst) {
+			return repSequ_[(offset-nfst) % repSequ_.size()];
 		}
 		return curSequ_[offset];
 	}
@@ -271,9 +271,9 @@ cend(const repeated_sequence<G>& s) -> decltype(s.end()) {
 template<class SequGen>
 inline constexpr
 repeated_sequence<SequGen>
-make_repeated_sequence(const SequGen& seq, std::size_t repetitions)
+make_repeated_sequence(SequGen&& seq, std::size_t repetitions)
 {
-	return repeated_sequence<SequGen>{seq, repetitions};
+	return repeated_sequence<SequGen>{std::forward<SequGen>(seq), repetitions};
 }
 
 //-----------------------------------------------------
@@ -281,9 +281,10 @@ template<class SequGen>
 inline constexpr
 repeated_sequence<SequGen>
 make_repeated_sequence(
-	const SequGen& firstSeq, const SequGen& repSeq, std::size_t repetitions)
+	SequGen firstSeq, SequGen repSeq, std::size_t repetitions)
 {
-	return repeated_sequence<SequGen>{firstSeq, repSeq, repetitions};
+	return repeated_sequence<SequGen>{
+		std::move(firstSeq), std::move(repSeq), repetitions};
 }
 
 

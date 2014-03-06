@@ -10,6 +10,7 @@
 #include "sequ_geom.h"
 #include "sequ_fibonacci.h"
 #include "sequ_repeated.h"
+#include "sequ_combined.h"
 
 #include "sequence_test.h"
 #include "equality.h"
@@ -197,6 +198,48 @@ void repeated_sequence_generation_correctness()
 
 
 
+//-------------------------------------------------------------------
+void combined_sequence_generation_correctness()
+{
+	{
+		auto v = std::vector<double>{};
+
+		auto g = combined_sequence<linear_sequence<int>,linear_sequence<double>> {
+			make_linear_sequence(8, -1, 1),
+			make_linear_sequence(1.0, 1.0, 8.0)};
+
+		for(auto x : g) {
+			v.push_back(x);
+		}
+		if(!approx_equal(v.front(),8) || !approx_equal(v.back(),8) ||
+			v.size() != 16)
+		{
+			throw std::logic_error("combined_sequence");
+		}
+	}
+
+	{
+		auto v = std::vector<double>{};
+
+		auto g = make_combined_sequence(
+			make_linear_sequence(8, -1, 1),
+			make_linear_sequence(1.0, 1.0, 8.0));
+
+		for(auto x : g) {
+			v.push_back(x);
+		}
+		if(!approx_equal(v.front(),8) || !approx_equal(v.back(),8) ||
+			v.size() != 16)
+		{
+			throw std::logic_error("combined_sequence");
+		}
+	}
+
+
+}
+
+
+
 
 /*****************************************************************************
  *
@@ -212,6 +255,7 @@ void sequence_generation_correctness()
 	geometric_sequence_generation_correctness();
 	fibonacci_sequence_generation_correctness();
 	repeated_sequence_generation_correctness();
+	combined_sequence_generation_correctness();
 
 
 //	std::cout << content(make_ascending_sequence(2,10)) << std::endl;

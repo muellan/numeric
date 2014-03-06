@@ -118,13 +118,16 @@ public:
 	size() const {
 		using std::log;
 
-		return (1 +	static_cast<size_type>(
+		return (1 + static_cast<size_type>(
 			0.5 + (log(uBound_/cur_) / log(base_)) ) );
 	}
 	//-----------------------------------------------------
 	bool
 	empty() const {
-		return (base_ > 1) ? (cur_ > uBound_) : (cur_ < uBound_);
+		return
+			(cur_ >= 0 && uBound_ >= 0)
+			? (base_ > 1) ? (cur_ > uBound_) : (cur_ < uBound_)
+			: (base_ > 1) ? (cur_ < uBound_) : (cur_ > uBound_);
 	}
 	//-----------------------------------------------------
 	explicit operator
