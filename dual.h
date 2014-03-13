@@ -1466,22 +1466,21 @@ struct is_floating_point<dual<T>> :
 
 
 
-namespace detail {
-
 //-------------------------------------------------------------------
 template<class T, class T2>
-struct common_numeric_type_helper<dual<T>,T2>
+struct common_numeric_type<dual<T>,T2>
 {
-    using type = dual<typename common_numeric_type_helper<T,T2>::type>;
+    using type = dual<common_numeric_t<T,T2>>;
 };
 //---------------------------------------------------------
 template<class T, class T2>
-struct common_numeric_type_helper<T2,dual<T>>
+struct common_numeric_type<T2,dual<T>>
 {
-    using type = typename common_numeric_type_helper<dual<T>,T2>::type;
+    using type = common_numeric_t<dual<T>,T2>;
 };
 
 
+namespace detail {
 
 //-------------------------------------------------------------------
 template<class To, class From>

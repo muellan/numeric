@@ -1310,23 +1310,22 @@ struct is_floating_point<scomplex<T>> :
 
 
 
-namespace detail {
-
 //-------------------------------------------------------------------
 template<class T, class T2>
-struct common_numeric_type_helper<scomplex<T>,T2>
+struct common_numeric_type<scomplex<T>,T2>
 {
-    using type = scomplex<typename common_numeric_type_helper<T,T2>::type>;
+    using type = scomplex<common_numeric_t<T,T2>>;
 };
-
 //---------------------------------------------------------
 template<class T, class T2>
-struct common_numeric_type_helper<T2,scomplex<T>>
+struct common_numeric_type<T2,scomplex<T>>
 {
-    using type = typename common_numeric_type_helper<scomplex<T>,T2>::type;
+    using type = common_numeric_t<scomplex<T>,T2>;
 };
 
 
+
+namespace detail {
 
 //-------------------------------------------------------------------
 template<class To, class From>

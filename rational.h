@@ -372,6 +372,32 @@ make_rational(const T& x)
 }
 
 
+
+//-------------------------------------------------------------------
+// CONVERSION FROM FLOATING-POINT NUMBER
+//-------------------------------------------------------------------
+inline rational<int>
+make_rational(float f)
+{
+	return to_rational<int>(f);
+}
+
+//---------------------------------------------------------
+inline rational<int>
+make_rational(double f)
+{
+	return to_rational<int>(f);
+}
+
+//---------------------------------------------------------
+inline rational<int>
+make_rational(long double f)
+{
+	return to_rational<int>(f);
+}
+
+
+
 //-------------------------------------------------------------------
 // I/O
 //-------------------------------------------------------------------
@@ -906,15 +932,15 @@ struct is_non_narrowing_helper<true, To, rational<From> > :
 
 //-------------------------------------------------------------------
 //template<class T, class T2>
-//struct common_numeric_type_helper<rational<T>,T2>
+//struct common_numeric_t<rational<T>,T2>
 //{
 //	//TODO
 //};
 ////---------------------------------------------------------
 //template<class T, class T2>
-//struct common_numeric_type_helper<T2,rational<T>>
+//struct common_numeric_t<T2,rational<T>>
 //{
-//	using type = typename common_numeric_type_helper<rational<T>,T2>::type;
+//	using type = common_numeric_t<rational<T>,T2>;
 //};
 
 }  // namespace detail

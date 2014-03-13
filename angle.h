@@ -15,6 +15,8 @@
 #include <utility>
 #include <random>
 
+#include "param.h"
+
 #include "traits.h"
 #include "narrowing.h"
 

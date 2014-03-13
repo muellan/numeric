@@ -14,10 +14,10 @@
 #include <type_traits>
 #include <utility>
 #include <complex>
+#include <initializer_list>
 #include <array>
 
 
-#include "param.h"
 #include "constants.h"
 
 
@@ -207,84 +207,21 @@ check_has_max(T&&, long) -> std::false_type;
 
 
 
-}  // namespace detail
-
-
-
-
-/*****************************************************************************
- *
- * @brief common numeric type
- *
- *
- *
- *****************************************************************************/
-
-namespace detail {
-
 //-------------------------------------------------------------------
-template<class T1, class T2>
-struct common_numeric_type_helper
-{
-	using type = typename std::common_type<T1,T2>::type;
-};
-
-
-
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<std::complex<T>,T2>
-{
-	using type = std::complex<typename common_numeric_type_helper<T,T2>::type>;
-};
-//---------------------------------------------------------
-template<class T, class T2>
-struct common_numeric_type_helper<T2,std::complex<T>>
-{
-	using type = typename common_numeric_type_helper<std::complex<T>,T2>::type;
-};
-
-
-}  // namespace detail
-
-
-
-//-------------------------------------------------------------------
-template<class T, class... Ts>
-struct common_numeric_type
-{
-	using type = typename
-		detail::common_numeric_type_helper<
-			T, typename common_numeric_type<Ts...>::type>::type;
-};
-
-//---------------------------------------------------------
 template<class T>
-struct common_numeric_type<T>
-{
-	using type = T;
-};
-
+constexpr auto
+check_has_numeric_type(int)
+	-> decltype(
+		std::declval<typename T::numeric_type>(),
+		std::true_type{});
 //---------------------------------------------------------
-template<class T1, class T2>
-struct common_numeric_type<T1,T2>
-{
-	using type = typename detail::common_numeric_type_helper<T1,T2>::type;
-};
+template<class>
+constexpr auto
+check_has_numeric_type(long)
+	-> std::false_type;
 
 
-//---------------------------------------------------------
-template<class... Ts>
-using common_numeric_t = typename common_numeric_type<Ts...>::type;
-
-
-
-//-------------------------------------------------------------------
-template<class... Ts>
-using floating_point_t = common_numeric_t<real_t,Ts...>;
-
-
-
+}  // namespace detail
 
 
 
@@ -298,6 +235,16 @@ using floating_point_t = common_numeric_t<real_t,Ts...>;
  *
  *
  *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+struct has_numeric_type: public
+	decltype(detail::check_has_numeric_type<T>(0))
+{};
+
+
+
+//-------------------------------------------------------------------
 template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_type
 {
@@ -311,9 +258,86 @@ struct numeric_type<T,true>
 	using type = T;
 };
 
+
+//---------------------------------------------------------
+template<class T>
+struct numeric_type<std::initializer_list<T>,false>
+{
+	using type = typename numeric_type<T>::type;
+};
+
+//---------------------------------------------------------
+template<class T, std::size_t n>
+struct numeric_type<std::array<T,n>,false>
+{
+	using type = typename numeric_type<T>::type;
+};
+
+//---------------------------------------------------------
+template<class T>
+struct numeric_type<std::complex<T>,false>
+{
+	using type = typename numeric_type<T>::type;
+};
+
 //---------------------------------------------------------
 template<class T>
 using numeric_t = typename numeric_type<T>::type;
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief common numeric type
+ *
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T, class... Ts>
+struct common_numeric_type
+{
+	using type =
+		typename std::common_type<
+			numeric_t<T>,
+			typename common_numeric_type<Ts...>::type >::type;
+};
+
+//---------------------------------------------------------
+template<class T>
+struct common_numeric_type<T>
+{
+	using type = numeric_t<T>;
+};
+
+//---------------------------------------------------------
+template<class... Ts>
+using common_numeric_t = typename common_numeric_type<Ts...>::type;
+
+
+
+//-------------------------------------------------------------------
+template<class... Ts>
+using floating_point_t = common_numeric_t<real_t,Ts...>;
+
+
+
+//-------------------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type<std::complex<T>,T2>
+{
+    using type = std::complex<common_numeric_t<T,T2>>;
+};
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type<T2,std::complex<T>>
+{
+    using type = common_numeric_t<std::complex<T>,T2>;
+};
 
 
 
@@ -353,7 +377,7 @@ struct dimensions<T,true> :
 //-------------------------------------------------------------------
 template<class T, std::size_t n>
 struct dimensions<std::array<T,n>,false> :
-	public std::integral_constant<std::size_t,n>
+	public std::integral_constant<dims_t,n>
 {};
 
 
