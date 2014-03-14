@@ -949,15 +949,6 @@ operator * (const T1& s, const quaternion<T2>& q)
 		{s*q.v_[0], s*q.v_[1], s*q.v_[2], s*q.v_[3]};
 }
 
-//---------------------------------------------------------
-template<class T>
-quaternion<T>&&
-operator * (const T& s, quaternion<T>&& q)
-{
-	q *= s;
-	return std::move(q);
-}
-
 
 
 //-------------------------------------------------------------------
@@ -971,7 +962,6 @@ operator * (const quaternion<T1>& p, const quaternion<T2>& q)
 		quaternion<common_numeric_t<T1,T2>>>(p,q);
 }
 
-
 //---------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
@@ -980,24 +970,6 @@ operator + (const quaternion<T1>& a, const quaternion<T2>& b)
 {
 	return quaternion<common_numeric_t<T1,T2>>{
 		a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]};
-}
-//---------------------------------------------------------
-template<class T>
-inline constexpr
-quaternion<T>&&
-operator + (const quaternion<T>& a, quaternion<T>&& b)
-{
-	b += a;
-	return std::move(b);
-}
-//---------------------------------------------------------
-template<class T>
-inline constexpr
-quaternion<T>&&
-operator + (quaternion<T>&& a, const quaternion<T>& b)
-{
-	a += b;
-	return std::move(a);
 }
 
 //---------------------------------------------------------
@@ -1008,15 +980,6 @@ operator - (const quaternion<T1>& a, const quaternion<T2>& b)
 {
 	return quaternion<common_numeric_t<T1,T2>>{
 		a[0]-b[0], a[1]-b[1], a[2]-b[2], a[3]-b[3]};
-}
-//---------------------------------------------------------
-template<class T>
-inline constexpr
-quaternion<T>&&
-operator - (quaternion<T>&& a, const quaternion<T>& b)
-{
-	a -= b;
-	return std::move(a);
 }
 
 //---------------------------------------------------------
@@ -1077,14 +1040,6 @@ inverse(quaternion<T> q)
 	q.invert();
 	return q;
 }
-//---------------------------------------------------------
-template<class T>
-inline quaternion<T>&&
-inverse(quaternion<T>&& q)
-{
-	q.invert();
-	return std::move(q);
-}
 
 
 
@@ -1096,16 +1051,6 @@ inline constexpr quaternion<T>
 conj(const quaternion<T>& q)
 {
 	return quaternion<T>{q[0], -q[1], -q[2], -q[3]};
-}
-//---------------------------------------------------------
-template<class T>
-inline quaternion<T>&&
-conj(quaternion<T>&& q)
-{
-	q[1] = -q[1];
-	q[2] = -q[2];
-	q[3] = -q[3];
-	return std::move(q);
 }
 
 
@@ -1119,14 +1064,6 @@ normalized(quaternion<T> q)
 {
 	q.normalize();
 	return q;
-}
-//---------------------------------------------------------
-template<class T>
-inline quaternion<T>&&
-normalized(quaternion<T>&& q)
-{
-	q.normalize();
-	return std::move(q);
 }
 
 
