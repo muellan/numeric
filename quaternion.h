@@ -40,7 +40,7 @@ class quaternion
 {
     static_assert(
         is_floating_point<NumberT>::value,
-        "quaternion<T>: T must be a floating-point number");
+        "quaternion<T>: T must be a floating-point number type");
 
     //befriend all quaternions
     template<class T> friend class quaternion;
@@ -322,11 +322,11 @@ public:
     {
         AM_CHECK_NARROWING(numeric_type,T)
 
-        auto p = *this;
+        const auto p = *this;
 
-        w_ =  p.real()*q.real() + p.imag_i()*q.imag_i() + p.imag_j()*q.imag_j() + p.imag_k()*q.imag_k();
-        x_ = -p.real()*q.imag_i() + p.imag_i()*q.real() - p.imag_j()*q.imag_k() + p.imag_k()*q.imag_j();
-        y_ = -p.real()*q.imag_j() + p.imag_i()*q.imag_k() + p.imag_j()*q.real() - p.imag_k()*q.imag_i();
+        w_ =  p.real()*q.real()   + p.imag_i()*q.imag_i() + p.imag_j()*q.imag_j() + p.imag_k()*q.imag_k();
+        x_ = -p.real()*q.imag_i() + p.imag_i()*q.real()   - p.imag_j()*q.imag_k() + p.imag_k()*q.imag_j();
+        y_ = -p.real()*q.imag_j() + p.imag_i()*q.imag_k() + p.imag_j()*q.real()   - p.imag_k()*q.imag_i();
         z_ = -p.real()*q.imag_k() - p.imag_i()*q.imag_j() + p.imag_j()*q.imag_i() + p.imag_k()*q.real();
 
         return *this;
@@ -338,11 +338,11 @@ public:
     {
         AM_CHECK_NARROWING(numeric_type,T)
 
-        auto p = *this;
+        const auto p = *this;
 
-        w_ = p.real()*q.real() + p.imag_i()*q.imag_i() + p.imag_j()*q.imag_j() + p.imag_k()*q.imag_k();
-        x_ = p.real()*q.imag_i() - p.imag_i()*q.real() - p.imag_j()*q.imag_k() + p.imag_k()*q.imag_j();
-        y_ = p.real()*q.imag_j() + p.imag_i()*q.imag_k() - p.imag_j()*q.real() - p.imag_k()*q.imag_i();
+        w_ = p.real()*q.real()   + p.imag_i()*q.imag_i() + p.imag_j()*q.imag_j() + p.imag_k()*q.imag_k();
+        x_ = p.real()*q.imag_i() - p.imag_i()*q.real()   - p.imag_j()*q.imag_k() + p.imag_k()*q.imag_j();
+        y_ = p.real()*q.imag_j() + p.imag_i()*q.imag_k() - p.imag_j()*q.real()   - p.imag_k()*q.imag_i();
         z_ = p.real()*q.imag_k() - p.imag_i()*q.imag_j() + p.imag_j()*q.imag_i() - p.imag_k()*q.real();
 
         return *this;
@@ -401,9 +401,10 @@ private:
  *****************************************************************************/
 
 //---------------------------------------------------------
-using quatf = quaternion<float>;
-using quatd = quaternion<double>;
-using quat  = quaternion<real_t>;
+using quatf  = quaternion<float>;
+using quatd  = quaternion<double>;
+using quatld = quaternion<long double>;
+using quat   = quaternion<real_t>;
 
 
 
@@ -845,8 +846,9 @@ template<class T, class URNG>
 inline quaternion<T>
 random_unit_quaternion(URNG& urng)
 {
-    static_assert(is_number<T>::value,
-        "random_unit_quaternion<T> : T has to be a number type");
+    static_assert(
+        is_floating_point<T>::value,
+        "quaternion<T>: T must be a floating-point number type");
 
     using std::cos;
     using std::sin;
