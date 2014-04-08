@@ -59,12 +59,12 @@ inline constexpr
 biquaternion<T>
 bi_conj(const biquaternion<T>& q)
 {
-	return biquaternion<T> {
-		std::complex<T>{q[0].real(), -q[0].imag()},
-		std::complex<T>{q[1].real(), -q[1].imag()},
-		std::complex<T>{q[2].real(), -q[2].imag()},
-		std::complex<T>{q[3].real(), -q[3].imag()}
-	};
+    return biquaternion<T> {
+        std::complex<T>{q.real().real(),   -q.real().imag()},
+        std::complex<T>{q.imag_i().real(), -q.imag_i().imag()},
+        std::complex<T>{q.imag_j().real(), -q.imag_j().imag()},
+        std::complex<T>{q.imag_k().real(), -q.imag_k().imag()}
+    };
 }
 
 //---------------------------------------------------------
@@ -73,12 +73,12 @@ inline constexpr
 biquaternion<T>
 full_conj(const biquaternion<T>& q)
 {
-	return biquaternion<T> {
-		std::complex<T>{ q[0].real(),-q[0].imag()},
-		std::complex<T>{-q[1].real(), q[1].imag()},
-		std::complex<T>{-q[2].real(), q[2].imag()},
-		std::complex<T>{-q[3].real(), q[3].imag()}
-	};
+    return biquaternion<T> {
+        std::complex<T>{ q.real().real(),  -q.real().imag()},
+        std::complex<T>{-q.imag_i().real(), q.imag_i().imag()},
+        std::complex<T>{-q.imag_j().real(), q.imag_j().imag()},
+        std::complex<T>{-q.imag_k().real(), q.imag_k().imag()}
+    };
 }
 
 
@@ -91,7 +91,10 @@ inline constexpr
 quaternion<T>
 real(const biquaternion<T>& dq)
 {
-	return quaternion<T>{dq[0].real(), dq[1].real(), dq[2].real(), dq[3].real()};
+    return quaternion<T>{dq.real().real(),
+                         dq.imag_i().real(),
+                         dq.imag_j().real(),
+                         dq.imag_k().real()};
 }
 
 
@@ -104,7 +107,10 @@ inline constexpr
 quaternion<T>
 imag(const biquaternion<T>& dq)
 {
-	return quaternion<T>{dq[0].imag(), dq[1].imag(), dq[2].imag(), dq[3].imag()};
+    return quaternion<T>{dq.real().imag(),
+                         dq.imag_i().imag(),
+                         dq.imag_j().imag(),
+                         dq.imag_k().imag()};
 }
 
 
@@ -122,23 +128,24 @@ imag(const biquaternion<T>& dq)
 
 //-------------------------------------------------------------------
 template<
-	class T1, class T2, class T3, class T4,
-	class T5, class T6, class T7, class T8
+    class T1, class T2, class T3, class T4,
+    class T5, class T6, class T7, class T8
 >
 inline constexpr
 biquaternion<common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>>
 make_biquaternion(
-	const T1& aw, const T2& ax, const T3& ay, const T4& az,
-	const T5& bw, const T6& bx, const T7& by, const T8& bz)
+    T1&& aw, T2&& ax, T3&& ay, T4&& az,
+    T5&& bw, T6&& bx, T7&& by, T8&& bz)
 {
-	using res_t = common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>;
+    using res_t = common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>;
 
-	return biquaternion<res_t>{
-		std::complex<res_t>{aw,bw},
-		std::complex<res_t>{ax,bx},
-		std::complex<res_t>{ay,by},
-		std::complex<res_t>{az,bz}	};
+    return biquaternion<res_t>{
+        dual<res_t>{std::forward<T1>(aw), std::forward<T5>(bw)},
+        dual<res_t>{std::forward<T2>(ax), std::forward<T6>(bx)},
+        dual<res_t>{std::forward<T3>(ay), std::forward<T7>(by)},
+        dual<res_t>{std::forward<T4>(az), std::forward<T8>(bz)} };
 }
+
 
 //---------------------------------------------------------
 template<class T1, class T2>
@@ -146,13 +153,13 @@ inline constexpr
 biquaternion<common_numeric_t<T1,T2>>
 make_biquaternion(const quaternion<T1>& real, const quaternion<T2>& imag)
 {
-	using res_t = common_numeric_t<T1,T2>;
+    using res_t = common_numeric_t<T1,T2>;
 
-	return biquaternion<res_t>{
-		std::complex<res_t>{real[0], imag[0]},
-		std::complex<res_t>{real[1], imag[1]},
-		std::complex<res_t>{real[2], imag[2]},
-		std::complex<res_t>{real[3], imag[3]}	};
+    return biquaternion<res_t>{
+        std::complex<res_t>{real.real(),   imag.real()},
+        std::complex<res_t>{real.imag_i(), imag.imag_i()},
+        std::complex<res_t>{real.imag_j(), imag.imag_j()},
+        std::complex<res_t>{real.imag_k(), imag.imag_k()}    };
 }
 
 //---------------------------------------------------------
@@ -160,7 +167,7 @@ template<class T>
 inline constexpr biquaternion<T>
 make_biquaternion(const quaternion<T>& q)
 {
-	return biquaternion<T>{q};
+    return biquaternion<T>{q};
 }
 
 

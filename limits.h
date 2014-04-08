@@ -18,7 +18,6 @@
 
 
 namespace am {
-
 namespace num {
 
 
@@ -32,7 +31,8 @@ namespace num {
 template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_max
 {
-	static constexpr T value = std::numeric_limits<T>::max();
+    static constexpr T
+    value() {return std::numeric_limits<T>::max(); }
 };
 
 
@@ -40,7 +40,8 @@ struct numeric_max
 template<class T>
 struct numeric_max<T,false>
 {
-	static constexpr T value = std::numeric_limits<numeric_t<T>>::max();
+    static constexpr T
+    value() {return std::numeric_limits<numeric_t<T>>::max(); }
 };
 
 
@@ -58,7 +59,8 @@ struct numeric_max<T,false>
 template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_min
 {
-	static constexpr T value = std::numeric_limits<T>::min();
+    static constexpr T
+    value() {return std::numeric_limits<T>::min(); }
 };
 
 
@@ -66,7 +68,8 @@ struct numeric_min
 template<class T>
 struct numeric_min<T,false>
 {
-	static constexpr T value = std::numeric_limits<numeric_t<T>>::min();
+    static constexpr T
+    value() {return std::numeric_limits<numeric_t<T>>::min(); }
 };
 
 
@@ -84,7 +87,8 @@ struct numeric_min<T,false>
 template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_lowest
 {
-	static constexpr T value = std::numeric_limits<T>::lowest();
+    static constexpr T
+    value() {return std::numeric_limits<T>::lowest(); }
 };
 
 
@@ -92,7 +96,8 @@ struct numeric_lowest
 template<class T>
 struct numeric_lowest<T,false>
 {
-	static constexpr T value = std::numeric_limits<numeric_t<T>>::lowest();
+    static constexpr T
+    value() {return std::numeric_limits<numeric_t<T>>::lowest(); }
 };
 
 
@@ -111,7 +116,8 @@ struct numeric_lowest<T,false>
 template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct tolerance
 {
-	static constexpr T value = (T(100) * std::numeric_limits<T>::epsilon());
+    static constexpr T
+    value() {return (T(100) * std::numeric_limits<T>::epsilon()); }
 };
 
 
@@ -119,7 +125,8 @@ struct tolerance
 template<class T>
 struct tolerance<T,false>
 {
-	static constexpr T value = tolerance<numeric_t<T>>::value;
+    static constexpr T
+    value() {return tolerance<numeric_t<T>>::value(); }
 };
 
 
@@ -127,7 +134,8 @@ struct tolerance<T,false>
 template<>
 struct tolerance<float,true>
 {
-	static constexpr float value = 10e-5;
+    static constexpr float
+    value() {return 10e-5; }
 };
 
 
@@ -135,7 +143,8 @@ struct tolerance<float,true>
 template<>
 struct tolerance<double,true>
 {
-	static constexpr double value = 10e-12;
+    static constexpr double
+    value() {return 10e-12; }
 };
 
 
@@ -143,7 +152,8 @@ struct tolerance<double,true>
 template<>
 struct tolerance<long double,true>
 {
-	static constexpr long double value = 10e-16;
+    static constexpr long double
+    value() {return 10e-16; }
 };
 
 
@@ -160,16 +170,15 @@ struct tolerance<long double,true>
  *****************************************************************************/
 template<class T>
 struct numeric_limits :
-	public std::numeric_limits<T>
+    public std::numeric_limits<T>
 {
-	static constexpr T tolerance() {return num::tolerance<T>::value; }
+    static constexpr T
+    tolerance() {return num::tolerance<T>::value(); }
 };
 
 
 
-
 }  // namespace num
-
 }  // namespace am
 
 

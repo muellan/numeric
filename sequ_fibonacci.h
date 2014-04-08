@@ -33,140 +33,142 @@ namespace num {
 template<class T = std::uint_least64_t>
 class fibonacci_sequence
 {
-	static_assert(num::is_integral<T>::value,
-		"fibonacci_sequence<T>: T has to be an integral number type");
+    static_assert(num::is_integral<T>::value,
+        "fibonacci_sequence<T>: T has to be an integral number type");
 
 public:
-	//---------------------------------------------------------------
-	using iterator_category = std::input_iterator_tag;
-	using difference_type = std::ptrdiff_t;
-	using size_type = std::size_t;
-	//-----------------------------------------------------
-	using value_type = T;
-	using reference = const T&;
-	using pointer = const T*;
+    //---------------------------------------------------------------
+    using iterator_category = std::input_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using size_type = std::size_t;
+    //-----------------------------------------------------
+    using value_type = T;
+    using reference = const T&;
+    using pointer = const T*;
 
 
-	//---------------------------------------------------------------
-	constexpr explicit
-	fibonacci_sequence(size_type maxIteration = numeric_limits<size_type>::max()):
-		cur_(0), prev_(1), n_(0), maxN_(maxIteration)
-	{}
+    //---------------------------------------------------------------
+    constexpr explicit
+    fibonacci_sequence(
+        size_type maxIteration = numeric_limits<size_type>::max())
+    :
+        cur_(0), prev_(1), n_(0), maxN_(maxIteration)
+    {}
 
 
-	//---------------------------------------------------------------
-	value_type
-	operator * () const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	pointer
-	operator -> () const {
-		return std::addressof(cur_);
-	}
-	//-----------------------------------------------------
-	value_type
-	operator [] (size_type offset) const
-	{
-		auto c = cur_;
-		auto p = prev_;
+    //---------------------------------------------------------------
+    value_type
+    operator * () const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    pointer
+    operator -> () const {
+        return std::addressof(cur_);
+    }
+    //-----------------------------------------------------
+    value_type
+    operator [] (size_type offset) const
+    {
+        auto c = cur_;
+        auto p = prev_;
 
-		for(; offset > 0 ; --offset) {
-			const auto oldc = c;
-			c += p;
-			p = oldc;
-		}
+        for(; offset > 0 ; --offset) {
+            const auto oldc = c;
+            c += p;
+            p = oldc;
+        }
 
-		return c;
-	}
-
-
-	//---------------------------------------------------------------
-	fibonacci_sequence&
-	operator ++ () {
-		const auto oldPrev = prev_;
-		prev_ = cur_;
-		cur_ += oldPrev;
-		++n_;
-		return *this;
-	}
-	//-----------------------------------------------------
-	fibonacci_sequence&
-	operator += (size_type offset)
-	{
-		for(; offset > 0 ; --offset) {
-			++(*this);
-		}
-
-		return *this;
-	}
+        return c;
+    }
 
 
-	//---------------------------------------------------------------
-	reference
-	front() const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	value_type
-	back() const {
-		return (*this)[size()-1];
-	}
+    //---------------------------------------------------------------
+    fibonacci_sequence&
+    operator ++ () {
+        const auto oldPrev = prev_;
+        prev_ = cur_;
+        cur_ += oldPrev;
+        ++n_;
+        return *this;
+    }
+    //-----------------------------------------------------
+    fibonacci_sequence&
+    operator += (size_type offset)
+    {
+        for(; offset > 0 ; --offset) {
+            ++(*this);
+        }
+
+        return *this;
+    }
 
 
-	//-----------------------------------------------------
-	size_type
-	size() const {
-		return maxN_;
-	}
-	//-----------------------------------------------------
-	bool
-	empty() const {
-		return (n_ >= maxN_);
-	}
-	//-----------------------------------------------------
-	explicit operator
-	bool() const {
-		return !empty();
-	}
+    //---------------------------------------------------------------
+    reference
+    front() const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    value_type
+    back() const {
+        return (*this)[size()-1];
+    }
 
 
-	//---------------------------------------------------------------
-	const fibonacci_sequence&
-	begin() const {
-		return *this;
-	}
-	//-----------------------------------------------------
-	fibonacci_sequence
-	end() const {
-		return fibonacci_sequence{nullptr, maxN_};
-	}
+    //-----------------------------------------------------
+    size_type
+    size() const {
+        return maxN_;
+    }
+    //-----------------------------------------------------
+    bool
+    empty() const {
+        return (n_ >= maxN_);
+    }
+    //-----------------------------------------------------
+    explicit operator
+    bool() const {
+        return !empty();
+    }
 
 
-	//---------------------------------------------------------------
-	bool
-	operator == (const fibonacci_sequence& o) const {
-		return (n_ == o.n_) && (maxN_ == o.maxN_);
-	}
-	//-----------------------------------------------------
-	bool
-	operator != (const fibonacci_sequence& o) const {
-		return !(*this == o);
-	}
+    //---------------------------------------------------------------
+    const fibonacci_sequence&
+    begin() const {
+        return *this;
+    }
+    //-----------------------------------------------------
+    fibonacci_sequence
+    end() const {
+        return fibonacci_sequence{nullptr, maxN_};
+    }
+
+
+    //---------------------------------------------------------------
+    bool
+    operator == (const fibonacci_sequence& o) const {
+        return (n_ == o.n_) && (maxN_ == o.maxN_);
+    }
+    //-----------------------------------------------------
+    bool
+    operator != (const fibonacci_sequence& o) const {
+        return !(*this == o);
+    }
 
 
 private:
-	//---------------------------------------------------------------
-	constexpr explicit
-	fibonacci_sequence(std::nullptr_t, size_type n):
-		cur_(), prev_(), n_(n), maxN_(n)
-	{}
+    //---------------------------------------------------------------
+    constexpr explicit
+    fibonacci_sequence(std::nullptr_t, size_type n):
+        cur_(), prev_(), n_(n), maxN_(n)
+    {}
 
 
-	//---------------------------------------------------------------
-	value_type cur_;
-	value_type prev_;
-	size_type n_, maxN_;
+    //---------------------------------------------------------------
+    value_type cur_;
+    value_type prev_;
+    size_type n_, maxN_;
 };
 
 
@@ -188,26 +190,26 @@ private:
 template<class T>
 inline auto
 begin(const fibonacci_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+    return s.begin();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
 cbegin(const fibonacci_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+    return s.begin();
 }
 
 //-----------------------------------------------------
 template<class T>
 inline auto
 end(const fibonacci_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+    return s.end();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
 cend(const fibonacci_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+    return s.end();
 }
 
 

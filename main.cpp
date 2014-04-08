@@ -14,5 +14,5 @@
 //-------------------------------------------------------------------
 int main()
 {
-	am::test::numeric_correctness();
+    am::test::numeric_correctness();
 }

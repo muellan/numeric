@@ -15,7 +15,7 @@ Generic classes
   - ordinary biquaternion
   - split-biquaternion
   - dual quaternion (study biquaternion)  
-  - sequence generators (linear, geometric, repeated, fibonacci)
+  - sequences (linear, geometric, repeated, fibonacci)
     
 Other
   - number concept checking

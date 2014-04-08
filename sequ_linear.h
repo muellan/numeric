@@ -30,122 +30,122 @@ namespace num {
  *
  *****************************************************************************/
 template<class T>
-class increment_sequence
+class ascending_sequence
 {
 public:
-	//---------------------------------------------------------------
-	using iterator_category = std::input_iterator_tag;
-	using difference_type = std::ptrdiff_t;
-	using size_type = std::size_t;
-	//-----------------------------------------------------
-	using value_type = T;
-	using reference = const T&;
-	using pointer = const T*;
+    //---------------------------------------------------------------
+    using iterator_category = std::input_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using size_type = std::size_t;
+    //-----------------------------------------------------
+    using value_type = T;
+    using reference = const T&;
+    using pointer = const T*;
 
 
-	//---------------------------------------------------------------
-	constexpr explicit
-	increment_sequence(
-		reference first = value_type(0),
-		reference uBound = value_type(0))
-	:
-		cur_{first}, uBound_{uBound}
-	{}
+    //---------------------------------------------------------------
+    constexpr explicit
+    ascending_sequence(
+        value_type first = value_type(0),
+        value_type uBound = value_type(0))
+    :
+        cur_{std::move(first)}, uBound_{std::move(uBound)}
+    {}
 
 
-	//---------------------------------------------------------------
-	reference
-	operator * () const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	pointer
-	operator -> () const {
-		return std::addressof(cur_);
-	}
-	//-----------------------------------------------------
-	value_type
-	operator [] (size_type offset) const {
-	   return cur_ + offset;
-	}
+    //---------------------------------------------------------------
+    reference
+    operator * () const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    pointer
+    operator -> () const {
+        return std::addressof(cur_);
+    }
+    //-----------------------------------------------------
+    value_type
+    operator [] (size_type offset) const {
+       return cur_ + offset;
+    }
 
 
-	//---------------------------------------------------------------
-	increment_sequence&
-	operator ++ () {
-		++cur_;
-		return *this;
-	}
-	//-----------------------------------------------------
-	increment_sequence&
-	operator += (size_type offset) {
-		cur_ += offset;
-		return *this;
-	}
+    //---------------------------------------------------------------
+    ascending_sequence&
+    operator ++ () {
+        ++cur_;
+        return *this;
+    }
+    //-----------------------------------------------------
+    ascending_sequence&
+    operator += (size_type offset) {
+        cur_ += offset;
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	reference
-	front() const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	value_type
-	back() const {
-		return (*this)[size()-1];
-	}
+    //---------------------------------------------------------------
+    reference
+    front() const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    value_type
+    back() const {
+        return (*this)[size()-1];
+    }
 
-	//---------------------------------------------------------------
-	size_type
-	size() const {
-		return (1 + static_cast<size_type>(0.5 + (uBound_ - cur_)));
-	}
-	//-----------------------------------------------------
-	bool
-	empty() const {
-		return (cur_ > uBound_);
-	}
-	//-----------------------------------------------------
-	explicit operator
-	bool() const {
-		return !empty();
-	}
-
-
-	//---------------------------------------------------------------
-	const increment_sequence&
-	begin() const {
-		return *this;
-	}
-	//-----------------------------------------------------
-	increment_sequence
-	end() const {
-		return increment_sequence{(*this)[size()], uBound_};
-	}
+    //---------------------------------------------------------------
+    size_type
+    size() const {
+        return (1 + static_cast<size_type>(0.5 + (uBound_ - cur_)));
+    }
+    //-----------------------------------------------------
+    bool
+    empty() const {
+        return (cur_ > uBound_);
+    }
+    //-----------------------------------------------------
+    explicit operator
+    bool() const {
+        return !empty();
+    }
 
 
-	//---------------------------------------------------------------
-	friend difference_type
-	distance(const increment_sequence& a, const increment_sequence& b) {
-		return static_cast<difference_type>(b.cur_ - a.cur_);
-	}
+    //---------------------------------------------------------------
+    const ascending_sequence&
+    begin() const {
+        return *this;
+    }
+    //-----------------------------------------------------
+    ascending_sequence
+    end() const {
+        return ascending_sequence{(*this)[size()], uBound_};
+    }
 
 
-	//---------------------------------------------------------------
-	bool
-	operator == (const increment_sequence& o) const {
-		return approx_equal(cur_, o.cur_) && approx_equal(uBound_, o.uBound_);
-	}
-	//-----------------------------------------------------
-	bool
-	operator != (const increment_sequence& o) const {
-		return !(*this == o);
-	}
+    //---------------------------------------------------------------
+    friend difference_type
+    distance(const ascending_sequence& a, const ascending_sequence& b) {
+        return static_cast<difference_type>(b.cur_ - a.cur_);
+    }
+
+
+    //---------------------------------------------------------------
+    bool
+    operator == (const ascending_sequence& o) const {
+        return approx_equal(cur_, o.cur_) && approx_equal(uBound_, o.uBound_);
+    }
+    //-----------------------------------------------------
+    bool
+    operator != (const ascending_sequence& o) const {
+        return !(*this == o);
+    }
 
 
 private:
-	value_type cur_;
-	value_type uBound_;
+    value_type cur_;
+    value_type uBound_;
 };
 
 
@@ -162,122 +162,122 @@ private:
  *
  *****************************************************************************/
 template<class T>
-class decrement_sequence
+class descending_sequence
 {
 public:
-	//---------------------------------------------------------------
-	using iterator_category = std::input_iterator_tag;
-	using difference_type = std::ptrdiff_t;
-	using size_type = std::size_t;
-	//-----------------------------------------------------
-	using value_type = T;
-	using reference = const T&;
-	using pointer = const T*;
+    //---------------------------------------------------------------
+    using iterator_category = std::input_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using size_type = std::size_t;
+    //-----------------------------------------------------
+    using value_type = T;
+    using reference = const T&;
+    using pointer = const T*;
 
 
-	//---------------------------------------------------------------
-	constexpr explicit
-	decrement_sequence(
-		reference first = value_type(0),
-		reference uBound = value_type(0))
-	:
-		cur_{first}, uBound_{uBound}
-	{}
+    //---------------------------------------------------------------
+    constexpr explicit
+    descending_sequence(
+        value_type first = value_type(0),
+        value_type uBound = value_type(0))
+    :
+        cur_{std::move(first)}, lBound_{std::move(uBound)}
+    {}
 
 
-	//---------------------------------------------------------------
-	reference
-	operator * () const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	pointer
-	operator -> () const {
-		return std::addressof(cur_);
-	}
-	//-----------------------------------------------------
-	value_type
-	operator [] (size_type offset) const {
-	   return cur_ - offset;
-	}
+    //---------------------------------------------------------------
+    reference
+    operator * () const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    pointer
+    operator -> () const {
+        return std::addressof(cur_);
+    }
+    //-----------------------------------------------------
+    value_type
+    operator [] (size_type offset) const {
+       return cur_ - offset;
+    }
 
 
-	//---------------------------------------------------------------
-	decrement_sequence&
-	operator ++ () {
-		--cur_;
-		return *this;
-	}
-	//-----------------------------------------------------
-	decrement_sequence&
-	operator += (size_type offset) {
-		cur_ -= offset;
-		return *this;
-	}
+    //---------------------------------------------------------------
+    descending_sequence&
+    operator ++ () {
+        --cur_;
+        return *this;
+    }
+    //-----------------------------------------------------
+    descending_sequence&
+    operator += (size_type offset) {
+        cur_ -= offset;
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	reference
-	front() const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	value_type
-	back() const {
-		return (*this)[size()-1];
-	}
+    //---------------------------------------------------------------
+    reference
+    front() const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    value_type
+    back() const {
+        return (*this)[size()-1];
+    }
 
-	//---------------------------------------------------------------
-	size_type
-	size() const {
-		return (1 + static_cast<size_type>(0.5 + (cur_ - uBound_)));
-	}
-	//-----------------------------------------------------
-	bool
-	empty() const {
-		return (cur_ < uBound_);
-	}
-	//-----------------------------------------------------
-	explicit operator
-	bool() const {
-		return !empty();
-	}
-
-
-	//---------------------------------------------------------------
-	const decrement_sequence&
-	begin() const {
-		return *this;
-	}
-	//-----------------------------------------------------
-	decrement_sequence
-	end() const {
-		return decrement_sequence{(*this)[size()], uBound_};
-	}
+    //---------------------------------------------------------------
+    size_type
+    size() const {
+        return (1 + static_cast<size_type>(0.5 + (cur_ - lBound_)));
+    }
+    //-----------------------------------------------------
+    bool
+    empty() const {
+        return (cur_ < lBound_);
+    }
+    //-----------------------------------------------------
+    explicit operator
+    bool() const {
+        return !empty();
+    }
 
 
-	//---------------------------------------------------------------
-	friend difference_type
-	distance(const decrement_sequence& a, const decrement_sequence& b) {
-		return static_cast<difference_type>(a.cur_ - b.cur_);
-	}
+    //---------------------------------------------------------------
+    const descending_sequence&
+    begin() const {
+        return *this;
+    }
+    //-----------------------------------------------------
+    descending_sequence
+    end() const {
+        return descending_sequence{(*this)[size()], lBound_};
+    }
 
 
-	//---------------------------------------------------------------
-	bool
-	operator == (const decrement_sequence& o) const {
-		return approx_equal(cur_, o.cur_) && approx_equal(uBound_, o.uBound_);
-	}
-	//-----------------------------------------------------
-	bool
-	operator != (const decrement_sequence& o) const {
-		return !(*this == o);
-	}
+    //---------------------------------------------------------------
+    friend difference_type
+    distance(const descending_sequence& a, const descending_sequence& b) {
+        return static_cast<difference_type>(a.cur_ - b.cur_);
+    }
+
+
+    //---------------------------------------------------------------
+    bool
+    operator == (const descending_sequence& o) const {
+        return approx_equal(cur_, o.cur_) && approx_equal(lBound_, o.lBound_);
+    }
+    //-----------------------------------------------------
+    bool
+    operator != (const descending_sequence& o) const {
+        return !(*this == o);
+    }
 
 
 private:
-	value_type cur_;
-	value_type uBound_;
+    value_type cur_;
+    value_type lBound_;
 };
 
 
@@ -297,132 +297,133 @@ template<class T>
 class linear_sequence
 {
 public:
-	//---------------------------------------------------------------
-	using iterator_category = std::input_iterator_tag;
-	using difference_type = std::ptrdiff_t;
-	using size_type = std::size_t;
-	//-----------------------------------------------------
-	using value_type = T;
-	using reference = const T&;
-	using pointer = const T*;
+    //---------------------------------------------------------------
+    using iterator_category = std::input_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using size_type = std::size_t;
+    //-----------------------------------------------------
+    using value_type = T;
+    using reference = const T&;
+    using pointer = const T*;
 
 
-	//---------------------------------------------------------------
-	constexpr explicit
-	linear_sequence(
-		reference first = value_type(0),
-		reference stride = value_type(1),
-		reference uBound  = std::numeric_limits<value_type>::max())
-	:
-		cur_{first}, stride_{stride}, uBound_{uBound}
-	{}
+    //---------------------------------------------------------------
+    constexpr explicit
+    linear_sequence(
+        value_type first = value_type(0),
+        value_type stride = value_type(1),
+        value_type uBound  = std::numeric_limits<value_type>::max())
+    :
+        cur_{std::move(first)}, stride_{std::move(stride)},
+        uBound_{std::move(uBound)}
+    {}
 
 
-	//---------------------------------------------------------------
-	value_type
-	operator * () const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	pointer
-	operator -> () const {
-		return std::addressof(cur_);
-	}
-	//-----------------------------------------------------
-	value_type
-	operator [] (size_type offset) const {
-	   return cur_ + (stride_ * offset);
-	}
+    //---------------------------------------------------------------
+    value_type
+    operator * () const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    pointer
+    operator -> () const {
+        return std::addressof(cur_);
+    }
+    //-----------------------------------------------------
+    value_type
+    operator [] (size_type offset) const {
+       return cur_ + (stride_ * offset);
+    }
 
 
-	//---------------------------------------------------------------
-	linear_sequence&
-	operator ++ () {
-		cur_ += stride_;
-		return *this;
-	}
-	//-----------------------------------------------------
-	linear_sequence&
-	operator += (size_type offset) {
-		cur_ += stride_ * offset;
-		return *this;
-	}
+    //---------------------------------------------------------------
+    linear_sequence&
+    operator ++ () {
+        cur_ += stride_;
+        return *this;
+    }
+    //-----------------------------------------------------
+    linear_sequence&
+    operator += (size_type offset) {
+        cur_ += stride_ * offset;
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	reference
-	stride() const {
-		return stride_;
-	}
+    //---------------------------------------------------------------
+    reference
+    stride() const {
+        return stride_;
+    }
 
 
-	//---------------------------------------------------------------
-	reference
-	front() const {
-		return cur_;
-	}
-	//-----------------------------------------------------
-	value_type
-	back() const {
-		return (*this)[size()-1];
-	}
+    //---------------------------------------------------------------
+    reference
+    front() const {
+        return cur_;
+    }
+    //-----------------------------------------------------
+    value_type
+    back() const {
+        return (*this)[size()-1];
+    }
 
-	//-----------------------------------------------------
-	size_type
-	size() const {
-		return (1 + static_cast<size_type>(
-			0.5 + ((uBound_ - cur_) / stride_)));
-	}
-	//-----------------------------------------------------
-	bool
-	empty() const {
-		return ((stride_> 0) ? (cur_ > uBound_) : (cur_ < uBound_));
-	}
-	//-----------------------------------------------------
-	explicit operator
-	bool() const {
-		return !empty();
-	}
-
-
-	//---------------------------------------------------------------
-	const linear_sequence&
-	begin() const {
-		return *this;
-	}
-	//-----------------------------------------------------
-	linear_sequence
-	end() const {
-		return linear_sequence{(*this)[size()], stride_, uBound_};
-	}
+    //-----------------------------------------------------
+    size_type
+    size() const {
+        return (1 + static_cast<size_type>(
+            0.5 + ((uBound_ - cur_) / stride_)));
+    }
+    //-----------------------------------------------------
+    bool
+    empty() const {
+        return ((stride_> 0) ? (cur_ > uBound_) : (cur_ < uBound_));
+    }
+    //-----------------------------------------------------
+    explicit operator
+    bool() const {
+        return !empty();
+    }
 
 
-	//---------------------------------------------------------------
-	friend difference_type
-	distance(const linear_sequence& a, const linear_sequence& b) {
-		return static_cast<difference_type>((b.cur_ - a.cur_) / a.stride_);
-	}
+    //---------------------------------------------------------------
+    const linear_sequence&
+    begin() const {
+        return *this;
+    }
+    //-----------------------------------------------------
+    linear_sequence
+    end() const {
+        return linear_sequence{(*this)[size()], stride_, uBound_};
+    }
 
 
-	//---------------------------------------------------------------
-	bool
-	operator == (const linear_sequence& o) const {
-		return
-			approx_equal(cur_, o.cur_) &&
-			approx_equal(stride_, o.stride_) &&
-			approx_equal(uBound_, o.uBound_);
-	}
-	//-----------------------------------------------------
-	bool
-	operator != (const linear_sequence& o) const {
-		return !(*this == o);
-	}
+    //---------------------------------------------------------------
+    friend difference_type
+    distance(const linear_sequence& a, const linear_sequence& b) {
+        return static_cast<difference_type>((b.cur_ - a.cur_) / a.stride_);
+    }
+
+
+    //---------------------------------------------------------------
+    bool
+    operator == (const linear_sequence& o) const {
+        return
+            approx_equal(cur_, o.cur_) &&
+            approx_equal(stride_, o.stride_) &&
+            approx_equal(uBound_, o.uBound_);
+    }
+    //-----------------------------------------------------
+    bool
+    operator != (const linear_sequence& o) const {
+        return !(*this == o);
+    }
 
 
 private:
-	value_type cur_;
-	value_type stride_;
-	value_type uBound_;
+    value_type cur_;
+    value_type stride_;
+    value_type uBound_;
 };
 
 
@@ -443,27 +444,27 @@ private:
 //---------------------------------------------------------------
 template<class T>
 inline auto
-begin(const increment_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+begin(const ascending_sequence<T>& s) -> decltype(s.begin()) {
+    return s.begin();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
-cbegin(const increment_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+cbegin(const ascending_sequence<T>& s) -> decltype(s.begin()) {
+    return s.begin();
 }
 
 //-----------------------------------------------------
 template<class T>
 inline auto
-end(const increment_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+end(const ascending_sequence<T>& s) -> decltype(s.end()) {
+    return s.end();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
-cend(const increment_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+cend(const ascending_sequence<T>& s) -> decltype(s.end()) {
+    return s.end();
 }
 
 
@@ -471,27 +472,27 @@ cend(const increment_sequence<T>& s) -> decltype(s.end()) {
 //---------------------------------------------------------------
 template<class T>
 inline auto
-begin(const decrement_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+begin(const descending_sequence<T>& s) -> decltype(s.begin()) {
+    return s.begin();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
-cbegin(const decrement_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+cbegin(const descending_sequence<T>& s) -> decltype(s.begin()) {
+    return s.begin();
 }
 
 //-----------------------------------------------------
 template<class T>
 inline auto
-end(const decrement_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+end(const descending_sequence<T>& s) -> decltype(s.end()) {
+    return s.end();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
-cend(const decrement_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+cend(const descending_sequence<T>& s) -> decltype(s.end()) {
+    return s.end();
 }
 
 
@@ -500,26 +501,26 @@ cend(const decrement_sequence<T>& s) -> decltype(s.end()) {
 template<class T>
 inline auto
 begin(const linear_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+    return s.begin();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
 cbegin(const linear_sequence<T>& s) -> decltype(s.begin()) {
-	return s.begin();
+    return s.begin();
 }
 
 //-----------------------------------------------------
 template<class T>
 inline auto
 end(const linear_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+    return s.end();
 }
 //-----------------------------------------------------
 template<class T>
 inline auto
 cend(const linear_sequence<T>& s) -> decltype(s.end()) {
-	return s.end();
+    return s.end();
 }
 
 
@@ -540,22 +541,29 @@ cend(const linear_sequence<T>& s) -> decltype(s.end()) {
 //-------------------------------------------------------------------
 template<class First>
 inline constexpr
-increment_sequence<First>
-make_ascending_sequence(const First& first)
+ascending_sequence<typename std::decay<First>::type>
+make_ascending_sequence(First&& first)
 {
-	return increment_sequence<First>{first};
+    return ascending_sequence<typename std::decay<First>::type>
+        {std::forward<First>(first)};
 }
 
 //---------------------------------------------------------
 template<class First, class UpperBound>
 inline constexpr
-increment_sequence<common_numeric_t<First,UpperBound>>
-make_ascending_sequence(const First& first, const UpperBound& uBound)
+ascending_sequence<common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<UpperBound>::type>>
+make_ascending_sequence(First&& first, UpperBound&& uBound)
 {
-//	assert(first <= uBound);
+//    assert(first <= uBound);
 
-	return increment_sequence<common_numeric_t<First,UpperBound>>
-		{first, uBound};
+    using num_t = common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<UpperBound>::type>;
+
+    return ascending_sequence<num_t>
+        {std::forward<First>(first), std::forward<UpperBound>(uBound)};
 }
 
 
@@ -563,24 +571,31 @@ make_ascending_sequence(const First& first, const UpperBound& uBound)
 //-------------------------------------------------------------------
 template<class First>
 inline constexpr
-decrement_sequence<First>
-make_descending_sequence(const First& first)
+descending_sequence<typename std::decay<First>::type>
+make_descending_sequence(First&& first)
 {
-//	assert(first >= uBound);
+//    assert(first >= uBound);
 
-	return decrement_sequence<First>{first};
+    return descending_sequence<typename std::decay<First>::type>
+        {std::forward<First>(first)};
 }
 
 //---------------------------------------------------------
 template<class First, class UpperBound>
 inline constexpr
-decrement_sequence<common_numeric_t<First,UpperBound>>
-make_descending_sequence(const First& first, const UpperBound& uBound)
+descending_sequence<common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<UpperBound>::type>>
+make_descending_sequence(First&& first, UpperBound&& uBound)
 {
-//	assert(first >= uBound);
+//    assert(first >= uBound);
 
-	return decrement_sequence<common_numeric_t<First,UpperBound>>
-		{first, uBound};
+    using num_t = common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<UpperBound>::type>;
+
+    return descending_sequence<num_t>
+        {std::forward<First>(first), std::forward<UpperBound>(uBound)};
 }
 
 
@@ -588,33 +603,50 @@ make_descending_sequence(const First& first, const UpperBound& uBound)
 //-------------------------------------------------------------------
 template<class First>
 inline constexpr
-linear_sequence<First>
-make_linear_sequence(const First& first)
+linear_sequence<typename std::decay<First>::type>
+make_linear_sequence(First&& first)
 {
-	return linear_sequence<First>{first};
+    return linear_sequence<typename std::decay<First>::type>
+        {std::forward<First>(first)};
 }
 
 //---------------------------------------------------------
 template<class First, class Stride>
 inline constexpr
-linear_sequence<common_numeric_t<First,Stride>>
-make_linear_sequence(const First& first, const Stride& stride)
+linear_sequence<common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<Stride>::type>>
+make_linear_sequence(First&& first, Stride&& stride)
 {
-	return linear_sequence<common_numeric_t<First,Stride>>{first, stride};
+    using num_t = common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<Stride>::type>;
+
+    return linear_sequence<num_t>
+        {std::forward<First>(first), std::forward<Stride>(stride)};
 }
 
 //---------------------------------------------------------
 template<class First, class Stride, class UpperBound>
 inline constexpr
-linear_sequence<common_numeric_t<First,Stride,UpperBound>>
-make_linear_sequence(
-	const First& first, const Stride& stride, const UpperBound& uBound)
+linear_sequence<common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<Stride>::type,
+        typename std::decay<UpperBound>::type>>
+make_linear_sequence(First&& first, Stride&& stride, UpperBound&& uBound)
 {
-//	assert((stride >  0 && first <= uBound) ||
-//		   (stride <  0 && first >= uBound) );
+//    assert((stride >  0 && first <= uBound) ||
+//           (stride <  0 && first >= uBound) );
 
-	return linear_sequence<common_numeric_t<First,Stride,UpperBound>>
-		{first, stride, uBound};
+    using num_t = common_numeric_t<
+        typename std::decay<First>::type,
+        typename std::decay<Stride>::type,
+        typename std::decay<UpperBound>::type>;
+
+    return linear_sequence<num_t> {
+        std::forward<First>(first),
+        std::forward<Stride>(stride),
+        std::forward<UpperBound>(uBound) };
 }
 
 

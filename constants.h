@@ -32,13 +32,13 @@ namespace num {
 /// @brief default floating point
 //------------------------------------------------------------------
 #ifdef AM_EXTENDED_DOUBLE_PRECISION
-	using real_t = long double;
+    using real_t = long double;
 #else
-	#ifdef AM_DOUBLE_PRECISION
-		using real_t = double;
-	#else
-		using real_t = float;
-	#endif
+    #ifdef AM_DOUBLE_PRECISION
+        using real_t = double;
+    #else
+        using real_t = float;
+    #endif
 #endif
 
 
@@ -47,13 +47,13 @@ namespace num {
 /// @brief default dimension type
 //-------------------------------------------------------------------
 #ifdef AM_DIMENSIONS_HUGE
-	using dims_t = std::int_fast32_t;
+    using dims_t = std::int_fast32_t;
 #else
-	#ifdef AM_DIMENSIONS_MANY
-		using dims_t = std::int_fast16_t;
-	#else
-		using dims_t = std::int_fast8_t;
-	#endif
+    #ifdef AM_DIMENSIONS_MANY
+        using dims_t = std::int_fast16_t;
+    #else
+        using dims_t = std::int_fast8_t;
+    #endif
 #endif
 
 
@@ -87,17 +87,18 @@ constexpr long double sqrt1_2  = 0.70710678118654752440;
 
 
 
+namespace literals {
 
 //---------------------------------------------------------
 /// @brief pi literal
 //---------------------------------------------------------
 constexpr long double operator "" _pi(long double x)
 {
-	return (x * pi);
+    return (x * pi);
 }
 constexpr long double operator "" _pi(unsigned long long int x)
 {
-	return (x * pi);
+    return (x * pi);
 }
 
 
@@ -106,17 +107,18 @@ constexpr long double operator "" _pi(unsigned long long int x)
 //---------------------------------------------------------
 constexpr long double operator "" _e(long double x)
 {
-	return (x * euler_e);
+    return (x * euler_e);
 }
 //---------------------------------------------------------
 constexpr long double operator "" _e(unsigned long long int x)
 {
-	return (x * euler_e);
+    return (x * euler_e);
 }
+
+}  // namespace literals
 
 
 }  // namespace num
-
 }  // namespace am
 
 

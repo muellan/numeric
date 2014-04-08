@@ -38,13 +38,13 @@ template<class T1, class T2>
 inline constexpr bool
 approx_equal(const T1& a, const T2& b)
 {
-	return (
-		(tolerance<T1>::value < tolerance<T2>::value)
-			? ((a >= (b - tolerance<T2>::value)) &&
-			   (a <= (b + tolerance<T2>::value)) )
-			: ((b >= (a - tolerance<T1>::value)) &&
-			   (b <= (a + tolerance<T1>::value)) )
-		);
+    return (
+        (tolerance<T1>::value() < tolerance<T2>::value())
+            ? ((a >= (b - tolerance<T2>::value())) &&
+               (a <= (b + tolerance<T2>::value())) )
+            : ((b >= (a - tolerance<T1>::value())) &&
+               (b <= (a + tolerance<T1>::value())) )
+        );
 }
 
 //---------------------------------------------------------
@@ -52,8 +52,8 @@ template<class T1, class T2, class T3>
 inline constexpr bool
 approx_equal(const T1& a, const T2& b, const T3& tolerance)
 {
-	return ((a >= (b - tolerance)) &&
-			(a <= (b + tolerance)) );
+    return ((a >= (b - tolerance)) &&
+            (a <= (b + tolerance)) );
 }
 
 
@@ -62,25 +62,25 @@ approx_equal(const T1& a, const T2& b, const T3& tolerance)
 template<class T1, class T2>
 inline constexpr bool
 approx_equal(
-	const std::complex<T1>& a,
-	const std::complex<T2>& b)
+    const std::complex<T1>& a,
+    const std::complex<T2>& b)
 {
-	return (
-		approx_equal(a.real(), b.real()) &&
-		approx_equal(a.imag(), b.imag()) );
+    return (
+        approx_equal(a.real(), b.real()) &&
+        approx_equal(a.imag(), b.imag()) );
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class T3>
 inline constexpr bool
 approx_equal(
-	const std::complex<T1>& a,
-	const std::complex<T2>& b,
-	const T3& tolerance)
+    const std::complex<T1>& a,
+    const std::complex<T2>& b,
+    const T3& tolerance)
 {
-	return (
-		approx_equal(a.real(), b.real(), tolerance) &&
-		approx_equal(a.imag(), b.imag(), tolerance) );
+    return (
+        approx_equal(a.real(), b.real(), tolerance) &&
+        approx_equal(a.imag(), b.imag(), tolerance) );
 }
 
 
@@ -90,8 +90,8 @@ template<class T1, class T2>
 inline constexpr bool
 abs_approx_equal(const T1& a, const T2& b)
 {
-	using std::abs;
-	return approx_equal(abs(a), abs(b));
+    using std::abs;
+    return approx_equal(abs(a), abs(b));
 }
 
 //---------------------------------------------------------
@@ -99,8 +99,8 @@ template<class T1, class T2, class T3>
 inline constexpr bool
 abs_approx_equal(const T1& a, const T2& b, const T3& tolerance)
 {
-	using std::abs;
-	return approx_equal(abs(a), abs(b), tolerance);
+    using std::abs;
+    return approx_equal(abs(a), abs(b), tolerance);
 }
 
 
@@ -108,21 +108,21 @@ abs_approx_equal(const T1& a, const T2& b, const T3& tolerance)
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const T& a, const T& tolerance = tolerance<T>::value)
+approx_0(const T& a, const T& tolerance = tolerance<T>::value())
 {
-	return (
-		(a >= (T(0) - tolerance)) &&
-		(a <= (T(0) + tolerance)) );
+    return (
+        (a >= (T(0) - tolerance)) &&
+        (a <= (T(0) + tolerance)) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const std::complex<T>& a, const T& tolerance = tolerance<T>::value)
+approx_0(const std::complex<T>& a, const T& tolerance = tolerance<T>::value())
 {
-	return (
-		approx_0(a.real(), tolerance) &&
-		approx_0(a.imag(), tolerance) );
+    return (
+        approx_0(a.real(), tolerance) &&
+        approx_0(a.imag(), tolerance) );
 }
 
 
@@ -131,21 +131,21 @@ approx_0(const std::complex<T>& a, const T& tolerance = tolerance<T>::value)
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const T& a, const T& tolerance = tolerance<T>::value)
+approx_1(const T& a, const T& tolerance = tolerance<T>::value())
 {
-	return (
-		(a >= (T(1) - tolerance)) &&
-		(a <= (T(1) + tolerance)) );
+    return (
+        (a >= (T(1) - tolerance)) &&
+        (a <= (T(1) + tolerance)) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const std::complex<T>& a, const T& tolerance = tolerance<T>::value)
+approx_1(const std::complex<T>& a, const T& tolerance = tolerance<T>::value())
 {
-	return (
-		approx_1(a.real(), tolerance) &&
-		approx_0(a.imag(), tolerance) );
+    return (
+        approx_1(a.real(), tolerance) &&
+        approx_0(a.imag(), tolerance) );
 }
 
 
@@ -154,23 +154,23 @@ approx_1(const std::complex<T>& a, const T& tolerance = tolerance<T>::value)
 /// @brief compares two ranges for numerical equality
 //-------------------------------------------------------------------
 template<class InputIter, class T, class = typename
-	std::enable_if<
-		is_number<typename std::iterator_traits<InputIter>::value_type>::value &&
-		is_number<T>::value>::type
+    std::enable_if<
+        is_number<typename std::iterator_traits<InputIter>::value_type>::value &&
+        is_number<T>::value>::type
 >
 bool
 approx_equal(
-	InputIter begin1, InputIter end1,
-	InputIter begin2, InputIter end2,
-	const T& tolerance)
+    InputIter begin1, InputIter end1,
+    InputIter begin2, InputIter end2,
+    const T& tolerance)
 {
-	using std::abs;
+    using std::abs;
 
-	for(;begin1 != end1; ++begin1, ++begin2) {
-		if(abs(*begin1 - *begin2) > tolerance) return false;
-	}
+    for(;begin1 != end1; ++begin1, ++begin2) {
+        if(abs(*begin1 - *begin2) > tolerance) return false;
+    }
 
-	return true;
+    return true;
 }
 
 

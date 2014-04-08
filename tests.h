@@ -23,6 +23,22 @@
 #include "sequence_test.h"
 
 
+
+namespace am {
+namespace num {
+namespace test {
+
+
+//-------------------------------------------------------------------
+void vector_expression_performance();
+
+
+}  // namespace test
+}  // namespace num
+}  // namespace am
+
+
+
 namespace am {
 namespace test {
 

@@ -20,7 +20,6 @@
 
 
 namespace am {
-
 namespace num {
 
 
@@ -37,300 +36,290 @@ namespace num {
 template<class IntT>
 class rational
 {
-	static_assert(is_integral<IntT>::value,
-		"rational<T>: T must be an integral number");
+    static_assert(is_integral<IntT>::value,
+        "rational<T>: T must be an integral number");
 
 public:
-	//---------------------------------------------------------------
-	// TYPES
-	//---------------------------------------------------------------
-	using value_type      = IntT;
-	using const_reference = const value_type&;
+    //---------------------------------------------------------------
+    using value_type      = IntT;
+    using numeric_type    = value_type;
+    using const_reference = const value_type&;
 
 
-	//---------------------------------------------------------------
-	// CONSTRUCTION / DESTRUCTION
-	//---------------------------------------------------------------
+    //---------------------------------------------------------------
+    // CONSTRUCTION / DESTRUCTION
+    //---------------------------------------------------------------
+    /// @brief
+    constexpr
+    rational() = default;
 
-	//-----------------------------------------------------
-	/// @brief
-	constexpr
-	rational() = default;
+    //-----------------------------------------------------
+    /// @brief
+    constexpr
+    rational(value_type wholes):
+        n_{std::move(wholes)}, d_{value_type(1)}
+    {}
 
-	//-----------------------------------------------------
-	/// @brief
-	constexpr
-	rational(const value_type& wholes):
-		n_{wholes}, d_{value_type(1)}
-	{}
-
-	//-----------------------------------------------------
-	/// @brief
-	template<class T, class = typename
-		std::enable_if<is_integral<T>::value>::type>
-	explicit constexpr
-	rational(const T& wholes):
-		n_{wholes}, d_{value_type(1)}
-	{
-		AM_CHECK_NARROWING(value_type,T)
-	}
+    //-----------------------------------------------------
+    /// @brief
+    template<class T, class = typename
+        std::enable_if<is_integral<T>::value>::type>
+    explicit constexpr
+    rational(T&& wholes):
+        n_(std::forward<T>(wholes)), d_{value_type(1)}
+    {
+        AM_CHECK_NARROWING(value_type,T)
+    }
 
 
-	//-----------------------------------------------------
-	/// @brief
-	constexpr
-	rational(const value_type& numerator, const value_type& denominator):
-		n_{numerator}, d_{denominator}
-	{}
+    //-----------------------------------------------------
+    /// @brief
+    constexpr
+    rational(value_type numerator, value_type denominator):
+        n_(std::move(numerator)), d_(std::move(denominator))
+    {}
 
-	//-----------------------------------------------------
-	/// @brief
-	template<class T1, class T2, class = typename
-		std::enable_if<is_integral<T1,T2>::value>::type>
-	constexpr
-	rational(const T1& numerator, const T2& denominator):
-		n_{value_type(numerator)}, d_{value_type(denominator)}
-	{
-		AM_CHECK_NARROWING2(value_type,T1,T2)
-	}
+    //-----------------------------------------------------
+    /// @brief
+    template<class T1, class T2, class = typename
+        std::enable_if<is_integral<T1,T2>::value>::type>
+    explicit constexpr
+    rational(T1&& numerator, T2&& denominator):
+        n_(std::forward<T1>(numerator)), d_(std::forward<T2>(denominator))
+    {
+        AM_CHECK_NARROWING2(value_type,T1,T2)
+    }
 
-	//-----------------------------------------------------
-	constexpr
-	rational(const rational&) = default;
-
-
-	//---------------------------------------------------------------
-	// ASSIGNMENT
-	//---------------------------------------------------------------
-	rational&
-	operator = (const rational&) = default;
-
-	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_integral<T>::value>::type>
-	rational&
-	operator = (const T& n)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_ = n;
-		d_ = value_type(0);
-		return *this;
-	}
-
-	//-----------------------------------------------------
-	/// @brief
-	template<class T1, class T2, class = typename
-		std::enable_if<is_integral<T1,T2>::value>::type>
-	rational&
-	assign(const T1& numerator, const T2& denominator)
-	{
-		AM_CHECK_NARROWING2(value_type,T1,T2)
-
-		n_ = numerator;
-		d_ = denominator;
-		return *this;
-	}
+    //-----------------------------------------------------
+    constexpr
+    rational(const rational&) = default;
+    //-----------------------------------------------------
+    constexpr
+    rational(rational&&) = default;
 
 
-	//---------------------------------------------------------------
-	// ACCESS
-	//---------------------------------------------------------------
-	constexpr const_reference
-	numer() const noexcept {
-		return n_;
-	}
-	//-----------------------------------------------------
-	constexpr const_reference
-	denom() const noexcept {
-		return d_;
-	}
+    //---------------------------------------------------------------
+    // ASSIGNMENT
+    //---------------------------------------------------------------
+    rational&
+    operator = (const rational&) = default;
 
-	//---------------------------------------------------------------
-	template<class T>
-	explicit operator
-	T() const {
-		return (T(n_) / T(d_));
-	}
+    //-----------------------------------------------------
+    rational&
+    operator = (rational&&) = default;
 
+    //-----------------------------------------------------
+    template<class T, class = typename
+        std::enable_if<is_integral<T>::value>::type>
+    rational&
+    operator = (T&& n)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-	//---------------------------------------------------------------
-	rational&
-	invert() {
-		using std::swap;
-		swap(n_, d_);
-		if(d_ < value_type(0)) {
-			n_ = -n_;
-			d_ = -d_;
-		}
-		return *this;
-	}
-
-	//---------------------------------------------------------
-	rational&
-	negate() noexcept {
-		n_ = -n_;
-		return *this;
-	}
+        n_ = std::forward<T>(n);
+        d_ = value_type(0);
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	// rational (op)= value_type
-	//---------------------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_integral<T>::value>::type>
-	rational&
-	operator += (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+    //---------------------------------------------------------------
+    // ACCESS
+    //---------------------------------------------------------------
+    constexpr const_reference
+    numer() const noexcept {
+        return n_;
+    }
+    //-----------------------------------------------------
+    constexpr const_reference
+    denom() const noexcept {
+        return d_;
+    }
 
-		n_ += (v * d_);
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_integral<T>::value>::type>
-	rational&
-	operator -= (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_ -= (v * d_);
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_integral<T>::value>::type>
-	rational&
-	operator *= (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_ *= v;
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T, class = typename
-		std::enable_if<is_integral<T>::value>::type>
-	rational&
-	operator /= (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		d_ *= v;
-		return *this;
-	}
+    //---------------------------------------------------------------
+    template<class T>
+    explicit operator
+    T() const {
+        return (T(n_) / T(d_));
+    }
 
 
-	//---------------------------------------------------------------
-	// increment / decrement
-	//---------------------------------------------------------------
-	rational&
-	operator ++ () {
-		n_ += d_;
-		return *this;
-	}
-	//-----------------------------------------------------
-	rational&
-	operator -- () {
-		n_ -= d_;
-		return *this;
-	}
+    //---------------------------------------------------------------
+    rational&
+    invert() {
+        using std::swap;
+        swap(n_, d_);
+        if(d_ < value_type(0)) {
+            n_ = -n_;
+            d_ = -d_;
+        }
+        return *this;
+    }
 
-	//-----------------------------------------------------
-	rational
-	operator ++ (int) {
-		auto old = *this;
-		++*this;
-		return old;
-	}
-	//-----------------------------------------------------
-	rational
-	operator -- (int) {
-		auto old = *this;
-		--*this;
-		return old;
-	}
+    //---------------------------------------------------------
+    rational&
+    negate() noexcept {
+        n_ = -n_;
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	// rational (op)= rational with different value_type
-	//---------------------------------------------------------------
-	template<class T>
-	rational&
-	operator += (const rational<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+    //---------------------------------------------------------------
+    // rational (op)= value_type
+    //---------------------------------------------------------------
+    template<class T, class = typename
+        std::enable_if<is_integral<T>::value>::type>
+    rational&
+    operator += (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		n_ = n_ * o.denom() + o.numer() * d_;
-		d_ *= o.denom();
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
-	rational&
-	operator -= (const rational<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+        n_ += (v * d_);
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T, class = typename
+        std::enable_if<is_integral<T>::value>::type>
+    rational&
+    operator -= (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		n_ = n_ * o.denom() - o.numer() * d_;
-		d_ *= o.denom();
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
-	rational&
-	operator *= (const rational<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+        n_ -= (v * d_);
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T, class = typename
+        std::enable_if<is_integral<T>::value>::type>
+    rational&
+    operator *= (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		n_ *= o.numer();
-		d_ *= o.denom();
-		normalize();
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
-	rational&
-	operator /= (const rational<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+        n_ *= v;
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T, class = typename
+        std::enable_if<is_integral<T>::value>::type>
+    rational&
+    operator /= (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		n_ *= o.denom();
-		d_ *= o.numer();
-		normalize();
-		return *this;
-	}
+        d_ *= v;
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	void
-	normalize() {
-		using std::abs;
-		auto x = gcd(abs(n_), d_);
-		if(x > value_type(1)) {
-			n_ /= x;
-			d_ /= x;
-		}
-	}
+    //---------------------------------------------------------------
+    // increment / decrement
+    //---------------------------------------------------------------
+    rational&
+    operator ++ () {
+        n_ += d_;
+        return *this;
+    }
+    //-----------------------------------------------------
+    rational&
+    operator -- () {
+        n_ -= d_;
+        return *this;
+    }
+
+    //-----------------------------------------------------
+    rational
+    operator ++ (int) {
+        auto old = *this;
+        ++*this;
+        return old;
+    }
+    //-----------------------------------------------------
+    rational
+    operator -- (int) {
+        auto old = *this;
+        --*this;
+        return old;
+    }
+
+
+    //---------------------------------------------------------------
+    // rational (op)= rational with different value_type
+    //---------------------------------------------------------------
+    template<class T>
+    rational&
+    operator += (const rational<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        n_ = n_ * o.denom() + o.numer() * d_;
+        d_ *= o.denom();
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T>
+    rational&
+    operator -= (const rational<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        n_ = n_ * o.denom() - o.numer() * d_;
+        d_ *= o.denom();
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T>
+    rational&
+    operator *= (const rational<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        n_ *= o.numer();
+        d_ *= o.denom();
+        normalize();
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T>
+    rational&
+    operator /= (const rational<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        n_ *= o.denom();
+        d_ *= o.numer();
+        normalize();
+        return *this;
+    }
+
+
+    //---------------------------------------------------------------
+    void
+    normalize() {
+        using std::abs;
+        const auto x = gcd(abs(n_), d_);
+        if(x > value_type(1)) {
+            n_ /= x;
+            d_ /= x;
+        }
+    }
 
 
 private:
-	//---------------------------------------------------------------
-	static value_type
-	gcd(value_type a, value_type b) {
-		while(b > value_type(0)) {
-			auto m = value_type(a % b);
-			a = b;
-			b = m;
-		}
-		return a;
-	}
+    //---------------------------------------------------------------
+    static value_type
+    gcd(value_type a, value_type b) {
+        while(b > value_type(0)) {
+            const auto m = value_type(a % b);
+            a = b;
+            b = m;
+        }
+        return a;
+    }
 
 
-	//---------------------------------------------------------------
-	value_type n_;
-	value_type d_;
+    //---------------------------------------------------------------
+    value_type n_;
+    value_type d_;
 };
 
 
@@ -351,24 +340,24 @@ private:
 
 //-------------------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<
-		is_integral<T1>::value &&
-		is_integral<T2>::value,T1>::type>
+    std::enable_if<is_integral<T1>::value && is_integral<T2>::value>::type>
 inline constexpr
 rational<common_numeric_t<T1,T2>>
-make_rational(const T1& a, const T2& b)
+make_rational(T1&& a, T2&& b)
 {
-	return rational<common_numeric_t<T1,T2>>{a,b};
+    return rational<common_numeric_t<T1,T2>>
+        {std::forward<T1>(a), std::forward<T2>(b)};
 }
 
 
 //-------------------------------------------------------------------
-template<class T>
+template<class T, class = typename
+    std::enable_if<is_integral<T>::value>::type>
 inline constexpr
-rational<T>
-make_rational(const T& x)
+rational<decay_t<T>>
+make_rational(T&& x)
 {
-	return rational<T>{x};
+    return rational<decay_t<T>>{std::forward<T>(x)};
 }
 
 
@@ -376,24 +365,61 @@ make_rational(const T& x)
 //-------------------------------------------------------------------
 // CONVERSION FROM FLOATING-POINT NUMBER
 //-------------------------------------------------------------------
-inline rational<int>
-make_rational(float f)
+template<class IntT, class FpT, class = typename
+    std::enable_if<is_floating_point<FpT>::value>::type>
+rational<IntT>
+make_rational(const FpT& f)
 {
-	return to_rational<int>(f);
+    using std::modf;
+    using std::fmod;
+    using std::floor;
+
+    constexpr auto base = std::numeric_limits<FpT>::radix;
+
+    auto rdigit = rational<IntT>{IntT(0)};
+
+    auto digits = std::vector<rational<IntT> >{};
+    digits.resize(base, IntT(0));
+    for(auto& d : digits) {
+        d = rdigit++;
+    }
+
+    auto intgr = FpT(0);
+
+    const int sign = (f < 0);
+    auto frac = FpT(sign ? modf(-f, &intgr) : modf(f, &intgr));
+
+    auto rc = rational<IntT>{IntT(1)};
+    auto ri = rational<IntT>{IntT(0)};
+    while(floor(intgr) != FpT(0)) {
+        ri += digits[static_cast<std::size_t>(fmod(intgr, base))];
+        intgr /= base;
+        ri /= rdigit;
+        rc *= rdigit;
+    }
+
+    ri *= rc;
+    rc = IntT(1);
+    auto rf = rational<IntT>{IntT(0)};
+    while(!approx_0(frac)) {
+        rf *= rdigit;
+        rc /= rdigit;
+        frac *= base;
+        frac = modf(frac, &intgr);
+        rf += digits[static_cast<std::size_t>(intgr)];
+    }
+    rf *= rc;
+
+    return (sign ? (-ri - rf) : (ri + rf));
 }
 
 //---------------------------------------------------------
+template<class T, class = typename
+    std::enable_if<is_floating_point<T>::value>::type>
 inline rational<int>
-make_rational(double f)
+make_rational(const T& f)
 {
-	return to_rational<int>(f);
-}
-
-//---------------------------------------------------------
-inline rational<int>
-make_rational(long double f)
-{
-	return to_rational<int>(f);
+    return make_rational<int>(f);
 }
 
 
@@ -401,11 +427,36 @@ make_rational(long double f)
 //-------------------------------------------------------------------
 // I/O
 //-------------------------------------------------------------------
+template<class Istream, class T>
+inline Istream&
+operator >> (Istream& is, rational<T>& x)
+{
+    is.clear();
+
+    auto numer = T(0);
+    auto denom = T(1);
+
+    is >> numer;
+    if(!is.good()) return is;
+
+    auto c = is.peek();
+    if(c == '/') {
+        c = is.get();
+        is >> denom;
+        if(!is.good()) {
+            is.clear(is.rdstate() | std::ios::badbit);
+        }
+    }
+    x = rational<T>{numer,denom};
+    return is;
+}
+
+//---------------------------------------------------------
 template<class Ostream, class T>
 inline Ostream&
 operator << (Ostream& os, const rational<T>& x)
 {
-	return (os << x.numer() << " " << x.denom() );
+    return (os << x.numer() << " " << x.denom() );
 }
 
 //---------------------------------------------------------
@@ -413,7 +464,7 @@ template<class T, class Ostream>
 inline Ostream&
 print(Ostream& os, const rational<T>& d)
 {
-	return (os << d.numer() << "/" << d.denom());
+    return (os << d.numer() << "/" << d.denom());
 }
 
 
@@ -433,7 +484,7 @@ print(Ostream& os, const rational<T>& d)
 template<class T>
 const T&
 numer(const rational<T>& x) {
-	return x.numer();
+    return x.numer();
 }
 
 
@@ -441,7 +492,7 @@ numer(const rational<T>& x) {
 template<class T>
 const T&
 denom(const rational<T>& x) {
-	return x.denom();
+    return x.denom();
 }
 
 
@@ -451,8 +502,8 @@ template<class T>
 T
 wholes(const rational<T>& x)
 {
-	using std::floor;
-	return static_cast<T>(floor(static_cast<real_t>(x)));
+    using std::floor;
+    return static_cast<T>(floor(static_cast<real_t>(x)));
 }
 
 
@@ -462,8 +513,8 @@ template<class T>
 inline rational<T>
 normalized(rational<T> x)
 {
-	x.normalize();
-	return x;
+    x.normalize();
+    return x;
 }
 
 
@@ -474,9 +525,9 @@ inline constexpr
 rational<T>
 reciprocal(const rational<T>& x)
 {
-	return (x.numer() < T(0))
-		? rational<T>{-x.denom(), -x.numer()}
-		: rational<T>{x.denom(), x.numer()};
+    return (x.numer() < T(0))
+        ? rational<T>{-x.denom(), -x.numer()}
+        : rational<T>{x.denom(), x.numer()};
 }
 
 
@@ -497,7 +548,7 @@ template<class T1, class T2>
 inline bool
 operator == (const rational<T1>& x, const rational<T2>& y)
 {
-	return ((x.numer() * y.denom()) == (y.numer() * x.denom()));
+    return ((x.numer() * y.denom()) == (y.numer() * x.denom()));
 }
 
 //---------------------------------------------------------
@@ -505,7 +556,7 @@ template<class T1, class T2>
 inline bool
 operator != (const rational<T1>& x, const rational<T2>& y)
 {
-	return ((x.numer() * y.denom()) != (y.numer() * x.denom()));
+    return ((x.numer() * y.denom()) != (y.numer() * x.denom()));
 }
 
 
@@ -513,25 +564,25 @@ operator != (const rational<T1>& x, const rational<T2>& y)
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const rational<T1>& a, const rational<T2>& b,
-	const T3& tolerance = tolerance<T3>::value)
+    const T3& tolerance = tolerance<T3>::value())
 {
-	return approx_equal(a.numer() * b.denom(), b.numer() * a.denom(), tolerance);
+    return approx_equal(a.numer() * b.denom(), b.numer() * a.denom(), tolerance);
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const rational<T>& x, const T& tolerance = tolerance<T>::value)
+approx_1(const rational<T>& x, const T& tolerance = tolerance<T>::value())
 {
-	return approx_1(real_t(x.numer()) / real_t(x.denom()), tolerance);
+    return approx_1(real_t(x.numer()) / real_t(x.denom()), tolerance);
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const rational<T>& x, const T& tolerance = tolerance<T>::value)
+approx_0(const rational<T>& x, const T& tolerance = tolerance<T>::value())
 {
-	return approx_0(x.numer(), tolerance);
+    return approx_0(x.numer(), tolerance);
 }
 
 
@@ -543,7 +594,7 @@ template<class T1, class T2>
 inline bool
 operator > (const rational<T1>& x, const rational<T2>& y)
 {
-	return ((x.numer() * y.denom()) > (y.numer() * x.denom()));
+    return ((x.numer() * y.denom()) > (y.numer() * x.denom()));
 }
 
 //---------------------------------------------------------
@@ -551,7 +602,7 @@ template<class T1, class T2>
 inline bool
 operator >= (const rational<T1>& x, const rational<T2>& y)
 {
-	return ((x.numer() * y.denom()) >= (y.numer() * x.denom()));
+    return ((x.numer() * y.denom()) >= (y.numer() * x.denom()));
 }
 
 //---------------------------------------------------------
@@ -559,7 +610,7 @@ template<class T1, class T2>
 inline bool
 operator < (const rational<T1>& x, const rational<T2>& y)
 {
-	return ((x.numer() * y.denom()) < (y.numer() * x.denom()));
+    return ((x.numer() * y.denom()) < (y.numer() * x.denom()));
 }
 
 //---------------------------------------------------------
@@ -567,7 +618,7 @@ template<class T1, class T2>
 inline bool
 operator <= (const rational<T1>& x, const rational<T2>& y)
 {
-	return ((x.numer() * y.denom()) <= (y.numer() * x.denom()));
+    return ((x.numer() * y.denom()) <= (y.numer() * x.denom()));
 }
 
 
@@ -576,70 +627,70 @@ operator <= (const rational<T1>& x, const rational<T2>& y)
 // COMPARISON WITH PLAIN NUMBERS
 //-------------------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator > (const rational<T1>& x, const T2& r)
 {
-	return (x.numer() > (r * x.denom()));
+    return (x.numer() > (r * x.denom()));
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator > (const T2& r, const rational<T1>& x)
 {
-	return (x.numer() > (r * x.denom()));
+    return (x.numer() > (r * x.denom()));
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator >= (const rational<T1>& x, const T2& r)
 {
-	return (x.numer() >= (r * x.denom()));
+    return (x.numer() >= (r * x.denom()));
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator >= (const T2& r, const rational<T1>& x)
 {
-	return (x.numer() >= (r * x.denom()));
+    return (x.numer() >= (r * x.denom()));
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator < (const rational<T1>& x, const T2& r)
 {
-	return (x.numer() < (r * x.denom()));
+    return (x.numer() < (r * x.denom()));
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator < (const T2& r, const rational<T1>& x)
 {
-	return (x.numer() < (r * x.denom()));
+    return (x.numer() < (r * x.denom()));
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator <= (const rational<T1>& x, const T2& r)
 {
-	return (x.numer() <= (r * x.denom()));
+    return (x.numer() <= (r * x.denom()));
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_integral<T2>::value>::type>
+    std::enable_if<is_integral<T2>::value>::type>
 inline bool
 operator <= (const T2& r, const rational<T1>& x)
 {
-	return (x.numer() <= (r * x.denom()));
+    return (x.numer() <= (r * x.denom()));
 }
 
 
@@ -663,9 +714,9 @@ inline constexpr
 rational<common_numeric_t<T1,T2>>
 operator + (const rational<T1> x, const rational<T2>& y)
 {
-	return rational<common_numeric_t<T1,T2>>{
-		(x.numer() * y.denom()) + (y.numer() * x.denom()),
-		x.denom() * y.denom() };
+    return rational<common_numeric_t<T1,T2>>{
+        (x.numer() * y.denom()) + (y.numer() * x.denom()),
+         x.denom() * y.denom() };
 }
 
 //---------------------------------------------------------
@@ -674,7 +725,7 @@ inline constexpr
 rational<T>
 operator + (const rational<T> x, const T& y)
 {
-	return rational<T>{x.numer() + (y * x.denom()), x.denom()};
+    return rational<T>{x.numer() + (y * x.denom()), x.denom()};
 }
 
 
@@ -687,9 +738,9 @@ inline constexpr
 rational<common_numeric_t<T1,T2>>
 operator - (const rational<T1> x, const rational<T2>& y)
 {
-	return rational<common_numeric_t<T1,T2>>{
-		(x.numer() * y.denom()) - (y.numer() * x.denom()),
-		x.denom() * y.denom() };
+    return rational<common_numeric_t<T1,T2>>{
+        (x.numer() * y.denom()) - (y.numer() * x.denom()),
+        x.denom() * y.denom() };
 }
 
 //---------------------------------------------------------
@@ -698,7 +749,7 @@ inline constexpr
 rational<T>
 operator - (const rational<T> x, const T& y)
 {
-	return rational<T>{x.numer() - (y * x.denom()), x.denom()};
+    return rational<T>{x.numer() - (y * x.denom()), x.denom()};
 }
 
 
@@ -711,8 +762,8 @@ inline constexpr
 rational<common_numeric_t<T1,T2>>
 operator * (const rational<T1> x, const rational<T2>& y)
 {
-	return rational<common_numeric_t<T1,T2>>{
-		x.numer() * y.numer(), x.denom() * y.denom() };
+    return rational<common_numeric_t<T1,T2>>{
+        x.numer() * y.numer(), x.denom() * y.denom() };
 }
 
 //---------------------------------------------------------
@@ -721,7 +772,7 @@ inline constexpr
 rational<T>
 operator * (const rational<T> x, const T& y)
 {
-	return rational<T>{x.numer() * y, x.denom()};
+    return rational<T>{x.numer() * y, x.denom()};
 }
 
 
@@ -734,8 +785,8 @@ inline constexpr
 rational<common_numeric_t<T1,T2>>
 operator / (const rational<T1> x, const rational<T2>& y)
 {
-	return rational<common_numeric_t<T1,T2>>{
-		x.numer() * y.denom(), x.denom() * y.numer() };
+    return rational<common_numeric_t<T1,T2>>{
+        x.numer() * y.denom(), x.denom() * y.numer() };
 }
 
 //---------------------------------------------------------
@@ -744,7 +795,7 @@ inline constexpr
 rational<T>
 operator / (const rational<T> x, const T& y)
 {
-	return rational<T>{x.numer(), x.denom() * y};
+    return rational<T>{x.numer(), x.denom() * y};
 }
 
 
@@ -757,7 +808,7 @@ inline
 rational<T>
 operator ^ (const rational<T> b, const T& e)
 {
-	return pow(b,e);
+    return pow(b,e);
 }
 
 
@@ -770,7 +821,7 @@ inline constexpr
 rational<T>
 operator - (const rational<T> x)
 {
-	return rational<T>{-x.numer(), x.denom()};
+    return rational<T>{-x.numer(), x.denom()};
 }
 
 
@@ -792,7 +843,7 @@ template<class T>
 inline
 rational<T>
 real(const rational<T>& r) {
-	return r;
+    return r;
 }
 
 
@@ -803,8 +854,8 @@ inline
 rational<T>
 ceil(const rational<T>& x)
 {
-	using std::ceil;
-	return rational<T>{ceil(static_cast<T>(x))};
+    using std::ceil;
+    return rational<T>{ceil(static_cast<T>(x))};
 }
 
 //---------------------------------------------------------
@@ -813,7 +864,7 @@ inline
 rational<T>
 floor(const rational<T>& x)
 {
-	return rational<T>{wholes(x)};
+    return rational<T>{wholes(x)};
 }
 
 
@@ -826,8 +877,8 @@ template<class T>
 inline rational<T>
 abs(const rational<T>& x)
 {
-	using std::abs;
-	return rational<T>{abs(x.numer()), abs(x.denom())};
+    using std::abs;
+    return rational<T>{abs(x.numer()), abs(x.denom())};
 }
 
 
@@ -840,11 +891,11 @@ inline
 rational<T>
 pow(const rational<T> b, const T& e)
 {
-	using std::pow;
+    using std::pow;
 
-	return ((e > T(0))
-		? rational<T>{pow(b.numer(),e), pow(b.denom(),e)}
-		: rational<T>{pow(b.denom(),e), pow(b.numer(),e)} );
+    return ((e > T(0))
+        ? rational<T>{pow(b.numer(),e), pow(b.denom(),e)}
+        : rational<T>{pow(b.denom(),e), pow(b.numer(),e)} );
 }
 
 
@@ -856,8 +907,8 @@ template<class T>
 inline bool
 isfinite(const rational<T>& x)
 {
-	using std::isfinite;
-	return (isfinite(x.numer()) && isfinite(x.denom()));
+    using std::isfinite;
+    return (isfinite(x.numer()) && isfinite(x.denom()));
 }
 
 //---------------------------------------------------------
@@ -865,8 +916,8 @@ template<class T>
 inline bool
 isinf(const rational<T>& x)
 {
-	using std::isinf;
-	return (isinf(x.numer()) || isinf(x.denom()));
+    using std::isinf;
+    return (isinf(x.numer()) || isinf(x.denom()));
 }
 
 //---------------------------------------------------------
@@ -874,8 +925,8 @@ template<class T>
 inline bool
 isnan(const rational<T>& x)
 {
-	using std::isnan;
-	return (isnan(x.numer()) || isnan(x.denom()));
+    using std::isnan;
+    return (isnan(x.numer()) || isnan(x.denom()));
 }
 
 //---------------------------------------------------------
@@ -883,8 +934,8 @@ template<class T>
 inline bool
 isnormal(const rational<T>& x)
 {
-	using std::isnormal;
-	return (isnormal(x.numer()) && isnormal(x.denom()));
+    using std::isnormal;
+    return (isnormal(x.numer()) && isnormal(x.denom()));
 }
 
 
@@ -913,19 +964,19 @@ namespace detail {
 //-------------------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, rational<To>, From> :
-	public is_non_narrowing_helper<true,To,From>
+    public is_non_narrowing_helper<true,To,From>
 {};
 
 //---------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, rational<To>, rational<From> > :
-	public is_non_narrowing_helper<true,To,From>
+    public is_non_narrowing_helper<true,To,From>
 {};
 
 //---------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, To, rational<From> > :
-	public is_non_narrowing_helper<true,To,From>
+    public is_non_narrowing_helper<true,To,From>
 {};
 
 
@@ -934,20 +985,19 @@ struct is_non_narrowing_helper<true, To, rational<From> > :
 //template<class T, class T2>
 //struct common_numeric_t<rational<T>,T2>
 //{
-//	//TODO
+//    //TODO
 //};
 ////---------------------------------------------------------
 //template<class T, class T2>
 //struct common_numeric_t<T2,rational<T>>
 //{
-//	using type = common_numeric_t<rational<T>,T2>;
+//    using type = common_numeric_t<rational<T>,T2>;
 //};
 
 }  // namespace detail
 
 
 }  // namespace num
-
 }  // namespace am
 
 

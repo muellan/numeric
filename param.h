@@ -16,15 +16,15 @@ namespace detail {
 template<class T>
 constexpr auto
 check_has_param(int)
-	-> decltype(
-		std::declval<typename T::param_type>(),
-		std::declval<T>().param(),
-		std::true_type{});
+    -> decltype(
+        std::declval<typename T::param_type>(),
+        std::declval<T>().param(),
+        std::true_type{});
 //---------------------------------------------------------
 template<class>
 constexpr auto
 check_has_param(long)
-	-> std::false_type;
+    -> std::false_type;
 
 }  // namespace detail
 
@@ -33,7 +33,7 @@ check_has_param(long)
 //-------------------------------------------------------------------
 template<class T>
 struct has_param : public
-	decltype(detail::check_has_param<T>(0))
+    decltype(detail::check_has_param<T>(0))
 {};
 
 
@@ -41,12 +41,12 @@ struct has_param : public
 //-------------------------------------------------------------------
 template<class T, bool has = has_param<T>::value>
 struct param {
-	using type = T;
+    using type = T;
 };
 
 template<class T>
 struct param<T,true> {
-	using type = typename T::param_type;
+    using type = typename T::param_type;
 };
 
 template<class T>

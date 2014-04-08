@@ -20,7 +20,6 @@
 
 
 namespace am {
-
 namespace num {
 
 
@@ -38,319 +37,325 @@ class scomplex
 {
 public:
 
-	static_assert(is_number<NumberType>::value, "scomplex<T>: T must be a number");
+    static_assert(is_number<NumberType>::value,
+        "scomplex<T>: T must be a number type");
 
 
-	//---------------------------------------------------------------
-	// TYPES
-	//---------------------------------------------------------------
-	using value_type      = NumberType;
-	using numeric_type    = value_type;
-	using const_reference = const value_type&;
+    //---------------------------------------------------------------
+    // TYPES
+    //---------------------------------------------------------------
+    using value_type      = NumberType;
+    using numeric_type    = value_type;
+    using const_reference = const value_type&;
 
 
-	//---------------------------------------------------------------
-	// CONSTRUCTION / DESTRUCTION
-	//---------------------------------------------------------------
+    //---------------------------------------------------------------
+    // CONSTRUCTION / DESTRUCTION
+    //---------------------------------------------------------------
 
-	//-----------------------------------------------------
-	/// @brief default constructor
-	constexpr
-	scomplex() = default;
+    //-----------------------------------------------------
+    /// @brief default constructor
+    constexpr
+    scomplex() = default;
 
-	//-----------------------------------------------------
-	/// @brief
-	template<class T, class = typename std::enable_if<
-		is_number<T>::value>::type>
-	explicit constexpr
-	scomplex(const T& a):
-		n_{value_type(a),value_type(0)}
-	{
-		AM_CHECK_NARROWING(value_type,T)
-	}
+    //-----------------------------------------------------
+    /// @brief
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    explicit constexpr
+    scomplex(T&& a):
+        r_(std::forward<T>(a)), i_(value_type(0))
+    {
+        AM_CHECK_NARROWING(value_type,T)
+    }
 
-	//-----------------------------------------------------
-	/// @brief
-	constexpr
-	scomplex(const value_type& a, const value_type& b):
-		n_{a, b}
-	{}
+    //-----------------------------------------------------
+    /// @brief
+    constexpr
+    scomplex(value_type real, value_type imag):
+        r_(std::move(real)), i_(std::move(imag))
+    {}
 
-	//-----------------------------------------------------
-	/// @brief
-	template<class T1, class T2, class = typename std::enable_if<
-		is_number<T1,T2>::value>::type>
-	constexpr
-	scomplex(const T1& a, const T2& b):
-		n_{value_type(a), value_type(b)}
-	{
-		AM_CHECK_NARROWING2(value_type,T1,T2)
-	}
+    //-----------------------------------------------------
+    /// @brief
+    template<class T1, class T2, class = typename std::enable_if<
+        is_number<T1,T2>::value>::type>
+    explicit constexpr
+    scomplex(T1&& real, T2&& imag):
+        r_(std::forward<T1>(real)), i_(std::forward<T2>(imag))
+    {
+        AM_CHECK_NARROWING2(value_type,T1,T2)
+    }
 
-	//-----------------------------------------------------
-	constexpr
-	scomplex(const scomplex&) = default;
+    //-----------------------------------------------------
+    constexpr
+    scomplex(const scomplex&) = default;
 
-	//-----------------------------------------------------
-	template<class T>
-	constexpr
-	scomplex(const scomplex<T>& src):
-		n_{value_type(src.real()), value_type(src.imag())}
-	{
-		AM_CHECK_NARROWING(value_type,T)
-	}
+    //-----------------------------------------------------
+    constexpr
+    scomplex(scomplex&&) = default;
 
-
-	//---------------------------------------------------------------
-	// ASSIGNMENT
-	//---------------------------------------------------------------
-	scomplex&
-	operator = (const scomplex&) = default;
-
-	//-----------------------------------------------------
-	template<class T>
-	scomplex&
-	operator = (const scomplex<T>& d)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_[0] = d.n_[0];
-		n_[1] = d.n_[1];
-		return *this;
-	}
-
-	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_number<T>::value>::type>
-	scomplex&
-	operator = (const T& n)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_[0] = n;
-		n_[1] = value_type(0);
-		return *this;
-	}
+    //-----------------------------------------------------
+    template<class T>
+    explicit constexpr
+    scomplex(const scomplex<T>& src):
+        r_(src.real()), i_(src.imag())
+    {
+        AM_CHECK_NARROWING(value_type,T)
+    }
+    //-----------------------------------------------------
+    template<class T>
+    explicit constexpr
+    scomplex(scomplex<T>&& src):
+        r_(std::move(src.real())), i_(std::move(src.imag()))
+    {
+        AM_CHECK_NARROWING(value_type,T)
+    }
 
 
-	//-----------------------------------------------------
-	/// @brief
-	template<class T1, class T2, class = typename std::enable_if<
-		is_number<T1,T2>::value>::type>
-	scomplex&
-	assign(const T1& r, const T2& d)
-	{
-		AM_CHECK_NARROWING2(value_type,T1,T2)
+    //---------------------------------------------------------------
+    // ASSIGNMENT
+    //---------------------------------------------------------------
+    scomplex&
+    operator = (const scomplex&) = default;
+    //-----------------------------------------------------
+    scomplex&
+    operator = (scomplex&&) = default;
 
-		n_[0] = r;
-		n_[1] = d;
-		return *this;
-	}
+    //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    scomplex&
+    operator = (const scomplex<T>& d)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
+        r_ = d.r_;
+        i_ = d.i_;
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    scomplex&
+    operator = (scomplex<T>&& d)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-	//---------------------------------------------------------------
-	// ELEMENT ACCESS
-	//---------------------------------------------------------------
-	constexpr const_reference
-	operator [] (std::size_t index) const noexcept
-	{
-		return n_[index];
-	}
+        r_ = std::move(d.r_);
+        i_ = std::move(d.i_);
+        return *this;
+    }
 
-	//-----------------------------------------------------
-	constexpr const_reference
-	real() const noexcept
-	{
-		return n_[0];
-	}
+    //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    scomplex&
+    operator = (T&& n)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-	//-----------------------------------------------------
-	constexpr const_reference
-	imag() const noexcept
-	{
-		return n_[1];
-	}
-
-
-	//---------------------------------------------------------------
-	scomplex&
-	conjugate()
-	{
-		n_[1] = -n_[1];
-		return *this;
-	}
-
-	//---------------------------------------------------------
-	scomplex&
-	negate() noexcept
-	{
-		n_[0] = -n_[0];
-		n_[1] = -n_[1];
-		return *this;
-	}
+        r_ = std::forward<T>(n);
+        i_ = value_type(0);
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	// scomplex (op)= number
-	//---------------------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_number<T>::value>::type>
-	scomplex&
-	operator += (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+    //---------------------------------------------------------------
+    // ELEMENT ACCESS
+    //---------------------------------------------------------------
+    constexpr const_reference
+    real() const noexcept {
+        return r_;
+    }
 
-		n_[0] += v;
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_number<T>::value>::type>
-	scomplex&
-	operator -= (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_[0] -= v;
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_number<T>::value>::type>
-	scomplex&
-	operator *= (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_[0] *= v;
-		n_[1] *= v;
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T, class = typename std::enable_if<
-		is_number<T>::value>::type>
-	scomplex&
-	operator /= (const T& v)
-	{
-		AM_CHECK_NARROWING(value_type,T)
-
-		n_[0] /= v;
-		n_[1] /= v;
-		return *this;
-	}
+    //-----------------------------------------------------
+    constexpr const_reference
+    imag() const noexcept {
+        return i_;
+    }
 
 
-	//---------------------------------------------------------------
-	// increment / decrement
-	//---------------------------------------------------------------
-	scomplex&
-	operator ++ () {
-		++n_[0];
-		return *this;
-	}
-	//-----------------------------------------------------
-	scomplex&
-	operator -- () {
-		--n_[0];
-		return *this;
-	}
+    //---------------------------------------------------------------
+    scomplex&
+    conjugate()
+    {
+        i_ = -i_;
+        return *this;
+    }
 
-	//-----------------------------------------------------
-	scomplex
-	operator ++ (int) {
-		auto old = *this;
-		++*this;
-		return old;
-	}
-	//-----------------------------------------------------
-	scomplex
-	operator -- (int) {
-		auto old = *this;
-		--*this;
-		return old;
-	}
+    //---------------------------------------------------------
+    scomplex&
+    negate() noexcept
+    {
+        r_ = -r_;
+        i_ = -i_;
+        return *this;
+    }
 
 
-	//---------------------------------------------------------------
-	// scomplex (op)= scomplex with different value_type
-	//---------------------------------------------------------------
-	template<class T>
-	scomplex&
-	operator += (const scomplex<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+    //---------------------------------------------------------------
+    // scomplex (op)= number
+    //---------------------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    scomplex&
+    operator += (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		n_[0] += o.real();
-		n_[1] += o.imag();
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
-	scomplex&
-	operator -= (const scomplex<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+        r_ += v;
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    scomplex&
+    operator -= (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		n_[0] -= o.real();
-		n_[1] -= o.imag();
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
-	scomplex&
-	operator *= (const scomplex<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+        r_ -= v;
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    scomplex&
+    operator *= (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		auto n_0 = n_[0];
-		n_[0] = (n_[0] * o.n_[0]) + (n_[1] * o.n_[1]);
-		n_[1] = (n_0 * o.n_[1]) + (n_[1] * o.n_[0]);
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
-	scomplex&
-	operator /= (const scomplex<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+        r_ *= v;
+        i_ *= v;
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    scomplex&
+    operator /= (const T& v)
+    {
+        AM_CHECK_NARROWING(value_type,T)
 
-		auto abso_inv = value_type(1) / abs(o);
-		auto n_0 = n_[0];
-		n_[0] = abso_inv * ( (n_[0] * o.n_[0]) - (n_[1] * o.n_[1]) );
-		n_[1] = abso_inv * ( (n_[1] * o.n_[0]) - (n_0   * o.n_[1]) );
-		return *this;
-	}
+        r_ /= v;
+        i_ /= v;
+        return *this;
+    }
 
-	//-----------------------------------------------------
-	template<class T>
-	scomplex&
-	times_conj(const scomplex<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
 
-		auto n_0 = n_[0];
-		n_[0] = (n_[0] * o.n_[0]) - (n_[1] * o.n_[1]);
-		n_[1] = (n_[1] * o.n_[0]) - (n_0 * o.n_[1]);
-		return *this;
-	}
-	//-----------------------------------------------------
-	template<class T>
-	scomplex&
-	conj_times(const scomplex<T>& o)
-	{
-		AM_CHECK_NARROWING(value_type,T)
+    //---------------------------------------------------------------
+    // increment / decrement
+    //---------------------------------------------------------------
+    scomplex&
+    operator ++ () {
+        ++r_;
+        return *this;
+    }
+    //-----------------------------------------------------
+    scomplex&
+    operator -- () {
+        --r_;
+        return *this;
+    }
 
-		auto n_0 = n_[0];
-		n_[0] = (n_[0] * o.n_[0]) - (n_[1] * o.n_[1]);
-		n_[1] = (n_0 * o.n_[1]) - (n_[1] * o.n_[0]);
-		return *this;
-	}
+    //-----------------------------------------------------
+    scomplex
+    operator ++ (int) {
+        auto old = *this;
+        ++*this;
+        return old;
+    }
+    //-----------------------------------------------------
+    scomplex
+    operator -- (int) {
+        auto old = *this;
+        --*this;
+        return old;
+    }
+
+
+    //---------------------------------------------------------------
+    // scomplex (op)= scomplex with different value_type
+    //---------------------------------------------------------------
+    template<class T>
+    scomplex&
+    operator += (const scomplex<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        r_ += o.real();
+        i_ += o.imag();
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T>
+    scomplex&
+    operator -= (const scomplex<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        r_ -= o.real();
+        i_ -= o.imag();
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T>
+    scomplex&
+    operator *= (const scomplex<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        auto ro = r_;
+        r_ = (r_ * o.r_) + (i_ * o.i_);
+        i_ = (ro * o.i_) + (i_ * o.r_);
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T>
+    scomplex&
+    operator /= (const scomplex<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        auto abso_inv = value_type(1) / abs(o);
+        auto ro = r_;
+        r_ = abso_inv * ( (r_ * o.r_) - (i_ * o.i_) );
+        i_ = abso_inv * ( (i_ * o.r_) - (ro   * o.i_) );
+        return *this;
+    }
+
+    //-----------------------------------------------------
+    template<class T>
+    scomplex&
+    times_conj(const scomplex<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        auto ro = r_;
+        r_ = (r_ * o.r_) - (i_ * o.i_);
+        i_ = (i_ * o.r_) - (ro * o.i_);
+        return *this;
+    }
+    //-----------------------------------------------------
+    template<class T>
+    scomplex&
+    conj_times(const scomplex<T>& o)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        auto ro = r_;
+        r_ = (r_ * o.r_) - (i_ * o.i_);
+        i_ = (ro * o.i_) - (i_ * o.r_);
+        return *this;
+    }
 
 
 private:
 
-	//---------------------------------------------------------------
-	value_type n_[2];
+    //---------------------------------------------------------------
+    value_type r_;
+    value_type i_;
 
 };
 
@@ -374,19 +379,20 @@ private:
 template<class T1, class T2>
 inline
 scomplex<common_numeric_t<T1,T2>>
-make_scomplex(const T1& a, const T2& b)
+make_scomplex(T1&& a, T2&& b)
 {
-	return scomplex<common_numeric_t<T1,T2>>{a,b};
+    return scomplex<common_numeric_t<T1,T2>>
+        {std::forward<T1>(a), std::forward<T2>(b)};
 }
 
 //---------------------------------------------------------------
 template<class T, class = typename
-	std::enable_if<is_number<T>::value,T>::type>
+    std::enable_if<is_number<T>::value,T>::type>
 inline
-scomplex<T>
-make_scomplex(const T& x)
+scomplex<decay_t<T>>
+make_scomplex(T&& x)
 {
-	return scomplex<T>{x, T(0)};
+    return scomplex<decay_t<T>>{std::forward<T>(x), T(0)};
 }
 
 
@@ -398,7 +404,7 @@ template<class Istream, class T>
 inline Istream&
 operator >> (Istream& is, scomplex<T>& x)
 {
-	return (is >> x.real() >> x.imag());
+    return (is >> x.real() >> x.imag());
 }
 
 //---------------------------------------------------------
@@ -406,7 +412,7 @@ template<class Ostream, class T>
 inline Ostream&
 operator << (Ostream& os, const scomplex<T>& x)
 {
-	return (os << x.real() << " " << x.imag() );
+    return (os << x.real() << " " << x.imag() );
 }
 
 //---------------------------------------------------------
@@ -414,7 +420,7 @@ template<class T, class Ostream>
 inline Ostream&
 print(Ostream& os, const scomplex<T>& d)
 {
-	return (os << "(" << d.real() << "," << d.imag() << ")" );
+    return (os << "(" << d.real() << "," << d.imag() << ")" );
 }
 
 
@@ -435,7 +441,7 @@ template<class T>
 inline constexpr auto
 real(const scomplex<T>& d) noexcept -> decltype(d.real())
 {
-	return d.real();
+    return d.real();
 }
 
 
@@ -445,7 +451,7 @@ template<class T>
 inline constexpr auto
 imag(const scomplex<T>& d) noexcept -> decltype(d.imag())
 {
-	return d.imag();
+    return d.imag();
 }
 
 
@@ -456,7 +462,7 @@ inline constexpr
 scomplex<T>
 conj(const scomplex<T>& x)
 {
-	return scomplex<T>{x.real(), -x.imag()};
+    return scomplex<T>{x.real(), -x.imag()};
 }
 
 
@@ -478,7 +484,7 @@ template<class T1, class T2>
 inline bool
 operator == (const scomplex<T1>& a, const scomplex<T2>& b)
 {
-	return ((a.real() == b.real()) && (a.imag() == b.imag()));
+    return ((a.real() == b.real()) && (a.imag() == b.imag()));
 }
 
 //---------------------------------------------------------
@@ -486,7 +492,7 @@ template<class T1, class T2>
 inline bool
 operator != (const scomplex<T1>& a, const scomplex<T2>& b)
 {
-	return ((a.real() != b.real()) || (a.imag() != b.imag()));
+    return ((a.real() != b.real()) || (a.imag() != b.imag()));
 }
 
 
@@ -494,31 +500,31 @@ operator != (const scomplex<T1>& a, const scomplex<T2>& b)
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(
-	const scomplex<T1>& a, const scomplex<T2>& b,
-	const T3& tolerance = tolerance<T3>::value)
+    const scomplex<T1>& a, const scomplex<T2>& b,
+    const T3& tolerance = tolerance<T3>::value())
 {
-	return (approx_equal(a.real(), b.real(), tolerance) &&
-		    approx_equal(a.imag(), b.imag(), tolerance) );
+    return (approx_equal(a.real(), b.real(), tolerance) &&
+            approx_equal(a.imag(), b.imag(), tolerance) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const scomplex<T>& x, const T& tolerance = tolerance<T>::value)
+approx_1(const scomplex<T>& x, const T& tolerance = tolerance<T>::value())
 {
-	return (
-		approx_1(x.real(), tolerance) &&
-		approx_0(x.imag(), tolerance) );
+    return (
+        approx_1(x.real(), tolerance) &&
+        approx_0(x.imag(), tolerance) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const scomplex<T>& x, const T& tolerance = tolerance<T>::value)
+approx_0(const scomplex<T>& x, const T& tolerance = tolerance<T>::value())
 {
-	return (
-		approx_0(x.real(), tolerance) &&
-		approx_0(x.imag(), tolerance) );
+    return (
+        approx_0(x.real(), tolerance) &&
+        approx_0(x.imag(), tolerance) );
 }
 
 
@@ -527,70 +533,70 @@ approx_0(const scomplex<T>& x, const T& tolerance = tolerance<T>::value)
 // COMPARISON WITH INTEGERS OR REAL NUMBERS
 //-------------------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator > (const scomplex<T1>& x, const T2& r)
 {
-	return (x.real() > r);
+    return (x.real() > r);
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator > (const T2& r, const scomplex<T1>& x)
 {
-	return (r > x.real());
+    return (r > x.real());
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator >= (const scomplex<T1>& x, const T2& r)
 {
-	return (x.real() >= r);
+    return (x.real() >= r);
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator >= (const T2& r, const scomplex<T1>& x)
 {
-	return (r >= x.real());
+    return (r >= x.real());
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator < (const scomplex<T1>& x, const T2& r)
 {
-	return (x.real() < r);
+    return (x.real() < r);
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator < (const T2& r, const scomplex<T1>& x)
 {
-	return (r < x.real());
+    return (r < x.real());
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator <= (const scomplex<T1>& x, const T2& r)
 {
-	return (x.real() <= r);
+    return (x.real() <= r);
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline bool
 operator <= (const T2& r, const scomplex<T1>& x)
 {
-	return (r <= x.real());
+    return (r <= x.real());
 }
 
 
@@ -614,29 +620,29 @@ inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator + (const scomplex<T1> x, const scomplex<T2>& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>{
-		x.real() + y.real(), x.imag() + y.imag()};
+    return scomplex<common_numeric_t<T1,T2>>{
+        x.real() + y.real(), x.imag() + y.imag()};
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator + (const scomplex<T1> x, const T2& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{x.real() + y, x.imag() + y};
+    return scomplex<common_numeric_t<T1,T2>>
+        {x.real() + y, x.imag() + y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator + (const T2& y, const scomplex<T1> x)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{y + x.real(), y + x.imag()};
+    return scomplex<common_numeric_t<T1,T2>>
+        {y + x.real(), y + x.imag()};
 }
 
 //---------------------------------------------------------
@@ -645,7 +651,7 @@ inline constexpr
 scomplex<T>
 operator + (const scomplex<T> x, const T& y)
 {
-	return scomplex<T>{x.real() + y, x.imag() + y};
+    return scomplex<T>{x.real() + y, x.imag() + y};
 }
 //---------------------------------------------------------
 template<class T>
@@ -653,7 +659,7 @@ inline constexpr
 scomplex<T>
 operator + (const T& y, const scomplex<T> x)
 {
-	return scomplex<T>{y + x.real(), y + x.imag()};
+    return scomplex<T>{y + x.real(), y + x.imag()};
 }
 
 
@@ -666,29 +672,29 @@ inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator - (const scomplex<T1> x, const scomplex<T2>& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>{
-		x.real() - y.real(), x.imag() - y.imag()};
+    return scomplex<common_numeric_t<T1,T2>>{
+        x.real() - y.real(), x.imag() - y.imag()};
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator - (const scomplex<T1> x, const T2& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{x.real() - y, x.imag() - y};
+    return scomplex<common_numeric_t<T1,T2>>
+        {x.real() - y, x.imag() - y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<std::is_arithmetic<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator - (const T2& y, const scomplex<T1> x)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{y - x.real(), y - x.imag()};
+    return scomplex<common_numeric_t<T1,T2>>
+        {y - x.real(), y - x.imag()};
 }
 
 //---------------------------------------------------------
@@ -697,7 +703,7 @@ inline constexpr
 scomplex<T>
 operator - (const scomplex<T> x, const T& y)
 {
-	return scomplex<T>{x.real() - y, x.imag() - y};
+    return scomplex<T>{x.real() - y, x.imag() - y};
 }
 //---------------------------------------------------------
 template<class T>
@@ -705,7 +711,7 @@ inline constexpr
 scomplex<T>
 operator - (const T& y, const scomplex<T> x)
 {
-	return scomplex<T>{y - x.real(), y - x.imag()};
+    return scomplex<T>{y - x.real(), y - x.imag()};
 }
 
 
@@ -718,31 +724,31 @@ inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator * (const scomplex<T1> x, const scomplex<T2>& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>{
-		(x.real() * y.real()) + (x.imag() * y.imag()),
-		(x.real() * y.imag()) + (x.imag() * y.real()),
-	};
+    return scomplex<common_numeric_t<T1,T2>>{
+        (x.real() * y.real()) + (x.imag() * y.imag()),
+        (x.real() * y.imag()) + (x.imag() * y.real()),
+    };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator * (const scomplex<T1> x, const T2& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{x.real() * y, x.imag() * y};
+    return scomplex<common_numeric_t<T1,T2>>
+        {x.real() * y, x.imag() * y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator * (const T2& y, const scomplex<T1> x)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{y * x.real(), y * x.imag()};
+    return scomplex<common_numeric_t<T1,T2>>
+        {y * x.real(), y * x.imag()};
 }
 
 //---------------------------------------------------------
@@ -751,7 +757,7 @@ inline constexpr
 scomplex<T>
 operator * (const scomplex<T> x, const T& y)
 {
-	return scomplex<T>{x.real() * y, x.imag() * y};
+    return scomplex<T>{x.real() * y, x.imag() * y};
 }
 //---------------------------------------------------------
 template<class T>
@@ -759,7 +765,7 @@ inline constexpr
 scomplex<T>
 operator * (const T& y, const scomplex<T> x)
 {
-	return scomplex<T>{y * x.real(), y * x.imag()};
+    return scomplex<T>{y * x.real(), y * x.imag()};
 }
 
 
@@ -772,34 +778,34 @@ inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator / (const scomplex<T1> x, const scomplex<T2>& y)
 {
-	using res_t = common_numeric_t<T1,T2>;
-	auto absy = res_t(1) / abs(y);
+    using res_t = common_numeric_t<T1,T2>;
+    auto absy = res_t(1) / abs(y);
 
-	return scomplex<res_t>{
-		absy * ( (x.real() * y.real()) - (x.imag() * y.imag()) ),
-		absy * ( (x.imag() * y.real()) - (x.real() * y.imag()) )
-	};
+    return scomplex<res_t>{
+        absy * ( (x.real() * y.real()) - (x.imag() * y.imag()) ),
+        absy * ( (x.imag() * y.real()) - (x.real() * y.imag()) )
+    };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator / (const scomplex<T1> x, const T2& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{x.real() / y, x.imag() / y};
+    return scomplex<common_numeric_t<T1,T2>>
+        {x.real() / y, x.imag() / y};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
-	std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value>::type>
 inline constexpr
 scomplex<common_numeric_t<T1,T2>>
 operator / (const T2& y, const scomplex<T1> x)
 {
-	return scomplex<common_numeric_t<T1,T2>>
-		{y / x.real(), y / x.imag()};
+    return scomplex<common_numeric_t<T1,T2>>
+        {y / x.real(), y / x.imag()};
 }
 
 //---------------------------------------------------------
@@ -808,7 +814,7 @@ inline constexpr
 scomplex<T>
 operator / (const scomplex<T> x, const T& y)
 {
-	return scomplex<T>{x.real() / y, x.imag() / y};
+    return scomplex<T>{x.real() / y, x.imag() / y};
 }
 //---------------------------------------------------------
 template<class T>
@@ -816,7 +822,7 @@ inline constexpr
 scomplex<T>
 operator / (const T& y, const scomplex<T> x)
 {
-	return scomplex<T>{y / x.real(), y / x.imag()};
+    return scomplex<T>{y / x.real(), y / x.imag()};
 }
 
 
@@ -829,7 +835,7 @@ inline constexpr
 scomplex<T>
 operator - (const scomplex<T> x)
 {
-	return scomplex<T>{-x.real(), -x.imag()};
+    return scomplex<T>{-x.real(), -x.imag()};
 }
 
 
@@ -841,10 +847,10 @@ template<class T1, class T2>
 inline scomplex<common_numeric_t<T1,T2>>
 times_conj(const scomplex<T1>& x, const scomplex<T2>& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>{
-		(x.real() * y.real()) - (x.imag() * y.imag()),
-		(x.imag() * y.real()) - (x.real() * y.imag()),
-	};
+    return scomplex<common_numeric_t<T1,T2>>{
+        (x.real() * y.real()) - (x.imag() * y.imag()),
+        (x.imag() * y.real()) - (x.real() * y.imag()),
+    };
 }
 
 //---------------------------------------------------------
@@ -852,10 +858,10 @@ template<class T1, class T2>
 inline scomplex<common_numeric_t<T1,T2>>
 conj_times(const scomplex<T1>& x, const scomplex<T2>& y)
 {
-	return scomplex<common_numeric_t<T1,T2>>{
-		(x.real() * y.real()) - (x.imag() * y.imag()),
-		(x.real() * y.imag()) - (x.imag() * y.real()),
-	};
+    return scomplex<common_numeric_t<T1,T2>>{
+        (x.real() * y.real()) - (x.imag() * y.imag()),
+        (x.real() * y.imag()) - (x.imag() * y.real()),
+    };
 }
 
 
@@ -881,8 +887,8 @@ inline
 scomplex<T>
 ceil(const scomplex<T>& x)
 {
-	using std::ceil;
-	return scomplex<T>{ceil(x.real()), ceil(x.imag())};
+    using std::ceil;
+    return scomplex<T>{ceil(x.real()), ceil(x.imag())};
 }
 
 //---------------------------------------------------------
@@ -891,8 +897,8 @@ inline
 scomplex<T>
 floor(const scomplex<T>& x)
 {
-	using std::floor;
-	return scomplex<T>{floor(x.real()), floor(x.imag())};
+    using std::floor;
+    return scomplex<T>{floor(x.real()), floor(x.imag())};
 }
 
 
@@ -905,8 +911,8 @@ template<class T>
 inline T
 abs(const scomplex<T>& x)
 {
-	using std::sqrt;
-	return sqrt(((x.real() * x.real()) - (x.imag() * x.imag())));
+    using std::sqrt;
+    return sqrt(((x.real() * x.real()) - (x.imag() * x.imag())));
 }
 
 //---------------------------------------------------------
@@ -915,7 +921,7 @@ template<class T>
 inline scomplex<T>
 abs2(const scomplex<T>& x)
 {
-	return ((x.real() * x.real()) - (x.imag() * x.imag()));
+    return ((x.real() * x.real()) - (x.imag() * x.imag()));
 }
 
 
@@ -928,7 +934,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //sqrt(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -937,7 +943,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //cbrt(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 
@@ -951,7 +957,7 @@ abs2(const scomplex<T>& x)
 //pow(const scomplex<T1> b, const scomplex<T2>& e)
 //{
 //
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -960,7 +966,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //pow(const scomplex<T> b, const T& e)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -969,7 +975,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //exp(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -978,7 +984,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //exp2(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -987,7 +993,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //expm1(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -996,7 +1002,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //ldexp(const scomplex<T>& a, const scomplex<int>&b)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -1005,7 +1011,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //frexp(const scomplex<T>& a, scomplex<int>* b)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -1014,7 +1020,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //modf(const scomplex<T>& a, scomplex<T>* b)
 //{
-//	//TODO
+//    //TODO
 //}
 
 
@@ -1027,7 +1033,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //log(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -1036,7 +1042,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //log10(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -1045,7 +1051,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //log2(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -1055,7 +1061,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //logb(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -1065,7 +1071,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //log1p(const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 //---------------------------------------------------------
@@ -1075,7 +1081,7 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //log_base(const T& base, const scomplex<T>& x)
 //{
-//	//TODO
+//    //TODO
 //}
 
 
@@ -1088,8 +1094,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //sin(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1098,8 +1104,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //cos(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1108,8 +1114,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //tan(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 
@@ -1123,8 +1129,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //asin(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1133,8 +1139,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //acos(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1143,8 +1149,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //atan(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 
@@ -1157,8 +1163,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //sinh(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1167,8 +1173,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //cosh(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1177,8 +1183,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //tanh(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 
@@ -1192,8 +1198,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //asinh(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1202,8 +1208,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //acosh(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1212,8 +1218,8 @@ abs2(const scomplex<T>& x)
 //scomplex<T>
 //atanh(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 
@@ -1226,8 +1232,8 @@ abs2(const scomplex<T>& x)
 //inline scomplex<T>
 //erf(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 //---------------------------------------------------------
@@ -1236,8 +1242,8 @@ abs2(const scomplex<T>& x)
 //inline scomplex<T>
 //erfc(const scomplex<T>& x)
 //{
-//	//TODO
-//	return scomplex<T>{};
+//    //TODO
+//    return scomplex<T>{};
 //}
 
 
@@ -1249,8 +1255,8 @@ template<class T>
 inline bool
 isfinite(const scomplex<T>& x)
 {
-	using std::isfinite;
-	return (isfinite(x.real()) && isfinite(x.imag()));
+    using std::isfinite;
+    return (isfinite(x.real()) && isfinite(x.imag()));
 }
 
 //---------------------------------------------------------
@@ -1258,8 +1264,8 @@ template<class T>
 inline bool
 isinf(const scomplex<T>& x)
 {
-	using std::isinf;
-	return (isinf(x.real()) || isinf(x.imag()));
+    using std::isinf;
+    return (isinf(x.real()) || isinf(x.imag()));
 }
 
 //---------------------------------------------------------
@@ -1267,8 +1273,8 @@ template<class T>
 inline bool
 isnan(const scomplex<T>& x)
 {
-	using std::isnan;
-	return (isnan(x.real()) || isnan(x.imag()));
+    using std::isnan;
+    return (isnan(x.real()) || isnan(x.imag()));
 }
 
 //---------------------------------------------------------
@@ -1276,8 +1282,8 @@ template<class T>
 inline bool
 isnormal(const scomplex<T>& x)
 {
-	using std::isnormal;
-	return (isnormal(x.real()) && isnormal(x.imag()));
+    using std::isnormal;
+    return (isnormal(x.real()) && isnormal(x.imag()));
 }
 
 
@@ -1330,19 +1336,19 @@ namespace detail {
 //-------------------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, scomplex<To>, From> :
-	public is_non_narrowing_helper<true,To,From>
+    public is_non_narrowing_helper<true,To,From>
 {};
 
 //---------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, scomplex<To>, scomplex<From> > :
-	public is_non_narrowing_helper<true,To,From>
+    public is_non_narrowing_helper<true,To,From>
 {};
 
 //---------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true, To, scomplex<From> > :
-	public is_non_narrowing_helper<true,To,From>
+    public is_non_narrowing_helper<true,To,From>
 {};
 
 }  // namespace detail
