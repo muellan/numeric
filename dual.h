@@ -1458,8 +1458,19 @@ isnormal(const dual<T>& x)
 
 //-------------------------------------------------------------------
 template<class T>
-struct is_number<dual<T>> : public std::true_type
-{};
+struct is_number<dual<T>> : public std::true_type {};
+
+template<class T>
+struct is_number<dual<T>&> : public std::true_type {};
+
+template<class T>
+struct is_number<dual<T>&&> : public std::true_type {};
+
+template<class T>
+struct is_number<const dual<T>&> : public std::true_type {};
+
+template<class T>
+struct is_number<const dual<T>> : public std::true_type {};
 
 
 

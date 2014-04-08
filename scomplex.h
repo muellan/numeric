@@ -1303,9 +1303,19 @@ isnormal(const scomplex<T>& x)
 
 //-------------------------------------------------------------------
 template<class T>
-struct is_number<scomplex<T>> : public std::true_type
-{};
+struct is_number<scomplex<T>> : public std::true_type {};
 
+template<class T>
+struct is_number<scomplex<T>&> : public std::true_type {};
+
+template<class T>
+struct is_number<scomplex<T>&&> : public std::true_type {};
+
+template<class T>
+struct is_number<const scomplex<T>&> : public std::true_type {};
+
+template<class T>
+struct is_number<const scomplex<T>> : public std::true_type {};
 
 
 //-------------------------------------------------------------------

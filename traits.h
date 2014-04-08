@@ -725,6 +725,9 @@ struct is_number<std::complex<T>&&> : public std::true_type {};
 template<class T>
 struct is_number<const std::complex<T>&> : public std::true_type {};
 
+template<class T>
+struct is_number<const std::complex<T>> : public std::true_type {};
+
 
 //-----------------------------------------------------
 /*
