@@ -712,12 +712,11 @@ make_interval(T1&& a, T2&& b)
 
 //---------------------------------------------------------
 template<class T>
-inline constexpr interval<decay_t<T>>
-make_interval(T&& a)
+inline constexpr interval<T>
+make_interval(const T& a)
 {
-    return interval<decay_t<T>>{std::forward<T>(a), std::forward<T>(a)};
+    return interval<T>{a,a};
 }
-
 
 
 //---------------------------------------------------------
