@@ -1,3 +1,13 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ *2008-2014  André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AM_GENERIC_PARAM_H_
 #define AM_GENERIC_PARAM_H_
 
@@ -6,7 +16,6 @@
 
 
 namespace am {
-
 namespace gen {
 
 
@@ -55,7 +64,6 @@ using param_t = typename param<T>::type;
 
 
 }  // namespace gen
-
 }  // namespace am
 
 

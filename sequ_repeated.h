@@ -1,3 +1,13 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ *2008-2014  André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AM_NUMERIC_REPEATED_SEQUENCE_GENERATOR_H_
 #define AM_NUMERIC_REPEATED_SEQUENCE_GENERATOR_H_
 
@@ -11,7 +21,6 @@
 
 namespace am {
 namespace num {
-
 
 
 /*****************************************************************************

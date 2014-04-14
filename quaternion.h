@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2013 André Müller
+ *2008-2014  André Müller
  *
  *****************************************************************************/
 
@@ -142,21 +142,6 @@ public:
         x_ = std::move(q.imag_i());
         y_ = std::move(q.imag_j());
         z_ = std::move(q.imag_k());
-        return *this;
-    }
-
-    //-----------------------------------------------------
-    template<class W, class X, class Y, class Z, class = typename
-        std::enable_if<is_number<W,X,Y,Z>::value>::type>
-    quaternion&
-    assign(W&& w, X&& x, Y&& y, Z&& z)
-    {
-        AM_CHECK_NARROWING4(numeric_type,W,X,Y,Z)
-
-        w_ = std::forward<W>(w);
-        x_ = std::forward<X>(x);
-        y_ = std::forward<Y>(y);
-        z_ = std::forward<Z>(z);
         return *this;
     }
 
@@ -771,12 +756,12 @@ inline void
 real_product(
     const quaternion<T1>& p, const quaternion<T2>& q, quaternion<T3>& r)
 {
-    r.assign(
+    r = quaternion<T3>{
         (real(p.real())*real(q.real()))   - (real(p.imag_i())*real(q.imag_i())) - (real(p.imag_j())*real(q.imag_j())) - (real(p.imag_k())*real(q.imag_k())),
         (real(p.real())*real(q.imag_i())) + (real(p.imag_i())*real(q.real()))   + (real(p.imag_j())*real(q.imag_k())) - (real(p.imag_k())*real(q.imag_j())),
         (real(p.real())*real(q.imag_j())) - (real(p.imag_i())*real(q.imag_k())) + (real(p.imag_j())*real(q.real()))   + (real(p.imag_k())*real(q.imag_i())),
         (real(p.real())*real(q.imag_k())) + (real(p.imag_i())*real(q.imag_j())) - (real(p.imag_j())*real(q.imag_i())) + (real(p.imag_k())*real(q.real()))
-    );
+    };
 }
 
 
@@ -803,12 +788,12 @@ inline void
 imag_product(
     const quaternion<T1>& p, const quaternion<T2>& q, quaternion<T3>& r)
 {
-    r.assign(
+    r = quaternion<T3>{
         (imag(p.real())*imag(q.real()))   - (imag(p.imag_i())*imag(q.imag_i())) - (imag(p.imag_j())*imag(q.imag_j())) - (imag(p.imag_k())*imag(q.imag_k())),
         (imag(p.real())*imag(q.imag_i())) + (imag(p.imag_i())*imag(q.real()))   + (imag(p.imag_j())*imag(q.imag_k())) - (imag(p.imag_k())*imag(q.imag_j())),
         (imag(p.real())*imag(q.imag_j())) - (imag(p.imag_i())*imag(q.imag_k())) + (imag(p.imag_j())*imag(q.real()))   + (imag(p.imag_k())*imag(q.imag_i())),
         (imag(p.real())*imag(q.imag_k())) + (imag(p.imag_i())*imag(q.imag_j())) - (imag(p.imag_j())*imag(q.imag_i())) + (imag(p.imag_k())*imag(q.real()))
-    );
+    };
 }
 
 
@@ -894,7 +879,7 @@ random_unit_quatld(URNG& urng) {
 
 
 //-------------------------------------------------------------------
-// spherical linear interpolation
+// linear interpolation
 //-------------------------------------------------------------------
 template<class T1, class T2, class T3,
     class = typename std::enable_if<is_number<T3>::value>::type
