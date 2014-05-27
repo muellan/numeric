@@ -8,12 +8,13 @@
  *
  *****************************************************************************/
 
-#include "tests.h"
+#include <iostream>
 
+#include "tests.h"
 
 //-------------------------------------------------------------------
 int main()
 {
-    am::test::numeric_correctness();
 
+    am::test::numeric_correctness();
 }

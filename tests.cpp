@@ -42,6 +42,14 @@ void numeric_correctness()
 
 
     try {
+        num::test::quantity_correctness();
+    }
+    catch(std::exception& e) {
+        std::cerr << "FAIL\n" << "am::num::quantity\n" << e.what() << std::endl;
+    }
+
+
+    try {
         num::test::quaternion_correctness();
     }
     catch(std::exception& e) {

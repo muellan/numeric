@@ -16,6 +16,7 @@
 
 #include "angle_test.h"
 #include "choice_test.h"
+#include "quantity_test.h"
 //#include "rational_test.h"
 //#include "dual_test.h"
 //#include "scomplex_test.h"
