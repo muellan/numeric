@@ -101,7 +101,10 @@ public:
 
         AM_CHECK_NARROWING(value_type,T)
 
-        v_ = (v >= zero_val()) ? value_type(std::forward<T>(v)) : zero_val();
+        v_ = v < zero_val() ? zero_val() :
+            (v > max_val()
+                ? infty_val()
+                : value_type(std::forward<T>(v)) );
 
         return *this;
     }
@@ -131,7 +134,7 @@ public:
     //-----------------------------------------------------
     static constexpr quantity
     max() noexcept {
-        return quantity(max_val);
+        return quantity(max_val());
     }
     //-----------------------------------------------------
     static constexpr quantity
@@ -152,10 +155,15 @@ public:
     operator += (const quantity& c) noexcept
     {
         if(!isinf(*this)) {
-            if(isinf(c))
+            if(isinf(c)) {
                 *this = infinity();
-            else
-                v_ += c.v_;
+            } else {
+                if((max_val() - v_) > c.v_) {
+                    v_ = max_val();
+                } else {
+                    v_ += c.v_;
+                }
+            }
         }
         return *this;
     }
@@ -168,10 +176,16 @@ public:
         AM_CHECK_NARROWING(value_type,OtherIntT)
 
         if(!isinf(*this)) {
-            if(isinf(c))
+            if(isinf(c) || (c.value() > max_val()))
                 *this = infinity();
-            else
-                v_ += value_type(c);
+            else {
+                const auto vc = value_type(c);
+                if((max_val() - v_) > vc) {
+                    v_ = max_val();
+                } else {
+                    v_ += vc;
+                }
+            }
         }
         return *this;
     }
@@ -188,7 +202,16 @@ public:
         AM_CHECK_NARROWING(value_type,T)
 
         if(!isinf(*this)) {
-            v_ += value_type(std::forward<T>(v));
+            if(v > max_val()) {
+                *this = infinity();
+            } else {
+                const auto vc = value_type(std::forward<T>(v));;
+                if((max_val() - v_) > vc) {
+                    v_ = max_val();
+                } else {
+                    v_ += vc;
+                }
+            }
         }
         return *this;
     }
@@ -219,14 +242,15 @@ public:
         AM_CHECK_NARROWING(value_type,OtherIntT)
 
         if(isinf(*this)) {
-            if(isinf(c))
+            if(isinf(c) || (c.value() > max_val()))
                 v_ = zero_val();
         }
         else {
-            if(!isinf(c) && (v_ > c.v_))
+            if(!isinf(c) && (v_ > c.v_)) {
                 v_ -= value_type(c);
-            else
+            } else {
                 v_ = zero_val();
+            }
         }
         return *this;
     }
@@ -243,10 +267,11 @@ public:
         AM_CHECK_NARROWING(value_type,T)
 
         if(!isinf(*this)) {
-            if(v_ > v)
+            if(v_ > v) {
                 v_ -= value_type(std::forward<T>(v));
-            else
+            } else {
                 v_ = zero_val();
+            }
         }
         return *this;
     }
@@ -257,10 +282,15 @@ public:
     operator *= (const quantity& c) noexcept
     {
         if(!isinf(*this)) {
-            if(isinf(c))
+            if(isinf(c) || (c.value() > max_val())) {
                 *this = infinity();
-            else
-                v_ *= c.v_;
+            } else {
+                if(c.v_ > (max_val() / v_)) {
+                    v_ = max_val();
+                } else {
+                    v_ *= c.v_;
+                }
+            }
         }
         return *this;
     }
@@ -273,10 +303,16 @@ public:
         AM_CHECK_NARROWING(value_type,OtherIntT)
 
         if(!isinf(*this)) {
-            if(isinf(c))
+            if(isinf(c) || (c.value() > max_val())) {
                 *this = infinity();
-            else
-                v_ *= value_type(c);
+            } else {
+                const auto cv = value_type(c);
+                if(cv > (max_val() / v_)) {
+                    v_ = max_val();
+                } else {
+                    v_ *= cv;
+                }
+            }
         } else {
             if(c == c.zero_val()) v_ = zero_val();
         }
@@ -295,10 +331,20 @@ public:
         AM_CHECK_NARROWING(value_type,T)
 
         if(!isinf(*this)) {
-            if(v > zero_val())
-                v_ *= value_type(std::forward<T>(v));
-            else
+            if(v > zero_val()) {
+                if(v <= max_val()) {
+                    const auto cv = value_type(std::forward<T>(v));
+                    if(cv > (max_val() / v_)) {
+                        v_ = max_val();
+                    } else {
+                        v_ *= cv;
+                    }
+                } else {
+                    v_ = max_val();
+                }
+            } else {
                 v_ = zero_val();
+            }
         }
         return *this;
     }
@@ -422,7 +468,9 @@ operator + (const quantity<T1>& a, const quantity<T2>& b) noexcept
 
     return (isinf(a) || isinf(b))
         ? res_t::infinity()
-        : res_t{cv_t(a) + cv_t(b)};
+        : ( (cv_t(res_t::max()) - cv_t(a)) > cv_t(b)
+                ? res_t::max()
+                : res_t{cv_t(a) + cv_t(b)});
 }
 
 //-------------------------------------------------------------------
@@ -436,7 +484,10 @@ operator - (const quantity<T1>& a, const quantity<T2>& b) noexcept
 
     return (isinf(a))
         ? (isinf(b)) ? res_t::zero() : res_t::infinity()
-        : (isinf(b)) ? res_t::zero() : res_t{cv_t(a) - cv_t(b)};
+        : (isinf(b)) ? res_t::zero() :
+            (cv_t(b) > cv_t(a)
+               ? res_t::zero()
+               : res_t{cv_t(a) - cv_t(b)});
 }
 
 //-------------------------------------------------------------------
@@ -455,7 +506,9 @@ operator * (const quantity<T1>& a, const quantity<T2>& b) noexcept
         )
         : ( (isinf(b))
             ? ((a == a.zero()) ? res_t::zero() : res_t::infinity())
-            : res_t{cv_t(a) * cv_t(b)}
+            : (cv_t(a) > (cv_t(res_t::max()) / cv_t(b))
+                  ? res_t::max()
+                  : res_t{cv_t(a) * cv_t(b)} )
         );
 }
 
