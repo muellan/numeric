@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -37,7 +37,7 @@ template<class IntT>
 class rational
 {
     static_assert(is_integral<IntT>::value,
-        "rational<T>: T must be an integral number");
+        "rational<T>: T must be an integral number type");
 
 public:
     //---------------------------------------------------------------
@@ -564,25 +564,25 @@ operator != (const rational<T1>& x, const rational<T2>& y)
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const rational<T1>& a, const rational<T2>& b,
-    const T3& tolerance = tolerance<T3>::value())
+    const T3& tol = tolerance<T3>::value())
 {
-    return approx_equal(a.numer() * b.denom(), b.numer() * a.denom(), tolerance);
+    return approx_equal(a.numer() * b.denom(), b.numer() * a.denom(), tol);
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const rational<T>& x, const T& tolerance = tolerance<T>::value())
+approx_1(const rational<T>& x, const T& tol = tolerance<T>::value())
 {
-    return approx_1(real_t(x.numer()) / real_t(x.denom()), tolerance);
+    return approx_1(real_t(x.numer()) / real_t(x.denom()), tol);
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const rational<T>& x, const T& tolerance = tolerance<T>::value())
+approx_0(const rational<T>& x, const T& tol = tolerance<T>::value())
 {
-    return approx_0(x.numer(), tolerance);
+    return approx_0(x.numer(), tol);
 }
 
 
@@ -955,7 +955,7 @@ isnormal(const rational<T>& x)
 
 //-------------------------------------------------------------------
 template<class T>
-struct is_number<rational<T>> : public std::true_type
+struct is_number<rational<T>> : std::true_type
 {};
 
 

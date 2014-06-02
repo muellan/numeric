@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_QUANTITY_TEST_H_
-#define AM_NUMERIC_QUANTITY_TEST_H_
+#ifndef AM_NUMERIC_BOUNDED_TEST_H_
+#define AM_NUMERIC_BOUNDED_TEST_H_
 
 #ifdef AM_USE_TESTS
 
@@ -19,7 +19,7 @@ namespace num {
 namespace test {
 
 
-void quantity_correctness();
+void bounded_correctness();
 
 
 }  // namespace test

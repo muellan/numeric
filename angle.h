@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  Andr� M�ller
+ * 2008-2014 Andr� M�ller
  *
  *****************************************************************************/
 
@@ -15,9 +15,10 @@
 #include <utility>
 #include <random>
 
+#include "param.h"
+
 #include "traits.h"
 #include "narrowing.h"
-#include "param.h"
 
 
 namespace am {
@@ -697,20 +698,20 @@ print(Ostream& os, const angle<gon_ccs_turn<T>>& a)
 //-------------------------------------------------------------------
 template<class T, class... R>
 struct is_angle :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         is_angle<T>::value && is_angle<R...>::value>
 {};
 
 //---------------------------------------------------------
 template<class T>
 struct is_angle<T> :
-    public std::false_type
+    std::false_type
 {};
 
 //-----------------------------------------------------
 template<class T>
 struct is_angle<angle<T>> :
-    public std::true_type
+    std::true_type
 {};
 
 

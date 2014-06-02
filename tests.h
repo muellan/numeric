@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -15,8 +15,9 @@
 
 
 #include "angle_test.h"
-#include "choice_test.h"
 #include "quantity_test.h"
+#include "bounded_test.h"
+#include "choice_test.h"
 //#include "rational_test.h"
 //#include "dual_test.h"
 //#include "scomplex_test.h"

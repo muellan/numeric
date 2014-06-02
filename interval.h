@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -172,30 +172,135 @@ interval_div(const T& al, const T& ar, const T& bl, const T& br, T& l, T& r)
 
 /*****************************************************************************
  *
- *
- * empty interval
- *
+ * @brief empty interval
  *
  *****************************************************************************/
 template<class T>
 class empty_interval
 {
 public:
-    //---------------------------------------------------------------
     using value_type = T;
+    using numeric_type = T;
 
-
-    //-----------------------------------------------------------------
-    static constexpr value_type min() noexcept        {return value_type(0); }
-    static constexpr value_type max() noexcept        {return value_type(0); }
-    //-----------------------------------------------------
-    static constexpr value_type width() noexcept      {return value_type(0); }
-    static constexpr value_type half_width() noexcept {return value_type(0); }
-    static constexpr value_type center() noexcept     {return value_type(0); }
-    //-----------------------------------------------------
-    static constexpr bool empty() noexcept            {return true; }
-
+    static constexpr value_type min() noexcept {return value_type(0); }
+    static constexpr value_type max() noexcept {return value_type(0); }
 };
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const empty_interval<T>&) { return empty_interval<T>::min(); }
+
+template<class T>
+inline constexpr T
+max(const empty_interval<T>&) { return empty_interval<T>::max(); }
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief interval [0,1]
+ *
+ *****************************************************************************/
+template<class T>
+struct unit_interval
+{
+    using value_type = T;
+    using numeric_type = T;
+
+    static constexpr T min() noexcept {return T(0); }
+    static constexpr T max() noexcept {return T(1); }
+};
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const unit_interval<T>&) { return unit_interval<T>::min(); }
+
+template<class T>
+inline constexpr T
+max(const unit_interval<T>&) { return unit_interval<T>::max(); }
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief interval [-1,-1]
+ *
+ *****************************************************************************/
+template<class T>
+struct symmetric_unit_interval
+{
+    using value_type = T;
+    using numeric_type = T;
+
+    static constexpr T min() noexcept {return T(-1); }
+    static constexpr T max() noexcept {return T(+1); }
+};
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const symmetric_unit_interval<T>&) {
+    return symmetric_unit_interval<T>::min();
+}
+
+template<class T>
+inline constexpr T
+max(const symmetric_unit_interval<T>&) {
+    return symmetric_unit_interval<T>::max();
+}
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief interval [0, 2^n-1]
+ *
+ *****************************************************************************/
+template<int n, class T>
+struct pow2_interval
+{
+    using value_type = T;
+    using numeric_type = T;
+
+    static constexpr T min() noexcept {
+        return T(0);
+    }
+    static constexpr T max() noexcept {
+        return pow2_interval<n-1,T>::max() * T(2);
+    }
+};
+
+//---------------------------------------------------------
+template<class T>
+struct pow2_interval<0,T>
+{
+    using value_type = T;
+    using numeric_type = T;
+
+    static constexpr T min() noexcept {return T(0); }
+    static constexpr T max() noexcept {return T(1); }
+};
+
+//-------------------------------------------------------------------
+template<int n, class T>
+inline constexpr T
+min(const pow2_interval<n,T>&) { return pow2_interval<n,T>::min(); }
+
+template<int n, class T>
+inline constexpr T
+max(const pow2_interval<n,T>&) { return pow2_interval<n,T>::max(); }
+
 
 
 
@@ -233,7 +338,8 @@ public:
     //---------------------------------------------------------------
     constexpr
     interval():
-        l_{value_type(0)}, r_{value_type(0)}
+        l_(numeric_limits<value_type>::lowest()),
+        r_(numeric_limits<value_type>::max())
     {}
 
     //-----------------------------------------------------
@@ -247,7 +353,6 @@ public:
     //-----------------------------------------------------
     template<class T1, class T2, class = typename std::enable_if<
         is_number<T1,T2>::value>::type>
-    explicit
     interval(T1&& left, T2&& right):
         l_(std::forward<T1>(left)),
         r_(std::forward<T2>(right))
@@ -717,6 +822,7 @@ make_interval(const T& a)
 {
     return interval<T>{a,a};
 }
+
 
 
 //---------------------------------------------------------

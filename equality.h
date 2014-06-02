@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -108,21 +108,21 @@ abs_approx_equal(const T1& a, const T2& b, const T3& tolerance)
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const T& a, const T& tolerance = tolerance<T>::value())
+approx_0(const T& a, const T& tol = tolerance<T>::value())
 {
     return (
-        (a >= (T(0) - tolerance)) &&
-        (a <= (T(0) + tolerance)) );
+        (a >= (T(0) - tol)) &&
+        (a <= (T(0) + tol)) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const std::complex<T>& a, const T& tolerance = tolerance<T>::value())
+approx_0(const std::complex<T>& a, const T& tol = tolerance<T>::value())
 {
     return (
-        approx_0(a.real(), tolerance) &&
-        approx_0(a.imag(), tolerance) );
+        approx_0(a.real(), tol) &&
+        approx_0(a.imag(), tol) );
 }
 
 
@@ -131,21 +131,21 @@ approx_0(const std::complex<T>& a, const T& tolerance = tolerance<T>::value())
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const T& a, const T& tolerance = tolerance<T>::value())
+approx_1(const T& a, const T& tol = tolerance<T>::value())
 {
     return (
-        (a >= (T(1) - tolerance)) &&
-        (a <= (T(1) + tolerance)) );
+        (a >= (T(1) - tol)) &&
+        (a <= (T(1) + tol)) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const std::complex<T>& a, const T& tolerance = tolerance<T>::value())
+approx_1(const std::complex<T>& a, const T& tol = tolerance<T>::value())
 {
     return (
-        approx_1(a.real(), tolerance) &&
-        approx_0(a.imag(), tolerance) );
+        approx_1(a.real(), tol) &&
+        approx_0(a.imag(), tol) );
 }
 
 

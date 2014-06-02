@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -15,7 +15,6 @@
 #include <random>
 
 #include "tests.h"
-
 
 
 namespace am {
@@ -32,15 +31,6 @@ void numeric_correctness()
         std::cerr << "FAIL\n" << "am::num::angle\n" << e.what() << std::endl;
     }
 
-
-    try {
-        num::test::choice_correctness();
-    }
-    catch(std::exception& e) {
-        std::cerr << "FAIL\n" << "am::num::choice\n" << e.what() << std::endl;
-    }
-
-
     try {
         num::test::quantity_correctness();
     }
@@ -48,6 +38,19 @@ void numeric_correctness()
         std::cerr << "FAIL\n" << "am::num::quantity\n" << e.what() << std::endl;
     }
 
+    try {
+        num::test::bounded_correctness();
+    }
+    catch(std::exception& e) {
+        std::cerr << "FAIL\n" << "am::num::bounded\n" << e.what() << std::endl;
+    }
+
+    try {
+        num::test::choice_correctness();
+    }
+    catch(std::exception& e) {
+        std::cerr << "FAIL\n" << "am::num::choice\n" << e.what() << std::endl;
+    }
 
     try {
         num::test::quaternion_correctness();
@@ -63,29 +66,6 @@ void numeric_correctness()
     catch(std::exception& e) {
         std::cerr << "FAIL\n" << "am::num sequence generation\n" << e.what() << std::endl;
     }
-
-
-//    try {
-//        num::test::rational_correctness();
-//    }
-//    catch(std::exception& e) {
-//        std::cerr << "FAIL\n" << "am::num::rational\n" << e.what() << std::endl;
-//    }
-
-//    try {
-//        num::test::dual_correctness();
-//    }
-//    catch(std::exception& e) {
-//        std::cerr << "FAIL\n" << "am::num::dual\n" << e.what() << std::endl;
-//    }
-
-//    try {
-//        num::test::scomplex_correctness();
-//    }
-//    catch(std::exception& e) {
-//        std::cerr << "FAIL\n" << "am::num::scomplex\n" << e.what() << std::endl;
-//    }
-
 
 
 }

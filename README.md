@@ -3,12 +3,19 @@ AM numeric
 
 Collection of numeric facilities for C++
 
+Note: 
+All classes and functions are work in progress. Interfaces are still likely 
+to change over time and documentation is very poor so far. 
+
+All components are header-only.
+
 
 Generic classes
   - safe angle 
   - choice (provides arithmetic modulo N)
-  - quantity (unsigned integer with bounds check and infinity type)
   - interval (incl. interval arithmetic)
+  - quantity (unsigned integer with bounds check and infinity type)
+  - bounded number
   - rational number
   - dual number
   - split-complex number

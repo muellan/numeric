@@ -15,8 +15,8 @@
 #include <cstdint>
 #include <cmath>
 #include <cassert>
+#include <iostream>
 
-#include "traits.h"
 #include "limits.h"
 #include "narrowing.h"
 #include "conversion.h"
@@ -24,6 +24,28 @@
 
 namespace am {
 namespace num {
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class> class quantity;
+
+template<class>
+struct is_quantity :
+    std::false_type
+{};
+
+template<class T>
+struct is_quantity<quantity<T>> :
+    std::true_type
+{};
+
+
+
+
 
 
 /*****************************************************************************
@@ -51,8 +73,9 @@ public:
         v_(v >= zero_val() ? v : zero_val())
     {}
     //-----------------------------------------------------
-    template<class T, class = typename
-        std::enable_if<is_number<decay_t<T>>::value>::type>
+    template<class T, class = typename std::enable_if<
+        !is_quantity<decay_t<T>>::value &&
+        is_number<decay_t<T>>::value>::type>
     constexpr
     quantity(T&& v) noexcept :
         v_(v < zero_val() ? zero_val() :
@@ -76,6 +99,16 @@ public:
     quantity(quantity&& source) noexcept :
         v_(std::move(source.v_))
     {}
+    //-----------------------------------------------------
+    template<class T>
+    constexpr
+    quantity(const quantity<T>& v) noexcept :
+        v_((isinf(v) || (v > max_val())
+            ? infty_val()
+            : value_type(v) ))
+    {
+         AM_CHECK_NARROWING(value_type,T)
+    }
 
     //---------------------------------------------------------------
     quantity&
@@ -89,10 +122,24 @@ public:
         v_ = std::move(source.v_);
         return *this;
     }
+    //-----------------------------------------------------
+    template<class T>
+    quantity&
+    operator = (const quantity<T>& v) noexcept
+    {
+        AM_CHECK_NARROWING(value_type,T)
+
+        v_ = (isinf(v) || v > max_val())
+                ? infty_val()
+                : value_type(v);
+
+        return *this;
+    }
 
     //-----------------------------------------------------
-    template<class T, class = typename
-        std::enable_if<is_number<decay_t<T>>::value>::type>
+    template<class T, class = typename std::enable_if<
+        !is_quantity<decay_t<T>>::value &&
+        is_number<decay_t<T>>::value>::type>
     quantity&
     operator = (T&& v) noexcept
     {
@@ -111,18 +158,27 @@ public:
 
 
     //---------------------------------------------------------------
-    constexpr
-    const value_type&
-    value() const noexcept {
-        return v_;
-    }
-    //-----------------------------------------------------
     template<class T, class = typename
         std::enable_if<is_number<T>::value>::type>
     explicit
     operator T() const noexcept
     {
-        return (isinf(*this)) ? numeric_limits<T>::infinity() : T(v_);
+        return (isinf(*this)
+            ? (numeric_limits<T>::has_infinity
+                   ? numeric_limits<T>::infinity()
+                   : numeric_limits<T>::max())
+            : T(v_));
+    }
+
+    //-----------------------------------------------------
+    value_type
+    value() const noexcept
+    {
+        return (isinf(*this)
+            ? (numeric_limits<value_type>::has_infinity
+                   ? numeric_limits<value_type>::infinity()
+                   : numeric_limits<value_type>::max())
+            : v_);
     }
 
 
@@ -142,11 +198,18 @@ public:
         return quantity{0,0};
     }
 
-    //-----------------------------------------------------
+
+    //---------------------------------------------------------------
     inline friend
     constexpr bool
     isinf(const quantity& q) noexcept {
         return (q.v_ < zero_val());
+    }
+    //-----------------------------------------------------
+    inline friend
+    constexpr bool
+    isfinite(const quantity& q) noexcept {
+        return (q.v_ > zero_val());
     }
 
 
@@ -169,17 +232,18 @@ public:
     }
 
     //-----------------------------------------------------
-    template<class OtherIntT>
+    template<class T>
     quantity&
-    operator += (const quantity<OtherIntT>& c) noexcept
+    operator += (const quantity<T>& c) noexcept
     {
-        AM_CHECK_NARROWING(value_type,OtherIntT)
+        AM_CHECK_NARROWING(value_type,T)
 
         if(!isinf(*this)) {
-            if(isinf(c) || (c.value() > max_val()))
+            const auto vc = value_type(c);
+
+            if(isinf(c) || (vc > max_val()))
                 *this = infinity();
             else {
-                const auto vc = value_type(c);
                 if((max_val() - v_) > vc) {
                     v_ = max_val();
                 } else {
@@ -192,6 +256,7 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
+        !is_quantity<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
     quantity&
     operator += (T&& v) noexcept
@@ -235,14 +300,14 @@ public:
     }
 
     //-----------------------------------------------------
-    template<class OtherIntT>
+    template<class T>
     quantity&
-    operator -= (const quantity<OtherIntT>& c) noexcept
+    operator -= (const quantity<T>& c) noexcept
     {
-        AM_CHECK_NARROWING(value_type,OtherIntT)
+        AM_CHECK_NARROWING(value_type,T)
 
         if(isinf(*this)) {
-            if(isinf(c) || (c.value() > max_val()))
+            if(isinf(c) || (value_type(c) > max_val()))
                 v_ = zero_val();
         }
         else {
@@ -257,6 +322,7 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
+        !is_quantity<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
     quantity&
     operator -= (T&& v) noexcept
@@ -282,7 +348,7 @@ public:
     operator *= (const quantity& c) noexcept
     {
         if(!isinf(*this)) {
-            if(isinf(c) || (c.value() > max_val())) {
+            if(isinf(c) || (c.v_ > max_val())) {
                 *this = infinity();
             } else {
                 if(c.v_ > (max_val() / v_)) {
@@ -296,17 +362,17 @@ public:
     }
 
     //-----------------------------------------------------
-    template<class OtherIntT>
+    template<class T>
     quantity&
-    operator *= (const quantity<OtherIntT>& c) noexcept
+    operator *= (const quantity<T>& c) noexcept
     {
-        AM_CHECK_NARROWING(value_type,OtherIntT)
+        AM_CHECK_NARROWING(value_type,T)
 
         if(!isinf(*this)) {
-            if(isinf(c) || (c.value() > max_val())) {
+            const auto cv = value_type(c);
+            if(isinf(c) || (cv > max_val())) {
                 *this = infinity();
             } else {
-                const auto cv = value_type(c);
                 if(cv > (max_val() / v_)) {
                     v_ = max_val();
                 } else {
@@ -321,6 +387,7 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
+        !is_quantity<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
     quantity&
     operator *= (T&& v) noexcept
@@ -410,75 +477,48 @@ private:
 
 
 
+
+
 /*****************************************************************************
  *
  *
+ * ARITHMETIC
  *
  *
  *****************************************************************************/
-
-template<class IntT>
-inline constexpr quantity<signed_t<decay_t<IntT>>>
-make_quantity(IntT&& x)
-{
-    static_assert(is_integral<IntT>::value,
-        "make_quantity(x): x has to be an integral number");
-
-//    assert(x <= numeric_limits<signed_t<decay_t<IntT>>>::max());
-
-    return quantity<signed_t<decay_t<IntT>>>{make_signed(std::forward<IntT>(x))};
-}
-
-
-
-namespace literals {
 
 //-------------------------------------------------------------------
-constexpr quantity<long long int>
-operator "" _qty (unsigned long long int x)
-{
-    return (x > static_cast<unsigned long long int>(
-            std::numeric_limits<long long int>::max()))
-               ? quantity<long long int>::infinity()
-               : quantity<long long int>(static_cast<long long int>(x));
-}
-
-} // namespace literals
-
-
-
-
-
-
-/*****************************************************************************
- *
- *
- *
- *
- *****************************************************************************/
-
+// +
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
 quantity<common_numeric_t<T1,T2>>
 operator + (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
+    using std::isinf;
+
     using cv_t = common_numeric_t<T1,T2>;
     using res_t = quantity<cv_t>;
 
     return (isinf(a) || isinf(b))
         ? res_t::infinity()
-        : ( (cv_t(res_t::max()) - cv_t(a)) > cv_t(b)
+        : ( (cv_t(res_t::max()) - cv_t(a)) < cv_t(b)
                 ? res_t::max()
                 : res_t{cv_t(a) + cv_t(b)});
 }
 
+
+
+//-------------------------------------------------------------------
+// -
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
 quantity<common_numeric_t<T1,T2>>
 operator - (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
+    using std::isinf;
+
     using cv_t = common_numeric_t<T1,T2>;
     using res_t = quantity<cv_t>;
 
@@ -490,12 +530,18 @@ operator - (const quantity<T1>& a, const quantity<T2>& b) noexcept
                : res_t{cv_t(a) - cv_t(b)});
 }
 
+
+
+//-------------------------------------------------------------------
+// *
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
 quantity<common_numeric_t<T1,T2>>
 operator * (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
+    using std::isinf;
+
     using cv_t = common_numeric_t<T1,T2>;
     using res_t = quantity<cv_t>;
 
@@ -506,9 +552,12 @@ operator * (const quantity<T1>& a, const quantity<T2>& b) noexcept
         )
         : ( (isinf(b))
             ? ((a == a.zero()) ? res_t::zero() : res_t::infinity())
-            : (cv_t(a) > (cv_t(res_t::max()) / cv_t(b))
-                  ? res_t::max()
-                  : res_t{cv_t(a) * cv_t(b)} )
+            : ((a == a.zero() || b == b.zero())
+                  ? res_t::zero()
+                  : ((cv_t(a) > (cv_t(res_t::max()) / cv_t(b)))
+                      ? res_t::max()
+                      : res_t{cv_t(a) * cv_t(b)} )
+              )
         );
 }
 
@@ -520,6 +569,7 @@ operator * (const quantity<T1>& a, const quantity<T2>& b) noexcept
 /*****************************************************************************
  *
  *
+ * COMPARISONS
  *
  *
  *****************************************************************************/
@@ -529,7 +579,7 @@ template<class T1, class T2>
 inline constexpr bool
 operator == (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
-    return (a.value() == b.value());
+    return isinf(a) ? isinf(b) : (isinf(b) ? false : (T1(a) == T2(b)) );
 }
 
 //---------------------------------------------------------
@@ -538,7 +588,9 @@ template<class T1, class T2, class = typename
 inline constexpr bool
 operator == (const quantity<T1>& a, const T2& b) noexcept
 {
-    return (a.value() == b);
+    using std::isinf;
+
+    return isinf(a) ? isinf(b) : (isinf(b) ? false : (T1(a) == b) );
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
@@ -546,7 +598,9 @@ template<class T1, class T2, class = typename
 inline constexpr bool
 operator == (const T2& b, const quantity<T1>& a) noexcept
 {
-    return (b == a.value());
+    using std::isinf;
+
+    return isinf(a) ? isinf(b) : (isinf(b) ? false : (T1(a) == b) );
 }
 
 
@@ -556,7 +610,7 @@ template<class T1, class T2>
 inline constexpr bool
 operator != (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
-    return (a.value() != b.value());
+    return !(a == b);
 }
 
 //---------------------------------------------------------
@@ -565,7 +619,7 @@ template<class T1, class T2, class = typename
 inline constexpr bool
 operator != (const quantity<T1>& a, const T2& b) noexcept
 {
-    return (a.value() != b);
+    return !(a == b);
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
@@ -573,7 +627,7 @@ template<class T1, class T2, class = typename
 inline constexpr bool
 operator != (const T2& b, const quantity<T1>& a) noexcept
 {
-    return (b != a.value());
+    return !(a == b);
 }
 
 
@@ -583,7 +637,7 @@ template<class T1, class T2>
 inline constexpr bool
 operator <= (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
-    return isinf(b) || (!isinf(a) && (a.value() <= b.value()));
+    return isinf(b) || (!isinf(a) && (T1(a) <= T2(b)));
 }
 
 //---------------------------------------------------------
@@ -594,7 +648,7 @@ operator <= (const quantity<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
-    return isinf(b) || (!isinf(a) && (a.value() <= b.value()));
+    return isinf(b) || (!isinf(a) && (T1(a) <= b));
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
@@ -604,7 +658,7 @@ operator <= (const T2& b, const quantity<T1>& a) noexcept
 {
     using std::isinf;
 
-    return isinf(b) || (!isinf(a) && (a.value() <= b));
+    return isinf(b) || (!isinf(a) && (b <= T1(a)));
 }
 
 
@@ -614,7 +668,7 @@ template<class T1, class T2>
 inline constexpr bool
 operator <  (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
-    return !isinf(a) && (isinf(b) || (a.value() < b.value()) );
+    return !isinf(a) && (isinf(b) || (T1(a) < T2(b)));
 }
 
 //---------------------------------------------------------
@@ -625,7 +679,7 @@ operator <  (const quantity<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
-    return !isinf(a) && (isinf(b) || (a.value() < b) );
+    return !isinf(a) && (isinf(b) || (T1(a) < b));
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
@@ -635,7 +689,7 @@ operator <  (const T2& b, const quantity<T1>& a) noexcept
 {
     using std::isinf;
 
-    return !isinf(a) && (isinf(b) || (a.value() < b) );
+    return !isinf(a) && (isinf(b) || (b < T1(a)) );
 }
 
 
@@ -644,7 +698,7 @@ template<class T1, class T2>
 inline constexpr bool
 operator >= (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
-    return isinf(a) || (!isinf(b) && (a.value() >= b.value()));
+    return isinf(a) || (!isinf(b) && (T1(a) >= T2(b)));
 }
 
 //---------------------------------------------------------
@@ -655,7 +709,7 @@ operator >= (const quantity<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
-    return isinf(a) || (!isinf(b) && (a.value() >= b.value()));
+    return isinf(a) || (!isinf(b) && (T1(a) >= b));
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
@@ -665,7 +719,7 @@ operator >= (const T2& b, const quantity<T1>& a) noexcept
 {
     using std::isinf;
 
-    return isinf(a) || (!isinf(b) && (a.value() >= b.value()));
+    return isinf(a) || (!isinf(b) && (b >= T1(a)));
 }
 
 
@@ -674,7 +728,7 @@ template<class T1, class T2>
 inline constexpr bool
 operator >  (const quantity<T1>& a, const quantity<T2>& b) noexcept
 {
-    return !isinf(b) && (isinf(a) || (a.value() > b.value()) );
+    return !isinf(b) && (isinf(a) || (T1(a) > T2(b)) );
 }
 
 //---------------------------------------------------------
@@ -685,7 +739,7 @@ operator >  (const quantity<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
-    return !isinf(b) && (isinf(a) || (a.value() > b) );
+    return !isinf(b) && (isinf(a) || (T1(a) > b) );
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
@@ -695,35 +749,8 @@ operator >  (const T2& b, const quantity<T1>& a) noexcept
 {
     using std::isinf;
 
-    return !isinf(b) && (isinf(a) || (a.value() > b) );
+    return !isinf(b) && (isinf(a) || (b > T1(a)) );
 }
-
-
-
-
-
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-template<class T>
-struct numeric_limits<quantity<T>> :
-    public numeric_limits<T>
-{
-    static constexpr quantity<T>
-    infinity() {return quantity<T>::infinity(); }
-
-    static constexpr quantity<T>
-    lowest() {return quantity<T>::zero(); }
-
-    static constexpr quantity<T>
-    min() {return quantity<T>::zero(); }
-
-    static constexpr quantity<T>
-    max() {return quantity<T>::max(); }
-};
 
 
 
@@ -761,6 +788,207 @@ print(Ostream& os, const quantity<Int>& c)
 
     return os;
 }
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class T>
+class numeric_limits<quantity<T>>
+{
+    using val_t = quantity<T>;
+
+public:
+    static constexpr bool is_specialized = true;
+
+    static constexpr val_t
+    min() {return val_t::zero(); }
+
+    static constexpr val_t
+    max() {return val_t::max(); }
+
+    static constexpr val_t
+    lowest() {return val_t::zero(); }
+
+    static constexpr int digits = numeric_limits<T>::digits;
+    static constexpr int digits10 = numeric_limits<T>::digits10;
+    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
+    static constexpr bool is_signed = false;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = numeric_limits<T>::is_exact;
+    static constexpr int radix = numeric_limits<T>::radix;
+
+    static constexpr val_t
+    tolerance() noexcept { return num::tolerance<T>::value(); }
+
+    static constexpr val_t
+    round_error() noexcept { return numeric_limits<T>::round_error(); }
+
+    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
+    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
+    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
+    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
+
+    static constexpr bool has_infinity = true;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = false;
+    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    static constexpr bool has_denorm_loss = false;
+
+    static constexpr val_t
+    infinity() noexcept {return val_t::infinity(); }
+
+    static constexpr val_t
+    quiet_NaN() noexcept {return numeric_limits<T>::quiet_NaN(); }
+
+    static constexpr val_t
+    signaling_NaN() noexcept {return numeric_limits<T>::signaling_NaN(); }
+
+    static constexpr val_t
+    denorm_min() noexcept {return numeric_limits<T>::denorm_min(); }
+
+    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
+
+    static constexpr bool traps = numeric_limits<T>::traps;
+    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
+    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
+};
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ * TRAITS SPECIALIZATIONS
+ *
+ *
+ *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_number<quantity<T>> : std::true_type {};
+
+template<class T>
+struct is_number<quantity<T>&> : std::true_type {};
+
+template<class T>
+struct is_number<quantity<T>&&> : std::true_type {};
+
+template<class T>
+struct is_number<const quantity<T>&> : std::true_type {};
+
+template<class T>
+struct is_number<const quantity<T>> : std::true_type {};
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_floating_point<quantity<T>> :
+    std::integral_constant<bool, is_floating_point<T>::value>
+{};
+
+
+
+//-------------------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type<quantity<T>,T2>
+{
+    using type = quantity<common_numeric_t<T,T2>>;
+};
+//---------------------------------------------------------
+template<class T, class T2>
+struct common_numeric_type<T2,quantity<T>>
+{
+    using type = quantity<common_numeric_t<T,T2>>;
+};
+//---------------------------------------------------------
+template<class T1, class T2>
+struct common_numeric_type<quantity<T1>,quantity<T2>>
+{
+    using type = quantity<common_numeric_t<T1,T2>>;
+};
+
+
+namespace detail {
+
+//-------------------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, quantity<To>, From> :
+    public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, quantity<To>, quantity<From> > :
+    public is_non_narrowing_helper<true,To,From>
+{};
+
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, quantity<From> > :
+    public is_non_narrowing_helper<true,To,From>
+{};
+
+
+}  // namespace detail
+
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *
+ *****************************************************************************/
+
+template<class IntT>
+inline constexpr quantity<signed_t<decay_t<IntT>>>
+make_quantity(IntT&& x)
+{
+    static_assert(is_integral<IntT>::value,
+        "make_quantity(x): x has to be an integral number");
+
+//    assert(x <= numeric_limits<signed_t<decay_t<IntT>>>::max());
+
+    return quantity<signed_t<decay_t<IntT>>>{make_signed(std::forward<IntT>(x))};
+}
+
+
+
+namespace literals {
+
+//-------------------------------------------------------------------
+constexpr quantity<long long int>
+operator "" _qty (unsigned long long int x)
+{
+    return (x > static_cast<unsigned long long int>(
+            std::numeric_limits<long long int>::max()))
+               ? quantity<long long int>::infinity()
+               : quantity<long long int>(static_cast<long long int>(x));
+}
+
+} // namespace literals
+
 
 
 }  // namespace num

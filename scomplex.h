@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -25,6 +25,28 @@ namespace num {
 
 /*****************************************************************************
  *
+ *
+ *
+ *****************************************************************************/
+template<class> class scomplex;
+
+template<class>
+struct is_scomplex :
+    std::false_type
+{};
+
+template<class T>
+struct is_scomplex<scomplex<T>> :
+    std::true_type
+{};
+
+
+
+
+
+
+/*****************************************************************************
+ *
  * @brief
  * represents a split complex number (aka real tessarine) r + j * d where
  * r is the real part,
@@ -39,6 +61,9 @@ public:
 
     static_assert(is_number<NumberType>::value,
         "scomplex<T>: T must be a number type");
+
+    static_assert(!is_scomplex<NumberType>::value,
+        "scomplex<T>: T must not be a scomplex<> type itself");
 
 
     //---------------------------------------------------------------
@@ -501,30 +526,30 @@ template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(
     const scomplex<T1>& a, const scomplex<T2>& b,
-    const T3& tolerance = tolerance<T3>::value())
+    const T3& tol = tolerance<T3>::value())
 {
-    return (approx_equal(a.real(), b.real(), tolerance) &&
-            approx_equal(a.imag(), b.imag(), tolerance) );
+    return (approx_equal(a.real(), b.real(), tol) &&
+            approx_equal(a.imag(), b.imag(), tol) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const scomplex<T>& x, const T& tolerance = tolerance<T>::value())
+approx_1(const scomplex<T>& x, const T& tol = tolerance<T>::value())
 {
     return (
-        approx_1(x.real(), tolerance) &&
-        approx_0(x.imag(), tolerance) );
+        approx_1(x.real(), tol) &&
+        approx_0(x.imag(), tol) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const scomplex<T>& x, const T& tolerance = tolerance<T>::value())
+approx_0(const scomplex<T>& x, const T& tol = tolerance<T>::value())
 {
     return (
-        approx_0(x.real(), tolerance) &&
-        approx_0(x.imag(), tolerance) );
+        approx_0(x.real(), tol) &&
+        approx_0(x.imag(), tol) );
 }
 
 
@@ -1303,25 +1328,25 @@ isnormal(const scomplex<T>& x)
 
 //-------------------------------------------------------------------
 template<class T>
-struct is_number<scomplex<T>> : public std::true_type {};
+struct is_number<scomplex<T>> : std::true_type {};
 
 template<class T>
-struct is_number<scomplex<T>&> : public std::true_type {};
+struct is_number<scomplex<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<scomplex<T>&&> : public std::true_type {};
+struct is_number<scomplex<T>&&> : std::true_type {};
 
 template<class T>
-struct is_number<const scomplex<T>&> : public std::true_type {};
+struct is_number<const scomplex<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<const scomplex<T>> : public std::true_type {};
+struct is_number<const scomplex<T>> : std::true_type {};
 
 
 //-------------------------------------------------------------------
 template<class T>
 struct is_floating_point<scomplex<T>> :
-    public std::integral_constant<bool, is_floating_point<T>::value>
+    std::integral_constant<bool, is_floating_point<T>::value>
 {};
 
 
@@ -1336,9 +1361,14 @@ struct common_numeric_type<scomplex<T>,T2>
 template<class T, class T2>
 struct common_numeric_type<T2,scomplex<T>>
 {
-    using type = common_numeric_t<scomplex<T>,T2>;
+    using type = scomplex<common_numeric_t<T,T2>>;
 };
-
+//---------------------------------------------------------
+template<class T1, class T2>
+struct common_numeric_type<scomplex<T1>,scomplex<T2>>
+{
+    using type = scomplex<common_numeric_t<T1,T2>>;
+};
 
 
 namespace detail {

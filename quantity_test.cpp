@@ -12,6 +12,7 @@
 
 #include <stdexcept>
 #include <cstdint>
+#include <iostream>
 
 #include "quantity.h"
 #include "quantity_test.h"
@@ -37,7 +38,7 @@ void quantity_init_correctness()
         (intmax_t(c3) != 5) ||
         (intmax_t(c4) != 8) ||
         (intmax_t(c5) != 123) ||
-        (c6.value()   != 12345678) )
+        (intmax_t(c6) != 12345678) )
     {
         throw std::logic_error("am::quantity init");
     }
@@ -96,7 +97,9 @@ void quantity_arithmetic_correctness()
         ((d + c) == 15) &&    isinf(e + c) &&        isinf(f + c) &&
         ((d + d) == 20) &&    isinf(e + d) &&        isinf(f + d) &&
         isinf(d + e) &&       isinf(e + e) &&        isinf(f + e) &&
-        isinf(d + f) &&       isinf(e + f) &&        isinf(f + f)))
+        isinf(d + f) &&       isinf(e + f) &&        isinf(f + f) &&
+
+        true ))
     {
         throw std::logic_error("am::quantity arithmetic");
     }

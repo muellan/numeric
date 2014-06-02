@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -13,6 +13,7 @@
 
 
 #include <limits>
+#include <cmath>
 
 #include "traits.h"
 
@@ -174,6 +175,14 @@ struct numeric_limits :
 {
     static constexpr T
     tolerance() {return num::tolerance<T>::value(); }
+
+    static int
+    precision() {
+        using std::log10;
+
+        return static_cast<int>(
+            log10(1 / static_cast<long double>(tolerance())));
+    }
 };
 
 

@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -27,6 +27,29 @@ namespace num {
 
 /*****************************************************************************
  *
+ *
+ *
+ *****************************************************************************/
+template<class> class dual;
+
+template<class>
+struct is_dual :
+    std::false_type
+{};
+
+template<class T>
+struct is_dual<dual<T>> :
+    std::true_type
+{};
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
  * @brief
  * represents a dual number r + e * d where
  * r is the real part,
@@ -41,6 +64,9 @@ public:
 
     static_assert(is_number<NumberType>::value,
         "dual<T>: T must be a number type");
+
+    static_assert(!is_dual<NumberType>::value,
+        "dual<T>: T must not be a dual<> type itself");
 
 
     //---------------------------------------------------------------
@@ -529,30 +555,30 @@ operator != (const dual<T1>& a, const dual<T2>& b)
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const dual<T1>& a, const dual<T2>& b,
-    const T3& tolerance = tolerance<T3>::value())
+    const T3& tol = tolerance<T3>::value())
 {
-    return (approx_equal(a.real(), b.real(), tolerance) &&
-            approx_equal(a.imag(), b.imag(), tolerance) );
+    return (approx_equal(a.real(), b.real(), tol) &&
+            approx_equal(a.imag(), b.imag(), tol) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const dual<T>& x, const T& tolerance = tolerance<T>::value())
+approx_1(const dual<T>& x, const T& tol = tolerance<T>::value())
 {
     return (
-        approx_1(x.real(), tolerance) &&
-        approx_0(x.imag(), tolerance) );
+        approx_1(x.real(), tol) &&
+        approx_0(x.imag(), tol) );
 }
 
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const dual<T>& x, const T& tolerance = tolerance<T>::value())
+approx_0(const dual<T>& x, const T& tol = tolerance<T>::value())
 {
     return (
-        approx_0(x.real(), tolerance) &&
-        approx_0(x.imag(), tolerance) );
+        approx_0(x.real(), tol) &&
+        approx_0(x.imag(), tol) );
 }
 
 
@@ -1458,26 +1484,26 @@ isnormal(const dual<T>& x)
 
 //-------------------------------------------------------------------
 template<class T>
-struct is_number<dual<T>> : public std::true_type {};
+struct is_number<dual<T>> : std::true_type {};
 
 template<class T>
-struct is_number<dual<T>&> : public std::true_type {};
+struct is_number<dual<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<dual<T>&&> : public std::true_type {};
+struct is_number<dual<T>&&> : std::true_type {};
 
 template<class T>
-struct is_number<const dual<T>&> : public std::true_type {};
+struct is_number<const dual<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<const dual<T>> : public std::true_type {};
+struct is_number<const dual<T>> : std::true_type {};
 
 
 
 //-------------------------------------------------------------------
 template<class T>
 struct is_floating_point<dual<T>> :
-    public std::integral_constant<bool, is_floating_point<T>::value>
+    std::integral_constant<bool, is_floating_point<T>::value>
 {};
 
 
@@ -1492,7 +1518,13 @@ struct common_numeric_type<dual<T>,T2>
 template<class T, class T2>
 struct common_numeric_type<T2,dual<T>>
 {
-    using type = common_numeric_t<dual<T>,T2>;
+    using type = dual<common_numeric_t<T,T2>>;
+};
+//---------------------------------------------------------
+template<class T1, class T2>
+struct common_numeric_type<dual<T1>,dual<T2>>
+{
+    using type = dual<common_numeric_t<T1,T2>>;
 };
 
 
@@ -1522,7 +1554,6 @@ struct is_non_narrowing_helper<true, To, dual<From> > :
 
 
 }  // namespace num
-
 }  // namespace am
 
 

@@ -12,6 +12,8 @@
 
 
 #include <vector>
+//#include <iostream>
+//#include "../traversal/traversable.h"
 
 
 #include "sequ_linear.h"

@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -16,7 +16,7 @@
 #include <cstdint>
 
 
-#include "traits.h"
+#include "limits.h"
 #include "narrowing.h"
 
 
@@ -109,12 +109,12 @@ public:
 
     //---------------------------------------------------------------
     static constexpr value_type
-    min_value() noexcept {
+    min() noexcept {
         return 0;
     }
     //-----------------------------------------------------
     static constexpr value_type
-    max_value() noexcept {
+    max() noexcept {
         return (numChoices-1);
     }
 
@@ -141,7 +141,7 @@ public:
     choice&
     operator += (const choice<OtherIntT,m>& c)
     {
-        return (*this += *c);
+        return (*this += value_type(c));
     }
 
     //-----------------------------------------------------
@@ -154,7 +154,7 @@ public:
             "choice::operator+=(T) : T has to be an integral number type");
 
         auto v = (x_ + x) % numChoices;
-        x_ = value_type((v >= 0) ? v : (numChoices+v));
+        x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
     }
 
@@ -177,7 +177,7 @@ public:
     choice&
     operator -= (const choice<OtherIntT,m>& c)
     {
-        return (*this -= *c);
+        return (*this -= value_type(c));
     }
 
     //-----------------------------------------------------
@@ -190,7 +190,7 @@ public:
             "choice::operator-=(T) : T has to be an integral number type");
 
         auto v = (x_ - x) % numChoices;
-        x_ = value_type((v >= 0) ? v : (numChoices+v));
+        x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
     }
 
@@ -207,7 +207,7 @@ public:
             "choice::operator*=(T) : T has to be an integral number type");
 
         auto v = (x_ * x) % numChoices;
-        x_ = value_type((v >= 0) ? v : (numChoices+v));
+        x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
     }
 
@@ -221,7 +221,7 @@ public:
             "choice::operator/=(T) : T has to be an integral number type");
 
         auto v = (x_ / x) % numChoices;
-        x_ = value_type((v >= 0) ? v : (numChoices+v));
+        x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
     }
 
@@ -274,7 +274,7 @@ public:
     //-----------------------------------------------------
     choice
     operator ++ (int) {
-        choice old{*this};
+        auto old = *this;
         ++*this;
         return old;
     }
@@ -287,7 +287,7 @@ public:
     //-----------------------------------------------------
     choice
     operator -- (int) {
-        choice old{*this};
+        auto old = *this;
         ++*this;
         return old;
     }
@@ -473,6 +473,79 @@ inverse(choice<Int,n> c)
 {
     return choice<Int,n>{-c};
 }
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class T, T n>
+class numeric_limits<choice<T,n>>
+{
+    using val_t = choice<T,n>;
+
+public:
+    static constexpr bool is_specialized = true;
+
+    static constexpr val_t
+    min() {return val_t::min(); }
+
+    static constexpr val_t
+    max() {return val_t::max(); }
+
+    static constexpr val_t
+    lowest() {return val_t::min(); }
+
+    static constexpr int digits = numeric_limits<T>::digits;
+    static constexpr int digits10 = numeric_limits<T>::digits10;
+    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
+    static constexpr bool is_signed = numeric_limits<T>::is_signed;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = numeric_limits<T>::is_exact;
+    static constexpr int radix = numeric_limits<T>::radix;
+
+    static constexpr val_t
+    tolerance() noexcept { return num::tolerance<T>::value(); }
+
+    static constexpr val_t
+    round_error() noexcept { return numeric_limits<T>::round_error(); }
+
+    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
+    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
+    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
+    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
+
+    static constexpr bool has_infinity = false;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = false;
+    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    static constexpr bool has_denorm_loss = false;
+
+    static constexpr val_t
+    infinity() noexcept {return numeric_limits<T>::infinity(); }
+
+    static constexpr val_t
+    quiet_NaN() noexcept {return numeric_limits<T>::quiet_NaN(); }
+
+    static constexpr val_t
+    signaling_NaN() noexcept {return numeric_limits<T>::signaling_NaN(); }
+
+    static constexpr val_t
+    denorm_min() noexcept {return numeric_limits<T>::denorm_min(); }
+
+    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = true;
+
+    static constexpr bool traps = numeric_limits<T>::traps;
+    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
+    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
+};
 
 
 }  // namespace num

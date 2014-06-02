@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -38,13 +38,13 @@ namespace detail {
 //-------------------------------------------------------------------
 template<bool numbers, class To, class F, class... Fs>
 struct is_non_narrowing_helper :
-    public std::false_type
+    std::false_type
 {};
 
 //---------------------------------------------------------
 template<class To, class F, class... Fs>
 struct is_non_narrowing_helper<true,To,F,Fs...> :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         is_non_narrowing_helper<true,
             decay_t<To>,
             decay_t<F>>::value
@@ -57,7 +57,7 @@ struct is_non_narrowing_helper<true,To,F,Fs...> :
 //---------------------------------------------------------
 template<class To, class From>
 struct is_non_narrowing_helper<true,To,From> :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         std::is_same<
             decay_t<To>,
             typename std::common_type<
@@ -104,7 +104,7 @@ struct is_non_narrowing_helper<true, To, std::complex<From> > :
 //-------------------------------------------------------------------
 template<class To, class From, class... Froms>
 struct is_non_narrowing :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         detail::is_non_narrowing_helper<
             is_number<decay_t<To>, decay_t<From>, decay_t<Froms>...>::value,
             decay_t<To>, decay_t<From>, decay_t<Froms>...>::value

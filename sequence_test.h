@@ -17,8 +17,10 @@ namespace am {
 namespace num {
 namespace test {
 
+
 //-------------------------------------------------------------------
 void sequence_generation_correctness();
+
 
 
 }  // namespace test

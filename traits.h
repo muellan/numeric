@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2014 André Müller
  *
  *****************************************************************************/
 
@@ -462,13 +462,13 @@ struct has_dimensions: public
 //-------------------------------------------------------------------
 template<class T, bool hasdim = has_dimensions<T>::value>
 struct dimensions :
-    public std::integral_constant<dims_t, dims_t(0)>
+    std::integral_constant<dims_t, dims_t(0)>
 {};
 
 //---------------------------------------------------------
 template<class T>
 struct dimensions<T,true> :
-    public std::integral_constant<
+    std::integral_constant<
         typename std::decay<decltype(T::dimensions())>::type,
         T::dimensions()>
 {};
@@ -476,7 +476,7 @@ struct dimensions<T,true> :
 //-------------------------------------------------------------------
 template<class T, std::size_t n>
 struct dimensions<std::array<T,n>,false> :
-    public std::integral_constant<dims_t,n>
+    std::integral_constant<dims_t,n>
 {};
 
 
@@ -486,7 +486,7 @@ struct dimensions<std::array<T,n>,false> :
 //-------------------------------------------------------------------
 template<dims_t n, class H, class... T>
 struct same_dimension :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         (same_dimension<n,H>::value &&
          same_dimension<n,T...>::value)>
 {
@@ -495,7 +495,7 @@ struct same_dimension :
 //---------------------------------------------------------
 template<dims_t n, class T>
 struct same_dimension<n,T> :
-    public std::integral_constant<bool, (dimensions<T>::value == n)>
+    std::integral_constant<bool, (dimensions<T>::value == n)>
 {};
 
 
@@ -628,7 +628,7 @@ struct is_invertable : public
 //-------------------------------------------------------------------
 template<class H, class... T>
 struct is_integral :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         is_integral<decay_t<H>>::value &&
         is_integral<decay_t<T>...>::value>
 {};
@@ -636,7 +636,7 @@ struct is_integral :
 //-----------------------------------------------------
 template<class T>
 struct is_integral<T> :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         std::is_integral<decay_t<T>>::value>
 {};
 
@@ -657,7 +657,7 @@ struct is_unsigned :
 //-------------------------------------------------------------------
 template<class H, class... T>
 struct is_floating_point :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         is_floating_point<decay_t<H>>::value &&
         is_floating_point<decay_t<T>...>::value>
 {};
@@ -672,13 +672,13 @@ struct is_floating_point<T> :
 //class decimal;
 //template<>
 //struct is_floating_point<decimal> :
-//    public std::true_type
+//    std::true_type
 //{};
 
 //-----------------------------------------------------
 template<class T>
 struct is_floating_point<std::complex<T>> :
-    public std::integral_constant<bool, is_floating_point<T>::value>
+    std::integral_constant<bool, is_floating_point<T>::value>
 {};
 
 
@@ -700,7 +700,7 @@ struct is_floating_point<std::complex<T>> :
 //-------------------------------------------------------------------
 template<class H, class... T>
 struct is_number :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         is_number<decay_t<H>>::value &&
         is_number<decay_t<T>...>::value>
 {};
@@ -708,32 +708,32 @@ struct is_number :
 //-----------------------------------------------------
 template<class T>
 struct is_number<T> :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         std::is_arithmetic<decay_t<T>>::value>
 {};
 
 //-----------------------------------------------------
 template<class T>
-struct is_number<std::complex<T>> : public std::true_type {};
+struct is_number<std::complex<T>> : std::true_type {};
 
 template<class T>
-struct is_number<std::complex<T>&> : public std::true_type {};
+struct is_number<std::complex<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<std::complex<T>&&> : public std::true_type {};
+struct is_number<std::complex<T>&&> : std::true_type {};
 
 template<class T>
-struct is_number<const std::complex<T>&> : public std::true_type {};
+struct is_number<const std::complex<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<const std::complex<T>> : public std::true_type {};
+struct is_number<const std::complex<T>> : std::true_type {};
 
 
 //-----------------------------------------------------
 /*
 template<class T>
 struct is_number<T> :
-    public std::integral_constant<bool, true
+    std::integral_constant<bool, true
         && is_addable<T>::value
         && is_subtractable<T>::value
         && is_multipliable<T>::value
@@ -772,18 +772,17 @@ struct has_max: public
 //-------------------------------------------------------------------
 template<class T, class... R>
 struct is_interval :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         is_interval<T>::value && is_interval<R...>::value>
 {};
 
 //---------------------------------------------------------
 template<class T>
 struct is_interval<T> :
-    public std::integral_constant<bool,
+    std::integral_constant<bool,
         has_min<T>::value &&
         has_max<T>::value>
 {};
-
 
 
 }  // namespace num
