@@ -129,10 +129,13 @@ class bounded :
 public:
 
     static_assert(is_number<NumberType>::value,
-        "bounded<T,B,P>: T must be a number type");
+        "bounded<T,I,P>: T must be a number type");
 
     static_assert(!is_bounded<NumberType>::value,
-        "bounded<T,B,P>: T must not be a bounded<> type itself");
+        "bounded<T,I,P>: T must not be a bounded<> type itself");
+
+    static_assert(is_interval<BoundingInterval>::value,
+        "bounded<T,I,P>: B must be an interval (concept num::Interval)");
 
 
     //---------------------------------------------------------------
@@ -512,7 +515,7 @@ make_unit_bounded(T&& x)
 template<class T, class B, class P>
 inline constexpr
 unit_bounded<T>
-make_unit_bounded(bounded<T,B,P> x)
+make_unit_bounded(bounded<T,B,P>& x)
 {
     return unit_bounded<T>{std::move(x)};
 }
@@ -534,7 +537,7 @@ make_symunit_bounded(T&& x)
 template<class T, class B, class P>
 inline constexpr
 symunit_bounded<T>
-make_symunit_bounded(bounded<T,B,P> x)
+make_symunit_bounded(bounded<T,B,P>& x)
 {
     return symunit_bounded<T>{std::move(x)};
 }
@@ -670,23 +673,6 @@ print(Ostream& os, const bounded<T,B,P>& x)
  *****************************************************************************/
 
 //-------------------------------------------------------------------
-template<class T1, class B1, class P1, class T2, class B2, class P2>
-inline bool
-operator == (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
-{
-    return (a.value() == b.value());
-}
-
-//---------------------------------------------------------
-template<class T1, class B1, class P1, class T2, class B2, class P2>
-inline bool
-operator != (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
-{
-    return (a.value() != b.value());
-}
-
-
-//-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2,
     class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
@@ -715,10 +701,60 @@ approx_0(const bounded<T,B,P>& x, const T& tol = tolerance<T>::value())
 
 
 //-------------------------------------------------------------------
-// COMPARISON WITH INTEGERS OR REAL NUMBERS
+template<class T1, class B, class P, class T2, class = typename
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+inline bool
+operator == (const bounded<T1,B,P>& x, const T2& r)
+{
+    return (x.value() == r);
+}
+//---------------------------------------------------------
+template<class T1, class B, class P, class T2, class = typename
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+inline bool
+operator == (const T2& r, const bounded<T1,B,P>& x)
+{
+    return (r == x.value());
+}
+//---------------------------------------------------------
+template<class T1, class B1, class P1, class T2, class B2, class P2>
+inline bool
+operator == (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
+{
+    return (a.value() == b.value());
+}
+
+
+
 //-------------------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+inline bool
+operator != (const bounded<T1,B,P>& x, const T2& r)
+{
+    return (x.value() != r);
+}
+//---------------------------------------------------------
+template<class T1, class B, class P, class T2, class = typename
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+inline bool
+operator != (const T2& r, const bounded<T1,B,P>& x)
+{
+    return (r != x.value());
+}
+//---------------------------------------------------------
+template<class T1, class B1, class P1, class T2, class B2, class P2>
+inline bool
+operator != (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
+{
+    return (a.value() != b.value());
+}
+
+
+
+//-------------------------------------------------------------------
+template<class T1, class B, class P, class T2, class = typename
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator > (const bounded<T1,B,P>& x, const T2& r)
 {
@@ -726,16 +762,24 @@ operator > (const bounded<T1,B,P>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator > (const T2& r, const bounded<T1,B,P>& x)
 {
     return (r > x.value());
 }
+//---------------------------------------------------------
+template<class T1, class B1, class P1, class T2, class B2, class P2>
+inline bool
+operator > (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
+{
+    return (a.value() > b.value());
+}
+
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator >= (const bounded<T1,B,P>& x, const T2& r)
 {
@@ -743,16 +787,24 @@ operator >= (const bounded<T1,B,P>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator >= (const T2& r, const bounded<T1,B,P>& x)
 {
     return (r >= x.value());
 }
+//---------------------------------------------------------
+template<class T1, class B1, class P1, class T2, class B2, class P2>
+inline bool
+operator >= (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
+{
+    return (a.value() >= b.value());
+}
+
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator < (const bounded<T1,B,P>& x, const T2& r)
 {
@@ -760,16 +812,24 @@ operator < (const bounded<T1,B,P>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator < (const T2& r, const bounded<T1,B,P>& x)
 {
     return (r < x.value());
 }
+//---------------------------------------------------------
+template<class T1, class B1, class P1, class T2, class B2, class P2>
+inline bool
+operator < (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
+{
+    return (a.value() < b.value());
+}
+
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator <= (const bounded<T1,B,P>& x, const T2& r)
 {
@@ -777,11 +837,18 @@ operator <= (const bounded<T1,B,P>& x, const T2& r)
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline bool
 operator <= (const T2& r, const bounded<T1,B,P>& x)
 {
     return (r <= x.value());
+}
+//---------------------------------------------------------
+template<class T1, class B1, class P1, class T2, class B2, class P2>
+inline bool
+operator <= (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
+{
+    return (a.value() <= b.value());
 }
 
 
@@ -803,7 +870,7 @@ operator <= (const T2& r, const bounded<T1,B,P>& x)
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
 common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-operator + (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
+operator + (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
     return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
                {x.value() + y.value()};
@@ -811,38 +878,21 @@ operator + (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator + (const bounded<T1,B,P> x, const T2& y)
+operator + (const bounded<T1,B,P>& x, const T2& y)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{x.value() + y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator + (const T2& y, const bounded<T1,B,P> x)
+operator + (const T2& y, const bounded<T1,B,P>& x)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{y + x.value()};
-}
-
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator + (const bounded<T,B,P> x, const T& y)
-{
-    return bounded<T,B,P>{x.value() + y};
-}
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator + (const T& y, const bounded<T,B,P> x)
-{
-    return bounded<T,B,P>{y + x.value()};
 }
 
 
@@ -853,7 +903,7 @@ operator + (const T& y, const bounded<T,B,P> x)
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
 common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-operator - (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
+operator - (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
     return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
                {x.value() - y.value()};
@@ -861,38 +911,21 @@ operator - (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator - (const bounded<T1,B,P> x, const T2& y)
+operator - (const bounded<T1,B,P>& x, const T2& y)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{x.value() - y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator - (const T2& y, const bounded<T1,B,P> x)
+operator - (const T2& y, const bounded<T1,B,P>& x)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{y - x.value()};
-}
-
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator - (const bounded<T,B,P> x, const T& y)
-{
-    return bounded<T,B,P>{x.value() - y};
-}
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator - (const T& y, const bounded<T,B,P> x)
-{
-    return bounded<T,B,P>{y - x.value()};
 }
 
 
@@ -903,7 +936,7 @@ operator - (const T& y, const bounded<T,B,P> x)
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
 common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-operator * (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
+operator * (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
     return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
                {x.value() * y.value()};
@@ -911,38 +944,21 @@ operator * (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator * (const bounded<T1,B,P> x, const T2& y)
+operator * (const bounded<T1,B,P>& x, const T2& y)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{x.value() * y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator * (const T2& y, const bounded<T1,B,P> x)
+operator * (const T2& y, const bounded<T1,B,P>& x)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{y * x.value()};
-}
-
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator * (const bounded<T,B,P> x, const T& y)
-{
-    return bounded<T,B,P>{x.value() * y};
-}
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator * (const T& y, const bounded<T,B,P> x)
-{
-    return bounded<T,B,P>{y * x.value()};
 }
 
 
@@ -953,7 +969,7 @@ operator * (const T& y, const bounded<T,B,P> x)
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
 common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-operator / (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
+operator / (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
     return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
                {x.value() / y.value()};
@@ -961,38 +977,21 @@ operator / (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator / (const bounded<T1,B,P> x, const T2& y)
+operator / (const bounded<T1,B,P>& x, const T2& y)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{x.value() / y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator / (const T2& y, const bounded<T1,B,P> x)
+operator / (const T2& y, const bounded<T1,B,P>& x)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{y / x.value()};
-}
-
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator / (const bounded<T,B,P> x, const T& y)
-{
-    return bounded<T,B,P>{x.value() / y};
-}
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator / (const T& y, const bounded<T,B,P> x)
-{
-    return bounded<T,B,P>{y / x.value()};
 }
 
 
@@ -1003,7 +1002,7 @@ operator / (const T& y, const bounded<T,B,P> x)
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
 common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-operator % (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
+operator % (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
     return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
                {x.value() % y.value()};
@@ -1011,38 +1010,21 @@ operator % (const bounded<T1,B1,P1> x, const bounded<T2,B2,P2>& y)
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator % (const bounded<T1,B,P> x, const T2& y)
+operator % (const bounded<T1,B,P>& x, const T2& y)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{x.value() % y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<std::is_arithmetic<T2>::value>::type>
+    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
 bounded<common_numeric_t<T1,T2>,B,P>
-operator % (const T2& y, const bounded<T1,B,P> x)
+operator % (const T2& y, const bounded<T1,B,P>& x)
 {
     return bounded<common_numeric_t<T1,T2>,B,P>{y % x.value()};
-}
-
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator % (const bounded<T,B,P> x, const T& y)
-{
-    return bounded<T,B,P>{x.value() % y};
-}
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-bounded<T,B,P>
-operator % (const T& y, const bounded<T,B,P> x)
-{
-    return bounded<T,B,P>{y % x.value()};
 }
 
 
@@ -1053,7 +1035,7 @@ operator % (const T& y, const bounded<T,B,P> x)
 template<class T, class B, class P>
 inline constexpr
 bounded<T,B,P>
-operator - (const bounded<T,B,P> x)
+operator - (const bounded<T,B,P>& x)
 {
     return bounded<T,B,P>{-x.value()};
 }
@@ -1173,16 +1155,16 @@ public:
     static constexpr bool has_denorm_loss = numeric_limits<T>::has_denorm_loss;
 
     static constexpr val_t
-    infinity() noexcept {return numeric_limits<T>::infinity(); }
+    infinity() noexcept {return val_t(numeric_limits<T>::infinity()); }
 
     static constexpr val_t
-    quiet_NaN() noexcept {return numeric_limits<T>::quiet_NaN(); }
+    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
 
     static constexpr val_t
-    signaling_NaN() noexcept {return numeric_limits<T>::signaling_NaN(); }
+    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
 
     static constexpr val_t
-    denorm_min() noexcept {return numeric_limits<T>::denorm_min(); }
+    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
 
     static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
     static constexpr bool is_bounded = true;
