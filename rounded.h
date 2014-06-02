@@ -1,3 +1,13 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2014 André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AM_NUMERIC_ROUNDED_H_
 #define AM_NUMERIC_ROUNDED_H_
 
