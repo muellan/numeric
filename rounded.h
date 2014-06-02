@@ -141,7 +141,7 @@ public:
     /// @brief
     template<class T, class = typename std::enable_if<
         is_number<T>::value>::type>
-    explicit constexpr
+    constexpr
     rounded(T&& v, rounding_method rp = rounding_method()) :
         rounding_method(std::move(rp)),
         v_(corrected(value_type(std::forward<T>(v))))
@@ -403,8 +403,8 @@ public:
 
 
 private:
-    value_type
-    corrected(value_type v) {
+    constexpr value_type
+    corrected(value_type v) const noexcept {
         return rounding_method::operator()(std::move(v));
     }
 

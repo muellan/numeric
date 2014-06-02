@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <cfloat>
 #include <iostream>
-#include <sstream>
 
 #include "interval.h"
 #include "equality.h"
@@ -60,27 +59,6 @@ struct clip_and_report
         else if(x > max) {
             std::cerr << x << " above [" << min << ',' << max << "]\n";
             return max;
-        }
-        return x;
-    }
-};
-
-//-------------------------------------------------------------------
-struct throw_if_out_of_bounds
-{
-    template<class T>
-    T
-    operator () (T x, const T& min, const T& max)
-    {
-        if(x < min) {
-            std::ostringstream os;
-            os << x << " below [" << min << ',' << max << "]\n";
-            throw std::out_of_range(os.str());
-        }
-        else if(x > max) {
-            std::ostringstream os;
-            os << x << " above [" << min << ',' << max << "]\n";
-            throw std::out_of_range(os.str());
         }
         return x;
     }
@@ -178,13 +156,14 @@ public:
     /// @brief
     template<class T, class = typename std::enable_if<
         is_number<T>::value>::type>
-    explicit constexpr
+    constexpr
     bounded(T&& v,
             interval_type b = interval_type(),
             bounding_policy bp = bounding_policy())
     :
         interval_type(std::move(b)), bounding_policy(std::move(bp)),
-        v_(get_bounded(value_type(std::forward<T>(v))))
+        v_(get_bounded(std::forward<T>(v)))
+
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -204,7 +183,7 @@ public:
     explicit constexpr
     bounded(T&& v, bounding_policy bp) :
         interval_type(), bounding_policy(std::move(bp)),
-        v_(get_bounded(value_type(std::forward<T>(v))))
+        v_(get_bounded(std::forward<T>(v)))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -217,7 +196,7 @@ public:
             bounding_policy bp = bounding_policy())
      :
         interval_type(std::move(b)), bounding_policy(std::move(bp)),
-        v_(get_bounded(value_type(v)))
+        v_(value_type(v))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -461,8 +440,8 @@ public:
 
 
 private:
-    value_type
-    get_bounded(value_type v) {
+    constexpr value_type
+    get_bounded(value_type v) const noexcept {
         return bounding_policy::operator()(std::move(v), min(), max());
     }
 
@@ -1110,6 +1089,21 @@ abs(const bounded<T,B,P>& x)
     return bounded<T,B,P>(abs(x.value()));
 }
 
+//---------------------------------------------------------
+template<class T, class B, class P>
+inline constexpr auto
+min(const bounded<T,B,P>& x) -> decltype(x.min())
+{
+    return x.min();
+}
+//---------------------------------------------------------
+template<class T, class B, class P>
+inline constexpr auto
+max(const bounded<T,B,P>& x) -> decltype(x.max())
+{
+    return x.max();
+}
+
 
 
 
@@ -1287,30 +1281,6 @@ struct common_bounding_policy<clip_and_report,silent_clip> {
 template<>
 struct common_bounding_policy<silent_clip,clip_and_report> {
     using type = clip_and_report;
-};
-
-//---------------------------------------------------------
-template<>
-struct common_bounding_policy<silent_clip,throw_if_out_of_bounds> {
-    using type = throw_if_out_of_bounds;
-};
-
-//---------------------------------------------------------
-template<>
-struct common_bounding_policy<throw_if_out_of_bounds,silent_clip> {
-    using type = throw_if_out_of_bounds;
-};
-
-//---------------------------------------------------------
-template<>
-struct common_bounding_policy<clip_and_report,throw_if_out_of_bounds> {
-    using type = throw_if_out_of_bounds;
-};
-
-//---------------------------------------------------------
-template<>
-struct common_bounding_policy<throw_if_out_of_bounds,clip_and_report> {
-    using type = throw_if_out_of_bounds;
 };
 
 
