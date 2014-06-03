@@ -55,12 +55,12 @@ void bounded_correctness()
         (abs((d0 + d1) - 0.02) < eps) &&
         (abs((d1 + d2) - 0.27) < eps) &&
         (abs((d2 + d3) - 0.75) < eps) &&
-        (abs((d3 + d4) - 1.00) < eps) &&
-        (abs((d5 + d4) - 1.00) < eps) &&
-        (abs((d4 - d5) - 0.00) < eps) &&
+        (abs((d3 + d4) - 1.25) < eps) &&
+        (abs((d5 + d4) - 1.73) < eps) &&
+        (abs((d4 - d5) + 0.23) < eps) &&
 
         (abs((d0 + d1 + d2) - 0.27) < eps) &&
-        (abs((d3 + d4 + d5) - 1.00) < eps) &&
+        (abs((d3 + d4 + d5) - 2.23) < eps) &&
 
         //integral values, runtime bounds
         (a == 5) && (b == 6) && (c == 8) && (d == -2) &&

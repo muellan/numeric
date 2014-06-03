@@ -866,30 +866,29 @@ operator <= (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
-common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
+common_numeric_t<T1,T2>
 operator + (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
-    return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-               {x.value() + y.value()};
+    return common_numeric_t<T1,T2>{x.value() + y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator + (const bounded<T1,B,P>& x, const T2& y)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{x.value() + y};
+    return common_numeric_t<T1,T2>{x.value() + y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator + (const T2& y, const bounded<T1,B,P>& x)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{y + x.value()};
+    return common_numeric_t<T1,T2>{y + x.value()};
 }
 
 
@@ -899,30 +898,29 @@ operator + (const T2& y, const bounded<T1,B,P>& x)
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
-common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
+common_numeric_t<T1,T2>
 operator - (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
-    return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-               {x.value() - y.value()};
+    return common_numeric_t<T1,T2>{x.value() - y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator - (const bounded<T1,B,P>& x, const T2& y)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{x.value() - y};
+    return common_numeric_t<T1,T2>{x.value() - y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator - (const T2& y, const bounded<T1,B,P>& x)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{y - x.value()};
+    return common_numeric_t<T1,T2>{y - x.value()};
 }
 
 
@@ -932,30 +930,29 @@ operator - (const T2& y, const bounded<T1,B,P>& x)
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
-common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
+common_numeric_t<T1,T2>
 operator * (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
-    return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-               {x.value() * y.value()};
+    return common_numeric_t<T1,T2>{x.value() * y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator * (const bounded<T1,B,P>& x, const T2& y)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{x.value() * y};
+    return common_numeric_t<T1,T2>{x.value() * y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator * (const T2& y, const bounded<T1,B,P>& x)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{y * x.value()};
+    return common_numeric_t<T1,T2>{y * x.value()};
 }
 
 
@@ -965,30 +962,29 @@ operator * (const T2& y, const bounded<T1,B,P>& x)
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
-common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
+common_numeric_t<T1,T2>
 operator / (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
-    return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-               {x.value() / y.value()};
+    return common_numeric_t<T1,T2>{x.value() / y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator / (const bounded<T1,B,P>& x, const T2& y)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{x.value() / y};
+    return common_numeric_t<T1,T2>{x.value() / y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator / (const T2& y, const bounded<T1,B,P>& x)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{y / x.value()};
+    return common_numeric_t<T1,T2>{y / x.value()};
 }
 
 
@@ -998,30 +994,29 @@ operator / (const T2& y, const bounded<T1,B,P>& x)
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 inline constexpr
-common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
+common_numeric_t<T1,T2>
 operator % (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
 {
-    return common_numeric_t<bounded<T1,B1,P1>, bounded<T2,B2,P2>>
-               {x.value() % y.value()};
+    return common_numeric_t<T1,T2>{x.value() % y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator % (const bounded<T1,B,P>& x, const T2& y)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{x.value() % y};
+    return common_numeric_t<T1,T2>{x.value() % y};
 }
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
 inline constexpr
-bounded<common_numeric_t<T1,T2>,B,P>
+common_numeric_t<T1,T2>
 operator % (const T2& y, const bounded<T1,B,P>& x)
 {
-    return bounded<common_numeric_t<T1,T2>,B,P>{y % x.value()};
+    return common_numeric_t<T1,T2>{y % x.value()};
 }
 
 

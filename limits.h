@@ -33,7 +33,7 @@ template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_max
 {
     static constexpr T
-    value() {return std::numeric_limits<T>::max(); }
+    value() noexcept {return std::numeric_limits<T>::max(); }
 };
 
 
@@ -42,7 +42,7 @@ template<class T>
 struct numeric_max<T,false>
 {
     static constexpr T
-    value() {return std::numeric_limits<numeric_t<T>>::max(); }
+    value() noexcept {return std::numeric_limits<numeric_t<T>>::max(); }
 };
 
 
@@ -61,7 +61,7 @@ template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_min
 {
     static constexpr T
-    value() {return std::numeric_limits<T>::min(); }
+    value() noexcept {return std::numeric_limits<T>::min(); }
 };
 
 
@@ -70,7 +70,7 @@ template<class T>
 struct numeric_min<T,false>
 {
     static constexpr T
-    value() {return std::numeric_limits<numeric_t<T>>::min(); }
+    value() noexcept {return std::numeric_limits<numeric_t<T>>::min(); }
 };
 
 
@@ -89,7 +89,7 @@ template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_lowest
 {
     static constexpr T
-    value() {return std::numeric_limits<T>::lowest(); }
+    value() noexcept {return std::numeric_limits<T>::lowest(); }
 };
 
 
@@ -98,7 +98,7 @@ template<class T>
 struct numeric_lowest<T,false>
 {
     static constexpr T
-    value() {return std::numeric_limits<numeric_t<T>>::lowest(); }
+    value() noexcept {return std::numeric_limits<numeric_t<T>>::lowest(); }
 };
 
 
@@ -118,7 +118,7 @@ template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct tolerance
 {
     static constexpr T
-    value() {return (T(100) * std::numeric_limits<T>::epsilon()); }
+    value() noexcept {return (T(100) * std::numeric_limits<T>::epsilon()); }
 };
 
 
@@ -127,7 +127,7 @@ template<class T>
 struct tolerance<T,false>
 {
     static constexpr T
-    value() {return tolerance<numeric_t<T>>::value(); }
+    value() noexcept {return tolerance<numeric_t<T>>::value(); }
 };
 
 
@@ -136,7 +136,7 @@ template<>
 struct tolerance<float,true>
 {
     static constexpr float
-    value() {return 10e-5; }
+    value() noexcept {return 10e-5; }
 };
 
 
@@ -145,7 +145,7 @@ template<>
 struct tolerance<double,true>
 {
     static constexpr double
-    value() {return 10e-12; }
+    value() noexcept {return 10e-12; }
 };
 
 
@@ -154,7 +154,7 @@ template<>
 struct tolerance<long double,true>
 {
     static constexpr long double
-    value() {return 10e-16; }
+    value() noexcept {return 10e-16; }
 };
 
 
@@ -174,14 +174,36 @@ struct numeric_limits :
     public std::numeric_limits<T>
 {
     static constexpr T
-    tolerance() {return num::tolerance<T>::value(); }
+    tolerance() noexcept {return num::tolerance<T>::value(); }
 
     static int
-    precision() {
+    precision() noexcept {
         using std::log10;
 
         return static_cast<int>(
             log10(1 / static_cast<long double>(tolerance())));
+    }
+
+};
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class T>
+struct max_infinity
+{
+    static constexpr T
+    value() noexcept {
+        return numeric_limits<T>::has_infinity
+                   ? numeric_limits<T>::infinity()
+                   : numeric_limits<T>::max();
     }
 };
 

@@ -718,30 +718,29 @@ operator <= (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
+common_numeric_t<T1,T2>
 operator + (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
 {
-    return common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
-               {x.value() + y.value()};
+    return common_numeric_t<T1,T2>{x.value() + y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator + (const rounded<T1,R>& x, const T2& y)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{x.value() + y};
+    return common_numeric_t<T1,T2>{x.value() + y};
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator + (const T2& y, const rounded<T1,R>& x)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{y + x.value()};
+    return common_numeric_t<T1,T2>{y + x.value()};
 }
 
 
@@ -751,30 +750,29 @@ operator + (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
+common_numeric_t<T1,T2>
 operator - (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
 {
-    return common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
-               {x.value() - y.value()};
+    return common_numeric_t<T1,T2>{x.value() - y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator - (const rounded<T1,R>& x, const T2& y)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{x.value() - y};
+    return common_numeric_t<T1,T2>{x.value() - y};
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator - (const T2& y, const rounded<T1,R>& x)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{y - x.value()};
+    return common_numeric_t<T1,T2>{y - x.value()};
 }
 
 
@@ -784,21 +782,20 @@ operator - (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
+common_numeric_t<T1,T2>
 operator * (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
 {
-    return common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
-               {x.value() * y.value()};
+    return common_numeric_t<T1,T2>{x.value() * y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator * (const rounded<T1,R>& x, const T2& y)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{x.value() * y};
+    return common_numeric_t<T1,T2>{x.value() * y};
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
@@ -807,7 +804,7 @@ inline constexpr
 rounded<common_numeric_t<T1,T2>,R>
 operator * (const T2& y, const rounded<T1,R>& x)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{y * x.value()};
+    return common_numeric_t<T1,T2>{y * x.value()};
 }
 
 
@@ -817,30 +814,29 @@ operator * (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
+common_numeric_t<T1,T2>
 operator / (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
 {
-    return common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
-               {x.value() / y.value()};
+    return common_numeric_t<T1,T2>{x.value() / y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator / (const rounded<T1,R>& x, const T2& y)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{x.value() / y};
+    return common_numeric_t<T1,T2>{x.value() / y};
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator / (const T2& y, const rounded<T1,R>& x)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{y / x.value()};
+    return common_numeric_t<T1,T2>{y / x.value()};
 }
 
 
@@ -850,30 +846,29 @@ operator / (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
+common_numeric_t<T1,T2>
 operator % (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
 {
-    return common_numeric_t<rounded<T1,R1>, rounded<T2,R2>>
-               {x.value() % y.value()};
+    return common_numeric_t<T1,T2>{x.value() % y.value()};
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator % (const rounded<T1,R>& x, const T2& y)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{x.value() % y};
+    return common_numeric_t<T1,T2>{x.value() % y};
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+common_numeric_t<T1,T2>
 operator % (const T2& y, const rounded<T1,R>& x)
 {
-    return rounded<common_numeric_t<T1,T2>,R>{y % x.value()};
+    return common_numeric_t<T1,T2>{y % x.value()};
 }
 
 

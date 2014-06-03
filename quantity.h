@@ -163,22 +163,16 @@ public:
     explicit
     operator T() const noexcept
     {
-        return (isinf(*this)
-            ? (numeric_limits<T>::has_infinity
-                   ? numeric_limits<T>::infinity()
-                   : numeric_limits<T>::max())
-            : T(v_));
+        return (isinf(*this) ? max_infinity<T>::value()
+                             : T(v_));
     }
 
     //-----------------------------------------------------
     value_type
     value() const noexcept
     {
-        return (isinf(*this)
-            ? (numeric_limits<value_type>::has_infinity
-                   ? numeric_limits<value_type>::infinity()
-                   : numeric_limits<value_type>::max())
-            : v_);
+        return (isinf(*this) ? max_infinity<value_type>::value()
+                             : v_);
     }
 
 
@@ -507,6 +501,39 @@ operator + (const quantity<T1>& a, const quantity<T2>& b) noexcept
                 : res_t{cv_t(a) + cv_t(b)});
 }
 
+//---------------------------------------------------------
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+inline constexpr common_numeric_t<T1,T2>
+operator + (const quantity<T1>& a, const T2& b) noexcept
+{
+    using std::isinf;
+
+    using cv_t = common_numeric_t<T1,T2>;
+
+    return (isinf(a) || isinf(b))
+        ? max_infinity<cv_t>::value()
+        : ( (numeric_max<cv_t>::value() - cv_t(a)) < cv_t(b)
+               ? numeric_max<cv_t>::value()
+               : cv_t(a) + cv_t(b));
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+inline constexpr bool
+operator + (const T2& b, const quantity<T1>& a) noexcept
+{
+    using std::isinf;
+
+    using cv_t = common_numeric_t<T1,T2>;
+
+    return (isinf(a) || isinf(b))
+        ? max_infinity<cv_t>::value()
+        : ( (numeric_max<cv_t>::value() - cv_t(b)) < cv_t(a)
+               ? numeric_max<cv_t>::value()
+               : cv_t(b) + cv_t(a));
+}
+
 
 
 //-------------------------------------------------------------------
@@ -528,6 +555,41 @@ operator - (const quantity<T1>& a, const quantity<T2>& b) noexcept
             (cv_t(b) > cv_t(a)
                ? res_t::zero()
                : res_t{cv_t(a) - cv_t(b)});
+}
+
+//---------------------------------------------------------
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+inline constexpr common_numeric_t<T1,T2>
+operator - (const quantity<T1>& a, const T2& b) noexcept
+{
+    using std::isinf;
+
+    using cv_t = common_numeric_t<T1,T2>;
+
+    return (isinf(a))
+        ? (isinf(b)) ? cv_t(0) : max_infinity<cv_t>::value()
+        : (isinf(b)) ? cv_t(0) :
+            (cv_t(b) > cv_t(a)
+               ? cv_t(0)
+               : cv_t(a) - cv_t(b));
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+inline constexpr bool
+operator - (const T2& b, const quantity<T1>& a) noexcept
+{
+    using std::isinf;
+
+    using cv_t = common_numeric_t<T1,T2>;
+
+    return (isinf(b))
+        ? (isinf(a)) ? cv_t(0) : max_infinity<cv_t>::value()
+        : (isinf(a)) ? cv_t(0) :
+            (cv_t(a) > cv_t(b)
+               ? cv_t(0)
+               : cv_t(b) - cv_t(a));
 }
 
 
@@ -561,6 +623,57 @@ operator * (const quantity<T1>& a, const quantity<T2>& b) noexcept
         );
 }
 
+//---------------------------------------------------------
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+inline constexpr common_numeric_t<T1,T2>
+operator * (const quantity<T1>& a, const T2& b) noexcept
+{
+    using std::isinf;
+
+    using cv_t = common_numeric_t<T1,T2>;
+
+    return (isinf(a))
+        ? ( (isinf(b))
+            ? max_infinity<cv_t>::value()
+            : ((b == T2(0)) ? cv_t(0) : max_infinity<cv_t>::value())
+        )
+        : ( (isinf(b))
+            ? ((a == a.zero()) ? cv_t(0) : max_infinity<cv_t>::value())
+            : ((a == a.zero() || b == T2(0))
+                  ? cv_t(0)
+                  : ((cv_t(a) > (numeric_max<cv_t>::value() / cv_t(b)))
+                      ? numeric_max<cv_t>::value()
+                      : cv_t(a) * cv_t(b) )
+              )
+        );
+}
+//---------------------------------------------------------
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+inline constexpr bool
+operator * (const T2& b, const quantity<T1>& a) noexcept
+{
+    using std::isinf;
+
+    using cv_t = common_numeric_t<T1,T2>;
+
+    return (isinf(a))
+        ? ( (isinf(b))
+            ? max_infinity<cv_t>::value()
+            : ((b == T2(0)) ? cv_t(0) : max_infinity<cv_t>::value())
+        )
+        : ( (isinf(b))
+            ? ((a == a.zero()) ? cv_t(0) : max_infinity<cv_t>::value())
+            : ((a == a.zero() || b == T2(0))
+                  ? cv_t(0)
+                  : ((cv_t(a) > (numeric_max<cv_t>::value() / cv_t(b)))
+                      ? numeric_max<cv_t>::value()
+                      : cv_t(a) * cv_t(b) )
+              )
+        );
+}
+
 
 
 
@@ -583,8 +696,8 @@ operator == (const quantity<T1>& a, const quantity<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value && is_integral<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator == (const quantity<T1>& a, const T2& b) noexcept
 {
@@ -593,8 +706,8 @@ operator == (const quantity<T1>& a, const T2& b) noexcept
     return isinf(a) ? isinf(b) : (isinf(b) ? false : (T1(a) == b) );
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value && is_integral<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator == (const T2& b, const quantity<T1>& a) noexcept
 {
@@ -614,16 +727,16 @@ operator != (const quantity<T1>& a, const quantity<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value && is_integral<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator != (const quantity<T1>& a, const T2& b) noexcept
 {
     return !(a == b);
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value && is_integral<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator != (const T2& b, const quantity<T1>& a) noexcept
 {
@@ -641,8 +754,8 @@ operator <= (const quantity<T1>& a, const quantity<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <= (const quantity<T1>& a, const T2& b) noexcept
 {
@@ -651,8 +764,8 @@ operator <= (const quantity<T1>& a, const T2& b) noexcept
     return isinf(b) || (!isinf(a) && (T1(a) <= b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <= (const T2& b, const quantity<T1>& a) noexcept
 {
@@ -672,8 +785,8 @@ operator <  (const quantity<T1>& a, const quantity<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <  (const quantity<T1>& a, const T2& b) noexcept
 {
@@ -682,8 +795,8 @@ operator <  (const quantity<T1>& a, const T2& b) noexcept
     return !isinf(a) && (isinf(b) || (T1(a) < b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <  (const T2& b, const quantity<T1>& a) noexcept
 {
@@ -702,8 +815,8 @@ operator >= (const quantity<T1>& a, const quantity<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >= (const quantity<T1>& a, const T2& b) noexcept
 {
@@ -712,8 +825,8 @@ operator >= (const quantity<T1>& a, const T2& b) noexcept
     return isinf(a) || (!isinf(b) && (T1(a) >= b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >= (const T2& b, const quantity<T1>& a) noexcept
 {
@@ -732,8 +845,8 @@ operator >  (const quantity<T1>& a, const quantity<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >  (const quantity<T1>& a, const T2& b) noexcept
 {
@@ -742,8 +855,8 @@ operator >  (const quantity<T1>& a, const T2& b) noexcept
     return !isinf(b) && (isinf(a) || (T1(a) > b) );
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename
-    std::enable_if<is_number<T2>::value>>
+template<class T1, class T2, class = typename std::enable_if<
+    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >  (const T2& b, const quantity<T1>& a) noexcept
 {
@@ -846,13 +959,13 @@ public:
     infinity() noexcept {return val_t::infinity(); }
 
     static constexpr val_t
-    quiet_NaN() noexcept {return numeric_limits<T>::quiet_NaN(); }
+    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
 
     static constexpr val_t
-    signaling_NaN() noexcept {return numeric_limits<T>::signaling_NaN(); }
+    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
 
     static constexpr val_t
-    denorm_min() noexcept {return numeric_limits<T>::denorm_min(); }
+    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
 
     static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
     static constexpr bool is_bounded = true;
