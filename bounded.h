@@ -37,28 +37,33 @@ namespace num {
 //-------------------------------------------------------------------
 struct silent_clip
 {
-    template<class T>
-    constexpr T
-    operator () (T x, T min, T max) noexcept
+    constexpr silent_clip() = default;
+    constexpr silent_clip(const silent_clip&) = default;
+    constexpr silent_clip(silent_clip&&) = default;
+
+    template<class T1, class T2>
+    constexpr T1
+    operator () (T1 x, T2 min, T2 max) noexcept
     {
-        return (x < min ? min : x > max ? max : x);
+        return (x < min ? T1(std::move(min))
+                        : (x > max ? T1(std::move(max)) : x));
     }
 };
 
 //-------------------------------------------------------------------
 struct clip_and_report
 {
-    template<class T>
-    T
-    operator () (T x, T min, T max) noexcept
+    template<class T1, class T2>
+    T1
+    operator () (T1 x, T2 min, T2 max) noexcept
     {
         if(x < min) {
             std::cerr << x << " below [" << min << ',' << max << "]\n";
-            return min;
+            return T1(std::move(min));
         }
         else if(x > max) {
             std::cerr << x << " above [" << min << ',' << max << "]\n";
-            return max;
+            return T1(std::move(max));
         }
         return x;
     }
@@ -155,14 +160,15 @@ public:
     //-----------------------------------------------------
     /// @brief
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_bounded<decay_t<T>>::value &&
+        is_number<decay_t<T>>::value>::type>
     constexpr
     bounded(T&& v,
-            interval_type b = interval_type(),
+            interval_type ival = interval_type(),
             bounding_policy bp = bounding_policy())
     :
-        interval_type(std::move(b)), bounding_policy(std::move(bp)),
-        v_(get_bounded(std::forward<T>(v)))
+        interval_type(ival), bounding_policy(bp),
+        v_(get_bounded(std::forward<T>(v), ival, bp))
 
     {
         AM_CHECK_NARROWING(value_type,T)
@@ -170,33 +176,22 @@ public:
     //-----------------------------------------------------
     /// @brief
     explicit constexpr
-    bounded(interval_type b,
+    bounded(interval_type ival,
             bounding_policy bp = bounding_policy())
     :
-        interval_type(std::move(b)), bounding_policy(std::move(bp)),
-        v_(min())
+        interval_type(std::move(ival)), bounding_policy(std::move(bp)),
+        v_(min(ival))
     {}
-    //-----------------------------------------------------
-    /// @brief
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
-    explicit constexpr
-    bounded(T&& v, bounding_policy bp) :
-        interval_type(), bounding_policy(std::move(bp)),
-        v_(get_bounded(std::forward<T>(v)))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
     //-----------------------------------------------------
     /// @brief
     template<class T, class B, class P>
     explicit constexpr
     bounded(const bounded<T,B,P>& v,
-            interval_type b,
+            interval_type ival,
             bounding_policy bp = bounding_policy())
      :
-        interval_type(std::move(b)), bounding_policy(std::move(bp)),
-        v_(value_type(v))
+        interval_type(ival), bounding_policy(bp),
+        v_(get_bounded(value_type(v), ival, bp))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -214,7 +209,8 @@ public:
     explicit constexpr
     bounded(const bounded<T,B,P>& src):
         interval_type(), bounding_policy(),
-        v_(get_bounded(value_type(src)))
+        v_(get_bounded(
+            value_type(src), interval_type(), bounding_policy()))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -223,7 +219,8 @@ public:
     explicit constexpr
     bounded(bounded<T,B,P>&& src):
         interval_type(), bounding_policy(),
-        v_(get_bounded(value_type(std::move(src))))
+        v_(get_bounded(
+            value_type(std::move(src)), interval_type(), bounding_policy()))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -239,8 +236,7 @@ public:
     operator = (bounded&&) = default;
 
     //-----------------------------------------------------
-    template<class T, class B, class P, class = typename std::enable_if<
-        is_number<T>::value>::type>
+    template<class T, class B, class P>
     bounded&
     operator = (const bounded<T,B,P>& b)
     {
@@ -251,8 +247,7 @@ public:
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class B, class P, class = typename std::enable_if<
-        is_number<T>::value>::type>
+    template<class T, class B, class P>
     bounded&
     operator = (bounded<T,B,P>&& b)
     {
@@ -265,7 +260,8 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_bounded<decay_t<T>>::value &&
+        is_number<decay_t<T>>::value>::type>
     bounded&
     operator = (T&& v)
     {
@@ -297,7 +293,7 @@ public:
     // bounded (op)= number
     //---------------------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
     operator += (const T& v)
     {
@@ -309,7 +305,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
     operator -= (const T& v)
     {
@@ -321,7 +317,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
     operator *= (const T& v)
     {
@@ -333,7 +329,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
     operator /= (const T& v)
     {
@@ -440,9 +436,21 @@ public:
 
 
 private:
+    //---------------------------------------------------------------
     constexpr value_type
     get_bounded(value_type v) const noexcept {
         return bounding_policy::operator()(std::move(v), min(), max());
+    }
+
+    //-----------------------------------------------------
+    /// @brief needed for constexpr construction
+    static constexpr value_type
+    get_bounded(
+        value_type v, const interval_type& i, const bounding_policy& p) noexcept
+    {
+        using num::min;
+        using num::max;
+        return p(std::move(v), min(i), max(i));
     }
 
     value_type v_;

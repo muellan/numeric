@@ -38,8 +38,7 @@ namespace num {
 struct round_to_nearest_int
 {
     template<class T>
-    constexpr T
-    operator () (const T& x) const noexcept {
+    T operator () (const T& x) const noexcept {
         using std::nearbyint;
         return (is_integral<T>::value) ? x : nearbyint(x);
     }
@@ -140,11 +139,12 @@ public:
     //-----------------------------------------------------
     /// @brief
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_rounded<decay_t<T>>::value &&
+        is_number<decay_t<T>>::value>::type>
     constexpr
-    rounded(T&& v, rounding_method rp = rounding_method()) :
-        rounding_method(std::move(rp)),
-        v_(corrected(value_type(std::forward<T>(v))))
+    rounded(T&& v, rounding_method rm = rounding_method()) :
+        rounding_method(rm),
+        v_(corrected(value_type(std::forward<T>(v)), rm))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -159,9 +159,9 @@ public:
     /// @brief
     template<class T, class R>
     explicit constexpr
-    rounded(const rounded<T,R>& v, rounding_method bp = rounding_method()) :
-        rounding_method(std::move(bp)),
-        v_(corrected(value_type(v)))
+    rounded(const rounded<T,R>& v, rounding_method rm = rounding_method()) :
+        rounding_method(rm),
+        v_(corrected(value_type(v), rm))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -178,17 +178,8 @@ public:
     template<class T, class R>
     explicit constexpr
     rounded(const rounded<T,R>& src):
-        rounding_method(),
-        v_(corrected(value_type(src)))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
-    //-----------------------------------------------------
-    template<class T, class R>
-    explicit constexpr
-    rounded(rounded<T,R>&& src):
-        rounding_method(),
-        v_(corrected(value_type(std::move(src))))
+        rounding_method(src),
+        v_(corrected(value_type(src), rounding_method()))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -204,8 +195,7 @@ public:
     operator = (rounded&&) = default;
 
     //-----------------------------------------------------
-    template<class T, class R, class = typename std::enable_if<
-        is_number<T>::value>::type>
+    template<class T, class R>
     rounded&
     operator = (const rounded<T,R>& b)
     {
@@ -216,8 +206,7 @@ public:
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class R, class = typename std::enable_if<
-        is_number<T>::value>::type>
+    template<class T, class R>
     rounded&
     operator = (rounded<T,R>&& b)
     {
@@ -230,7 +219,8 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_rounded<decay_t<T>>::value &&
+        is_number<decay_t<T>>::value>::type>
     rounded&
     operator = (T&& v)
     {
@@ -260,7 +250,7 @@ public:
     // rounded (op)= number
     //---------------------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_rounded<T>::value && is_number<T>::value>::type>
     rounded&
     operator += (const T& v)
     {
@@ -272,7 +262,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_rounded<T>::value && is_number<T>::value>::type>
     rounded&
     operator -= (const T& v)
     {
@@ -284,7 +274,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_rounded<T>::value && is_number<T>::value>::type>
     rounded&
     operator *= (const T& v)
     {
@@ -296,7 +286,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        !is_rounded<T>::value && is_number<T>::value>::type>
     rounded&
     operator /= (const T& v)
     {
@@ -403,9 +393,17 @@ public:
 
 
 private:
+    //---------------------------------------------------------------
     constexpr value_type
     corrected(value_type v) const noexcept {
         return rounding_method::operator()(std::move(v));
+    }
+
+    //-----------------------------------------------------
+    /// @brief needed for constexpr construction
+    static constexpr value_type
+    corrected(value_type v, const rounding_method& rm) noexcept {
+        return rm(std::move(v));
     }
 
     value_type v_;
