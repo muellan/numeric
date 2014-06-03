@@ -37,10 +37,6 @@ namespace num {
 //-------------------------------------------------------------------
 struct silent_clip
 {
-    constexpr silent_clip() = default;
-    constexpr silent_clip(const silent_clip&) = default;
-    constexpr silent_clip(silent_clip&&) = default;
-
     template<class T1, class T2>
     constexpr T1
     operator () (T1 x, T2 min, T2 max) noexcept
@@ -233,7 +229,14 @@ public:
     operator = (const bounded&) = default;
     //-----------------------------------------------------
     bounded&
-    operator = (bounded&&) = default;
+    operator = (bounded&& src)
+    {
+        interval_type::operator = (src);
+        bounding_policy::operator = (src);
+        v_ = std::move(src.v_);
+        return *this;
+    }
+
 
     //-----------------------------------------------------
     template<class T, class B, class P>

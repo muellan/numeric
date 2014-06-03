@@ -192,7 +192,12 @@ public:
     operator = (const rounded&) = default;
     //-----------------------------------------------------
     rounded&
-    operator = (rounded&&) = default;
+    operator = (rounded&& src)
+    {
+        rounding_method::operator = (src);
+        v_ = std::move(src.v_);
+        return *this;
+    }
 
     //-----------------------------------------------------
     template<class T, class R>
