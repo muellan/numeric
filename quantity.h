@@ -55,7 +55,7 @@ struct is_quantity<quantity<T>> :
  *
  *
  *****************************************************************************/
-template<class IntT>
+template<class IntT = int>
 class quantity
 {
     static_assert(is_integral<IntT>::value && !is_unsigned<IntT>::value,
@@ -215,7 +215,7 @@ public:
             if(isinf(c)) {
                 *this = infinity();
             } else {
-                if((max_val() - v_) > c.v_) {
+                if((max_val() - v_) < c.v_) {
                     v_ = max_val();
                 } else {
                     v_ += c.v_;
@@ -235,10 +235,10 @@ public:
         if(!isinf(*this)) {
             const auto vc = value_type(c);
 
-            if(isinf(c) || (vc > max_val()))
+            if(isinf(c))
                 *this = infinity();
             else {
-                if((max_val() - v_) > vc) {
+                if((max_val() - v_) < vc) {
                     v_ = max_val();
                 } else {
                     v_ += vc;
@@ -264,8 +264,8 @@ public:
             if(v > max_val()) {
                 *this = infinity();
             } else {
-                const auto vc = value_type(std::forward<T>(v));;
-                if((max_val() - v_) > vc) {
+                const auto vc = value_type(std::forward<T>(v));
+                if((max_val() - v_) < vc) {
                     v_ = max_val();
                 } else {
                     v_ += vc;
@@ -414,7 +414,7 @@ public:
     //---------------------------------------------------------------
     quantity&
     operator ++ () noexcept {
-        if(!isinf(*this)) ++v_;
+        if(v_ != infty_val() && v_ < max_val()) ++v_;
         return *this;
     }
     //-----------------------------------------------------
@@ -427,7 +427,9 @@ public:
     //-----------------------------------------------------
     quantity&
     operator -- () noexcept {
-        if(v_ > zero()) --v_; else v_ = zero_val();
+        if(v_ != infty_val()) {
+            if(v_ > zero_val()) --v_; else v_ = zero_val();
+        }
         return *this;
     }
     //-----------------------------------------------------
