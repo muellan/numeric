@@ -34,7 +34,7 @@ namespace num {
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline typename std::common_type<T1,T2>::type
-min(const std::pair<T1,T2>& p)
+min(const std::pair<T1,T2>& p) noexcept(noexcept(p.first < p.second))
 {
     return (p.first < p.second) ? p.first : p.second;
 }
@@ -43,7 +43,7 @@ min(const std::pair<T1,T2>& p)
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline typename std::common_type<T1,T2>::type
-max(const std::pair<T1,T2>& p)
+max(const std::pair<T1,T2>& p) noexcept(noexcept(p.first > p.second))
 {
     return (p.first > p.second) ? p.first : p.second;
 }
@@ -189,11 +189,11 @@ public:
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr T
-min(const empty_interval<T>&) { return empty_interval<T>::min(); }
+min(const empty_interval<T>&) noexcept { return empty_interval<T>::min(); }
 
 template<class T>
 inline constexpr T
-max(const empty_interval<T>&) { return empty_interval<T>::max(); }
+max(const empty_interval<T>&) noexcept { return empty_interval<T>::max(); }
 
 
 
@@ -218,11 +218,11 @@ struct unit_interval
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr T
-min(const unit_interval<T>&) { return unit_interval<T>::min(); }
+min(const unit_interval<T>&) noexcept { return unit_interval<T>::min(); }
 
 template<class T>
 inline constexpr T
-max(const unit_interval<T>&) { return unit_interval<T>::max(); }
+max(const unit_interval<T>&) noexcept { return unit_interval<T>::max(); }
 
 
 
@@ -247,13 +247,13 @@ struct symmetric_unit_interval
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr T
-min(const symmetric_unit_interval<T>&) {
+min(const symmetric_unit_interval<T>&) noexcept {
     return symmetric_unit_interval<T>::min();
 }
 
 template<class T>
 inline constexpr T
-max(const symmetric_unit_interval<T>&) {
+max(const symmetric_unit_interval<T>&) noexcept {
     return symmetric_unit_interval<T>::max();
 }
 
@@ -295,11 +295,11 @@ struct pow2_interval<0,T>
 //-------------------------------------------------------------------
 template<int n, class T>
 inline constexpr T
-min(const pow2_interval<n,T>&) { return pow2_interval<n,T>::min(); }
+min(const pow2_interval<n,T>&) noexcept { return pow2_interval<n,T>::min(); }
 
 template<int n, class T>
 inline constexpr T
-max(const pow2_interval<n,T>&) { return pow2_interval<n,T>::max(); }
+max(const pow2_interval<n,T>&) noexcept { return pow2_interval<n,T>::max(); }
 
 
 
@@ -1261,6 +1261,45 @@ wider(const interval<T1>& a, const interval<T2>& b)
 {
     return (a.width() > b.width());
 }
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief
+ *
+ *****************************************************************************/
+template<class Arg>
+class value_in_range_predicate
+{
+public:
+
+    using argument_type = Arg;
+    using interval_type = interval<Arg>;
+
+    value_in_range_predicate() = default;
+
+    explicit
+    value_in_range_predicate(interval_type ival):
+        interval_{std::move(ival)}
+    {}
+
+//    explicit
+    value_in_range_predicate(Arg min, Arg max):
+        interval_{std::move(min), std::move(max)}
+    {}
+
+    bool
+    operator () (const argument_type& value) const {
+        return interval_.contains(value);
+    }
+
+private:
+    interval_type interval_;
+};
 
 
 

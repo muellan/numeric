@@ -28,30 +28,56 @@ namespace num {
 
 /*****************************************************************************
  *
- *
- * BOUNDING POLICIES
- *
+ * @brief silently cut off at interval bounds
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 struct silent_clip
 {
     template<class T1, class T2>
     constexpr T1
-    operator () (T1 x, T2 min, T2 max) noexcept
+    operator () (T1 x, T2 min, T2 max) const noexcept
     {
         return (x < min ? T1(std::move(min))
                         : (x > max ? T1(std::move(max)) : x));
     }
 };
 
-//-------------------------------------------------------------------
+
+
+
+/*****************************************************************************
+ *
+ * @brief silently wrap around ("modulo")
+ *
+ *****************************************************************************/
+struct silent_wrap
+{
+    //this relies on max beeing greater than min
+    template<class T>
+    T operator () (T x, const T& min, const T& max) const {
+        using std::fmod;
+
+        if(x < min || x > max) {
+            return fmod(x - min, max-min) + min;
+        }
+
+        return x;
+    }
+};
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief clip off and report each clipping on stderr
+ *
+ *****************************************************************************/
 struct clip_and_report
 {
     template<class T1, class T2>
     T1
-    operator () (T1 x, T2 min, T2 max) noexcept
+    operator () (T1 x, T2 min, T2 max) const noexcept
     {
         if(x < min) {
             std::cerr << x << " below [" << min << ',' << max << "]\n";
@@ -109,7 +135,7 @@ struct is_bounded<bounded<T,B,P>> :
 template<
     class NumberType,
     class BoundingInterval,
-    class BoundingPolicy = silent_clip
+    class BoundingPolicy
 >
 class bounded :
     private BoundingInterval,
@@ -124,7 +150,7 @@ public:
         "bounded<T,I,P>: T must not be a bounded<> type itself");
 
     static_assert(is_interval<BoundingInterval>::value,
-        "bounded<T,I,P>: B must be an interval (concept num::Interval)");
+        "bounded<T,I,P>: I must be an interval (concept num::Interval)");
 
 
     //---------------------------------------------------------------
@@ -164,8 +190,7 @@ public:
             bounding_policy bp = bounding_policy())
     :
         interval_type(ival), bounding_policy(bp),
-        v_(get_bounded(std::forward<T>(v), ival, bp))
-
+        v_(get_bounded(value_type(std::forward<T>(v)), ival, bp))
     {
         AM_CHECK_NARROWING(value_type,T)
     }
@@ -286,7 +311,7 @@ public:
 
     //-----------------------------------------------------
     constexpr
-    operator value_type () const noexcept
+    operator const value_type& () const noexcept
     {
         return v_;
     }
@@ -467,25 +492,126 @@ private:
 
 /*****************************************************************************
  *
+ * @brief numbers that are clipped on the interval bounds
  *
- * DERIVED TYPES
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
-template<class T>
-using unit_bounded = bounded<T,unit_interval<T>>;
+template<class NumericT, class BoundingInterval>
+using clipped = bounded<NumericT,BoundingInterval,silent_clip>;
 
 
 //-------------------------------------------------------------------
 template<class T>
-using symunit_bounded = bounded<T,symmetric_unit_interval<T>>;
-
+using unit_clipped = clipped<T,unit_interval<T>>;
 
 //-------------------------------------------------------------------
 template<class T>
-using interval_bounded = bounded<T,interval<T>>;
+using symunit_clipped = clipped<T,symmetric_unit_interval<T>>;
+
+//-------------------------------------------------------------------
+template<class T>
+using interval_clipped = clipped<T,interval<T>>;
+
+
+
+//-------------------------------------------------------------------
+template<class T, class = typename std::enable_if<
+    is_number<decay_t<T>>::value &&
+    !is_bounded<decay_t<T>>::value>::type>
+inline constexpr
+unit_clipped<decay_t<T>>
+make_unit_clipped(T&& x)
+{
+    return unit_clipped<decay_t<T>>{std::forward<T>(x)};
+}
+
+
+
+//-------------------------------------------------------------------
+template<class T, class = typename std::enable_if<
+    is_number<decay_t<T>>::value &&
+    !is_bounded<decay_t<T>>::value>::type>
+inline constexpr
+symunit_clipped<decay_t<T>>
+make_symunit_clipped(T&& x)
+{
+    return symunit_clipped<decay_t<T>>{std::forward<T>(x)};
+}
+
+
+
+//-------------------------------------------------------------------
+template<class T, class = typename std::enable_if<
+    is_number<decay_t<T>>::value &&
+    !is_bounded<decay_t<T>>::value>::type>
+inline constexpr
+interval_clipped<decay_t<T>>
+make_clipped(T&& x)
+{
+    return interval_clipped<decay_t<T>>{std::forward<T>(x)};
+}
+
+//---------------------------------------------------------
+template<class T1, class T2, class = typename std::enable_if<
+    is_number<decay_t<T1>>::value &&
+    !is_bounded<decay_t<T1>>::value>::type>
+inline constexpr
+interval_clipped<common_numeric_t<decay_t<T1>,T2>>
+make_clipped(T1&& x, interval<T2> bounds)
+{
+    return interval_clipped<common_numeric_t<decay_t<T1>,T2>>{
+        std::forward<T1>(x), std::move(bounds)};
+}
+
+
+
+//-------------------------------------------------------------------
+template<class T, class B>
+inline constexpr clipped<T,B>
+make_clipped(const clipped<T,B>& x)
+{
+    return x;
+}
+//---------------------------------------------------------
+template<class T, class B>
+inline constexpr clipped<T,B>&&
+make_clipped(clipped<T,B>&& x)
+{
+    return std::move(x);
+}
+
+//---------------------------------------------------------
+template<class T1, class B, class T2>
+inline constexpr
+interval_clipped<common_numeric_t<T1,T2>>
+make_clipped(const clipped<T1,B>& x, interval<T2> bounds)
+{
+    return interval_clipped<common_numeric_t<T1,T2>>{
+        common_numeric_t<T1,T2>(x), std::move(bounds)};
+}
+
+//---------------------------------------------------------
+template<class T1, class B, class T2>
+inline constexpr
+unit_clipped<common_numeric_t<T1,T2>>
+make_clipped(const clipped<T1,B>& x, const unit_interval<T2>&)
+{
+    return unit_clipped<common_numeric_t<T1,T2>>{
+        common_numeric_t<T1,T2>(x)};
+}
+
+//---------------------------------------------------------
+template<class T1, class B, class T2>
+inline constexpr
+symunit_clipped<common_numeric_t<T1,T2>>
+make_clipped(const clipped<T1,B>& x, const symmetric_unit_interval<T2>&)
+{
+    return symunit_clipped<common_numeric_t<T1,T2>>{
+        common_numeric_t<T1,T2>(x)};
+}
+
+
 
 
 
@@ -494,52 +620,38 @@ using interval_bounded = bounded<T,interval<T>>;
 
 /*****************************************************************************
  *
+ * @brief numbers that are wrapped around on the interval bounds
  *
- * FACTORIES
  *
  *
  *****************************************************************************/
+template<class NumericT, class BoundingInterval>
+using wrapped = bounded<NumericT,BoundingInterval,silent_wrap>;
+
+
+//-------------------------------------------------------------------
+template<class T>
+using unit_wrapped = wrapped<T,unit_interval<T>>;
+
+//-------------------------------------------------------------------
+template<class T>
+using symunit_wrapped = wrapped<T,symmetric_unit_interval<T>>;
+
+//-------------------------------------------------------------------
+template<class T>
+using interval_wrapped = wrapped<T,interval<T>>;
+
+
 
 //-------------------------------------------------------------------
 template<class T, class = typename std::enable_if<
     is_number<decay_t<T>>::value &&
     !is_bounded<decay_t<T>>::value>::type>
 inline constexpr
-unit_bounded<decay_t<T>>
-make_unit_bounded(T&& x)
+unit_wrapped<decay_t<T>>
+make_unit_wrapped(T&& x)
 {
-    return unit_bounded<decay_t<T>>{std::forward<T>(x)};
-}
-
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-unit_bounded<T>
-make_unit_bounded(bounded<T,B,P>& x)
-{
-    return unit_bounded<T>{std::move(x)};
-}
-
-
-
-//-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_bounded<decay_t<T>>::value>::type>
-inline constexpr
-symunit_bounded<decay_t<T>>
-make_symunit_bounded(T&& x)
-{
-    return symunit_bounded<decay_t<T>>{std::forward<T>(x)};
-}
-
-//---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr
-symunit_bounded<T>
-make_symunit_bounded(bounded<T,B,P>& x)
-{
-    return symunit_bounded<T>{std::move(x)};
+    return unit_wrapped<decay_t<T>>{std::forward<T>(x)};
 }
 
 
@@ -549,10 +661,23 @@ template<class T, class = typename std::enable_if<
     is_number<decay_t<T>>::value &&
     !is_bounded<decay_t<T>>::value>::type>
 inline constexpr
-interval_bounded<decay_t<T>>
-make_bounded(T&& x)
+symunit_wrapped<decay_t<T>>
+make_symunit_wrapped(T&& x)
 {
-    return interval_bounded<decay_t<T>>{std::forward<T>(x)};
+    return symunit_wrapped<decay_t<T>>{std::forward<T>(x)};
+}
+
+
+
+//-------------------------------------------------------------------
+template<class T, class = typename std::enable_if<
+    is_number<decay_t<T>>::value &&
+    !is_bounded<decay_t<T>>::value>::type>
+inline constexpr
+interval_wrapped<decay_t<T>>
+make_wrapped(T&& x)
+{
+    return interval_wrapped<decay_t<T>>{std::forward<T>(x)};
 }
 
 //---------------------------------------------------------
@@ -560,57 +685,57 @@ template<class T1, class T2, class = typename std::enable_if<
     is_number<decay_t<T1>>::value &&
     !is_bounded<decay_t<T1>>::value>::type>
 inline constexpr
-interval_bounded<common_numeric_t<decay_t<T1>,T2>>
-make_bounded(T1&& x, interval<T2> bounds)
+interval_wrapped<common_numeric_t<decay_t<T1>,T2>>
+make_wrapped(T1&& x, interval<T2> bounds)
 {
-    return interval_bounded<common_numeric_t<decay_t<T1>,T2>>{
+    return interval_wrapped<common_numeric_t<decay_t<T1>,T2>>{
         std::forward<T1>(x), std::move(bounds)};
 }
 
 
 
 //-------------------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr bounded<T,B,P>
-make_bounded(const bounded<T,B,P>& x)
+template<class T, class B>
+inline constexpr wrapped<T,B>
+make_wrapped(const wrapped<T,B>& x)
 {
     return x;
 }
 //---------------------------------------------------------
-template<class T, class B, class P>
-inline constexpr bounded<T,B,P>&&
-make_bounded(bounded<T,B,P>&& x)
+template<class T, class B>
+inline constexpr wrapped<T,B>&&
+make_wrapped(wrapped<T,B>&& x)
 {
     return std::move(x);
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2>
+template<class T1, class B, class T2>
 inline constexpr
-interval_bounded<common_numeric_t<T1,T2>>
-make_bounded(const bounded<T1,B,P>& x, interval<T2> bounds)
+interval_wrapped<common_numeric_t<T1,T2>>
+make_wrapped(const wrapped<T1,B>& x, interval<T2> bounds)
 {
-    return interval_bounded<common_numeric_t<T1,T2>>{
+    return interval_wrapped<common_numeric_t<T1,T2>>{
         common_numeric_t<T1,T2>(x), std::move(bounds)};
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2>
+template<class T1, class B, class T2>
 inline constexpr
-unit_bounded<common_numeric_t<T1,T2>>
-make_bounded(const bounded<T1,B,P>& x, const unit_interval<T2>&)
+unit_wrapped<common_numeric_t<T1,T2>>
+make_wrapped(const wrapped<T1,B>& x, const unit_interval<T2>&)
 {
-    return unit_bounded<common_numeric_t<T1,T2>>{
+    return unit_wrapped<common_numeric_t<T1,T2>>{
         common_numeric_t<T1,T2>(x)};
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2>
+template<class T1, class B, class T2>
 inline constexpr
-symunit_bounded<common_numeric_t<T1,T2>>
-make_bounded(const bounded<T1,B,P>& x, const symmetric_unit_interval<T2>&)
+symunit_wrapped<common_numeric_t<T1,T2>>
+make_wrapped(const wrapped<T1,B>& x, const symmetric_unit_interval<T2>&)
 {
-    return symunit_bounded<common_numeric_t<T1,T2>>{
+    return symunit_wrapped<common_numeric_t<T1,T2>>{
         common_numeric_t<T1,T2>(x)};
 }
 
@@ -1192,116 +1317,6 @@ public:
 
 /*****************************************************************************
  *
- * DEFAULT COMMON BOUNDS
- *
- *****************************************************************************/
-
-//-------------------------------------------------------------------
-/// @brief default behaviour: widen bounds
-//-------------------------------------------------------------------
-template<class B1, class B2>
-class common_bounds
-{
-
-    using res_t = common_numeric_t<
-                      decay_t<decltype(min(std::declval<B1>()))>,
-                      decay_t<decltype(min(std::declval<B2>()))>,
-                      decay_t<decltype(max(std::declval<B1>()))>,
-                      decay_t<decltype(max(std::declval<B2>()))> >;
-
-    struct not_same_t :
-        private B1,
-        private B2
-    {
-        not_same_t() = default;
-
-        template<class...Args>
-        not_same_t(Args&&... args):
-            B1(std::forward<Args>(args)...),
-            B2(std::forward<Args>(args)...)
-        {}
-
-        constexpr res_t
-        min() noexcept {
-            return res_t(B1::min()) < res_t(B2::min())
-                       ? res_t(B1::min())
-                       : res_t(B2::min());
-        }
-
-        constexpr res_t
-        max() noexcept {
-            return res_t(B1::max()) > res_t(B2::max())
-                       ? res_t(B1::max())
-                       : res_t(B2::max());
-        }
-
-        inline friend constexpr res_t
-        min(const not_same_t& x) noexcept {return x.min(); }
-
-        inline friend constexpr res_t
-        max(const not_same_t& x) noexcept {return x.max(); }
-    };
-
-public:
-    using type = typename std::conditional<
-                    std::is_same<B1,B2>::value, B1, not_same_t>::type;
-
-};
-
-
-
-//-------------------------------------------------------------------
-template<class B1, class B2>
-using common_bounds_t = typename common_bounds<B1,B2>::type;
-
-
-
-
-
-
-/*****************************************************************************
- *
- * DEFAULT COMMON BOUNDING POLICY
- *
- *****************************************************************************/
-
-//-------------------------------------------------------------------
-/// @brief default behaviour: use the 'mightier' policy
-//-------------------------------------------------------------------
-template<class, class>
-struct common_bounding_policy {};
-
-//---------------------------------------------------------
-template<class P>
-struct common_bounding_policy<P,P> {
-    using type = P;
-};
-
-//---------------------------------------------------------
-template<>
-struct common_bounding_policy<clip_and_report,silent_clip> {
-    using type = clip_and_report;
-};
-
-//---------------------------------------------------------
-template<>
-struct common_bounding_policy<silent_clip,clip_and_report> {
-    using type = clip_and_report;
-};
-
-
-
-//-------------------------------------------------------------------
-template<class P1, class P2>
-using common_bounding_policy_t = typename common_bounding_policy<P1,P2>::type;
-
-
-
-
-
-
-/*****************************************************************************
- *
  *
  * TRAITS SPECIALIZATIONS
  *
@@ -1339,23 +1354,20 @@ struct is_floating_point<bounded<T,B,P>> :
 template<class T1, class B, class P, class T2>
 struct common_numeric_type<bounded<T1,B,P>,T2>
 {
-    using type = bounded<common_numeric_t<T1,T2>,B,P>;
+    using type = common_numeric_t<T1,T2>;
 };
 //---------------------------------------------------------
 template<class T1, class B, class P, class T2>
 struct common_numeric_type<T2,bounded<T1,B,P>>
 {
-    using type = bounded<common_numeric_t<T1,T2>,B,P>;
+    using type = common_numeric_t<T1,T2>;
 };
 //---------------------------------------------------------
 /// @brief
 template<class T1, class B1, class P1, class T2, class B2, class P2>
 struct common_numeric_type<bounded<T1,B1,P1>,bounded<T2,B2,P2>>
 {
-    using type = bounded<
-        common_numeric_t<T1,T2>,
-        common_bounds_t<B1,B2>,
-        common_bounding_policy_t<P1,P2>>;
+    using type = common_numeric_t<T1,T2>;
 };
 
 

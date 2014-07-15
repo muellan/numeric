@@ -63,7 +63,7 @@ public:
     //-----------------------------------------------------
     /// @brief allow implicit conversions to wrapped type
     constexpr
-    operator value_type() const noexcept {
+    operator const value_type& () const noexcept {
         return v_;
     }
 

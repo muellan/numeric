@@ -24,23 +24,23 @@ namespace test {
 
 
 //-------------------------------------------------------------------
-void bounded_correctness()
+void clipped_correctness()
 {
     using std::abs;
     constexpr auto eps = 0.01;
 
-    auto a = num::bounded<int,num::interval<int>>{ 5, {-2,8}};
-    auto b = num::bounded<int,num::interval<int>>{ 6, {-2,8}};
-    auto c = num::bounded<int,num::interval<int>>{10, {-2,8}};
-    auto d = num::bounded<int,num::interval<int>>{-5, {-2,8}};
+    auto a = num::clipped<int,num::interval<int>>{ 5, {-2,8}};
+    auto b = num::clipped<int,num::interval<int>>{ 6, {-2,8}};
+    auto c = num::clipped<int,num::interval<int>>{10, {-2,8}};
+    auto d = num::clipped<int,num::interval<int>>{-5, {-2,8}};
 
-    auto d0 = num::bounded<double,num::unit_interval<double>>{-0.12};
-    auto d1 = num::bounded<double,num::unit_interval<double>>{0.02};
-    auto d2 = num::bounded<double,num::unit_interval<double>>{0.25};
-    auto d3 = num::bounded<double,num::unit_interval<double>>{0.50};
-    auto d4 = num::bounded<double,num::unit_interval<double>>{0.75};
-    auto d5 = num::bounded<double,num::unit_interval<double>>{0.98};
-    auto d6 = num::bounded<double,num::unit_interval<double>>{1.23};
+    auto d0 = num::clipped<double,num::unit_interval<double>>{-0.12};
+    auto d1 = num::clipped<double,num::unit_interval<double>>{0.02};
+    auto d2 = num::clipped<double,num::unit_interval<double>>{0.25};
+    auto d3 = num::clipped<double,num::unit_interval<double>>{0.50};
+    auto d4 = num::clipped<double,num::unit_interval<double>>{0.75};
+    auto d5 = num::clipped<double,num::unit_interval<double>>{0.98};
+    auto d6 = num::clipped<double,num::unit_interval<double>>{1.23};
 
     if(!(
         //double values, compile-time bounds
@@ -79,21 +79,21 @@ void bounded_correctness()
         ((d-a) == -7) &&
         ((d-b) == -8) &&
         ((d-c) == -10) &&
-        (make_bounded(a+b, make_interval(-1,5)) == 5) &&
-        (make_bounded(a+c, make_interval(-1,5)) == 5) &&
-        (make_bounded(a+d, make_interval(-1,5)) == 3) &&
-        (make_bounded(a-b, make_interval(-1,5)) == -1) &&
-        (make_bounded(a-c, make_interval(-1,5)) == -1) &&
-        (make_bounded(a-d, make_interval(-1,5)) == 5) &&
-        (make_bounded(b-a, make_interval(-1,5)) == 1) &&
-        (make_bounded(b-c, make_interval(-1,5)) == -1) &&
-        (make_bounded(b-d, make_interval(-1,5)) == 5) &&
-        (make_bounded(c-a, make_interval(-1,5)) == 3) &&
-        (make_bounded(c-b, make_interval(-1,5)) == 2) &&
-        (make_bounded(c-d, make_interval(-1,5)) == 5) &&
-        (make_bounded(d-a, make_interval(-1,5)) == -1) &&
-        (make_bounded(d-b, make_interval(-1,5)) == -1) &&
-        (make_bounded(d-c, make_interval(-1,5)) == -1) &&
+        (make_clipped(a+b, make_interval(-1,5)) == 5) &&
+        (make_clipped(a+c, make_interval(-1,5)) == 5) &&
+        (make_clipped(a+d, make_interval(-1,5)) == 3) &&
+        (make_clipped(a-b, make_interval(-1,5)) == -1) &&
+        (make_clipped(a-c, make_interval(-1,5)) == -1) &&
+        (make_clipped(a-d, make_interval(-1,5)) == 5) &&
+        (make_clipped(b-a, make_interval(-1,5)) == 1) &&
+        (make_clipped(b-c, make_interval(-1,5)) == -1) &&
+        (make_clipped(b-d, make_interval(-1,5)) == 5) &&
+        (make_clipped(c-a, make_interval(-1,5)) == 3) &&
+        (make_clipped(c-b, make_interval(-1,5)) == 2) &&
+        (make_clipped(c-d, make_interval(-1,5)) == 5) &&
+        (make_clipped(d-a, make_interval(-1,5)) == -1) &&
+        (make_clipped(d-b, make_interval(-1,5)) == -1) &&
+        (make_clipped(d-c, make_interval(-1,5)) == -1) &&
         true
     ))
     {

@@ -16,7 +16,6 @@
 
 
 namespace am {
-
 namespace num {
 
 
@@ -31,10 +30,10 @@ namespace num {
 //------------------------------------------------------------------
 /// @brief default floating point
 //------------------------------------------------------------------
-#ifdef AM_EXTENDED_DOUBLE_PRECISION
+#ifdef AM_NUMERIC_PRECISION_LONG_DOUBLE
     using real_t = long double;
 #else
-    #ifdef AM_DOUBLE_PRECISION
+    #ifdef AM_NUMERIC_PRECISION_DOUBLE
         using real_t = double;
     #else
         using real_t = float;
@@ -46,10 +45,10 @@ namespace num {
 //-------------------------------------------------------------------
 /// @brief default dimension type
 //-------------------------------------------------------------------
-#ifdef AM_DIMENSIONS_HUGE
+#ifdef AM_NUMERIC_DIMENSIONS_32BIT
     using dims_t = std::int_fast32_t;
 #else
-    #ifdef AM_DIMENSIONS_MANY
+    #ifdef AM_NUMERIC_DIMENSIONS_16BIT
         using dims_t = std::int_fast16_t;
     #else
         using dims_t = std::int_fast8_t;

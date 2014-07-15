@@ -39,10 +39,10 @@ void numeric_correctness()
     }
 
     try {
-        num::test::bounded_correctness();
+        num::test::clipped_correctness();
     }
     catch(std::exception& e) {
-        std::cerr << "FAIL\n" << "am::num::bounded\n" << e.what() << std::endl;
+        std::cerr << "FAIL\n" << "am::num::clipped\n" << e.what() << std::endl;
     }
 
     try {
@@ -73,6 +73,7 @@ void numeric_correctness()
 
 }  // namespace test
 }  // namespace am
+
 
 
 #endif

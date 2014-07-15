@@ -245,7 +245,7 @@ public:
 
     //-----------------------------------------------------
     constexpr
-    operator value_type () const noexcept
+    operator const value_type& () const noexcept
     {
         return v_;
     }
@@ -1032,52 +1032,6 @@ public:
 
 /*****************************************************************************
  *
- * DEFAULT COMMON ROUNDING POLICY
- *
- *****************************************************************************/
-
-//-------------------------------------------------------------------
-/// @brief default behaviour: use the method thats less restrictive
-//-------------------------------------------------------------------
-template<class, class>
-struct common_rounding_method {};
-
-//---------------------------------------------------------
-template<class R>
-struct common_rounding_method<R,R> {
-    using type = R;
-};
-
-//---------------------------------------------------------
-template<class T1, class T2>
-struct common_rounding_method<round_to_nearest<T1>, round_to_nearest<T2>> {
-    using type = round_to_nearest<common_numeric_t<T1,T2>>;
-};
-
-//---------------------------------------------------------
-template<class T>
-struct common_rounding_method<round_to_nearest<T>, round_to_nearest_int> {
-    using type = round_to_nearest<T>;
-};
-
-//---------------------------------------------------------
-template<class T>
-struct common_rounding_method<round_to_nearest_int, round_to_nearest<T>> {
-    using type = round_to_nearest<T>;
-};
-
-
-//-------------------------------------------------------------------
-template<class R1, class R2>
-using common_rounding_method_t = typename common_rounding_method<R1,R2>::type;
-
-
-
-
-
-
-/*****************************************************************************
- *
  *
  * TRAITS SPECIALIZATIONS
  *
@@ -1115,22 +1069,20 @@ struct is_floating_point<rounded<T,R>> :
 template<class T1, class R, class T2>
 struct common_numeric_type<rounded<T1,R>,T2>
 {
-    using type = rounded<common_numeric_t<T1,T2>,R>;
+    using type = common_numeric_t<T1,T2>;
 };
 //---------------------------------------------------------
 template<class T1, class R, class T2>
 struct common_numeric_type<T2,rounded<T1,R>>
 {
-    using type = rounded<common_numeric_t<T1,T2>,R>;
+    using type = common_numeric_t<T1,T2>;
 };
 //---------------------------------------------------------
 /// @brief
 template<class T1, class R1, class T2, class R2>
 struct common_numeric_type<rounded<T1,R1>,rounded<T2,R2>>
 {
-    using type = rounded<
-        common_numeric_t<T1,T2>,
-        common_rounding_method_t<R1,R2>>;
+    using type = common_numeric_t<T1,T2>;
 };
 
 

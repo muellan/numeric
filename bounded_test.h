@@ -19,7 +19,7 @@ namespace num {
 namespace test {
 
 
-void bounded_correctness();
+void clipped_correctness();
 
 
 }  // namespace test

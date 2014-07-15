@@ -17,8 +17,8 @@
 
 #include "param.h"
 
-#include "traits.h"
 #include "narrowing.h"
+#include "traits.h"
 
 
 namespace am {
@@ -104,6 +104,40 @@ struct gon_ccs_turn
 
 /*****************************************************************************
  *
+ *
+ * TRAITS
+ *
+ *
+ *****************************************************************************/
+template<class> class angle;
+
+//-------------------------------------------------------------------
+template<class T, class... R>
+struct is_angle :
+    std::integral_constant<bool,
+        is_angle<T>::value && is_angle<R...>::value>
+{};
+
+//---------------------------------------------------------
+template<class T>
+struct is_angle<T> :
+    std::false_type
+{};
+
+//-----------------------------------------------------
+template<class T>
+struct is_angle<angle<T>> :
+    std::true_type
+{};
+
+
+
+
+
+
+
+/*****************************************************************************
+ *
  * @brief represents an angle
  *        supports automatic angle unit conversions
  *        supports constexpr compile-time evaluation
@@ -120,8 +154,10 @@ class angle
     using conversion_t = typename std::common_type<
             typename T::type, typename Turn::type>::type;
 
-    static_assert(is_number<typename Turn::type>::value,
-        "angle<T>: T::type must be a number");
+    static_assert(is_number<typename Turn::type>::value &&
+                  !is_angle<Turn>::value &&
+                  !is_angle<typename Turn::type>::value,
+                  "angle<T>: T must be a turn specifier and T::type must be a number");
 
     //befriend all angles
     template<class T> friend class angle;
@@ -157,8 +193,8 @@ public:
     {}
     //-----------------------------------------------------
     /// @brief implicit conversion from simple values is not allowed
-    template<class T, class = typename
-        std::enable_if<is_number<T>::value>::type>
+    template<class T, class = typename std::enable_if<
+        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     explicit constexpr
     angle(T&& a):
         v_(std::forward<T>(a))
@@ -231,7 +267,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     angle&
     operator *= (const T& factor)
     {
@@ -242,7 +278,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     angle&
     operator /= (const T& factor)
     {
@@ -270,14 +306,16 @@ public:
         return angle{v_ - a.as<turn_type>()};
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+    template<class T, class = typename std::enable_if<
+        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     constexpr angle
     operator * (const T& factor) const
     {
         return angle{v_ * factor};
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+    template<class T, class = typename std::enable_if<
+        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     constexpr angle
     operator / (const T& factor) const
     {
@@ -286,7 +324,8 @@ public:
 
     //-----------------------------------------------------
     /// @brief pre-multiplication
-    template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+    template<class T, class = typename std::enable_if<
+        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     inline friend constexpr angle
     operator * (const T& factor, const angle& a)
     {
@@ -297,8 +336,8 @@ public:
     //---------------------------------------------------------------
     // inversion (works only on signed domains)
     //---------------------------------------------------------------
-    template<class T = numeric_type, class =
-        typename std::enable_if<!std::is_unsigned<T>::value>::type>
+    template<class T = numeric_type, class = typename std::enable_if<
+        !std::is_unsigned<T>::value && !is_angle<decay_t<T>>::value>::type>
     constexpr angle
     operator - () const {
         return angle{-v_};
@@ -425,6 +464,81 @@ public:
     inline friend constexpr T
     gon_ccs_cast(const angle& a) {
         return a.as<gon_ccs_turn<T>>();
+    }
+
+
+    //---------------------------------------------------------------
+    inline friend angle
+    fmod(const angle& numer, const angle& denom) {
+        using std::fmod;
+        return angle{fmod(numer.v_, denom.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    floor(const angle& a) {
+        using std::floor;
+        return angle{floor(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    ceil(const angle& a) {
+        using std::ceil;
+        return angle{ceil(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    trunc(const angle& a) {
+        using std::trunc;
+        return angle{trunc(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    remainder(const angle& numer, const angle& denom) {
+        using std::remainder;
+        return angle{remainder(numer.v_, denom.v_)};
+    }
+
+    //-----------------------------------------------------
+    inline friend angle
+    round(const angle& a) {
+        using std::round;
+        return angle{round(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    lround(const angle& a) {
+        using std::lround;
+        return angle{lround(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    llround(const angle& a) {
+        using std::llround;
+        return angle{llround(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    rint(const angle& a) {
+        using std::rint;
+        return angle{rint(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    lrint(const angle& a) {
+        using std::lrint;
+        return angle{lrint(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    llrint(const angle& a) {
+        using std::llrint;
+        return angle{llrint(a.v_)};
+    }
+    //-----------------------------------------------------
+    inline friend angle
+    nearbyint(const angle& a) {
+        using std::nearbyint;
+        return angle{nearbyint(a.v_)};
     }
 
 
@@ -685,34 +799,74 @@ print(Ostream& os, const angle<gon_ccs_turn<T>>& a)
 
 
 
-
-
 /*****************************************************************************
  *
  *
- * TRAITS
+ * TRAITS SPECIALIZATIONS
  *
  *
  *****************************************************************************/
 
 //-------------------------------------------------------------------
-template<class T, class... R>
-struct is_angle :
+template<class T>
+struct is_number<angle<T>> : std::true_type {};
+
+template<class T>
+struct is_number<angle<T>&> : std::true_type {};
+
+template<class T>
+struct is_number<angle<T>&&> : std::true_type {};
+
+template<class T>
+struct is_number<const angle<T>&> : std::true_type {};
+
+template<class T>
+struct is_number<const angle<T>> : std::true_type {};
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+struct is_floating_point<angle<T>> :
     std::integral_constant<bool,
-        is_angle<T>::value && is_angle<R...>::value>
+        is_floating_point<typename angle<T>::numeric_type>::value>
+{};
+
+
+
+//-------------------------------------------------------------------
+template<class T>
+struct common_numeric_type<angle<T>,angle<T>>
+{
+    using type = angle<T>;
+};
+
+
+
+namespace detail {
+
+//-------------------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, angle<To>, From> :
+    public is_non_narrowing_helper<true,typename angle<To>::numeric_type,From>
 {};
 
 //---------------------------------------------------------
-template<class T>
-struct is_angle<T> :
-    std::false_type
+template<class To, class From>
+struct is_non_narrowing_helper<true, angle<To>, angle<From> > :
+    public is_non_narrowing_helper<true,
+        typename angle<To>::numeric_type,
+        typename angle<From>::numeric_type>
 {};
 
-//-----------------------------------------------------
-template<class T>
-struct is_angle<angle<T>> :
-    std::true_type
+//---------------------------------------------------------
+template<class To, class From>
+struct is_non_narrowing_helper<true, To, angle<From> > :
+    public is_non_narrowing_helper<true,To,typename angle<From>::numeric_type>
 {};
+
+
+}  // namespace detail
 
 
 
@@ -731,7 +885,7 @@ struct is_angle<angle<T>> :
 /// @brief maps the input angle to the turn range
 template<class T>
 inline constexpr angle<T>
-wrapped(angle<T> a)
+mod_turn(angle<T> a)
 {
     return angle<T>{a.wrap()};
 }
@@ -1120,6 +1274,119 @@ using uniform_degree_distribution = uniform_angle_distribution<degrees_turn<T>>;
 //---------------------------------------------------------
 template<class T = real_t>
 using uniform_gon_distribution = uniform_angle_distribution<gons_turn<T>>;
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class Angle>
+struct turn_interval
+{
+    using value_type = Angle;
+
+    static constexpr value_type
+    min() noexcept {
+        return value_type(0);
+    }
+
+    static constexpr value_type
+    max() noexcept {
+        return value_type{Angle::turn()};
+    }
+};
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const turn_interval<T>&) noexcept { return turn_interval<T>::min(); }
+
+template<class T>
+inline constexpr T
+max(const turn_interval<T>&) noexcept { return turn_interval<T>::max(); }
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class Angle>
+struct centered_turn_interval
+{
+    using value_type = Angle;
+
+    static constexpr value_type
+    min() noexcept {
+        return value_type{-Angle::turn()/2};
+    }
+
+    static constexpr value_type
+    max() noexcept {
+        return value_type{Angle::turn()/2};
+    }
+};
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const centered_turn_interval<T>&) noexcept {
+    return centered_turn_interval<T>::min();
+}
+
+template<class T>
+inline constexpr T
+max(const centered_turn_interval<T>&) noexcept {
+    return centered_turn_interval<T>::max();
+}
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class Angle>
+struct inclination_interval
+{
+    using value_type = Angle;
+
+    static constexpr value_type
+    min() noexcept {
+        return value_type{-Angle::turn()/4};
+    }
+
+    static constexpr value_type
+    max() noexcept {
+        return value_type{Angle::turn()/4};
+    }
+};
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const inclination_interval<T>&) noexcept {
+    return inclination_interval<T>::min();
+}
+
+template<class T>
+inline constexpr T
+max(const inclination_interval<T>&) noexcept {
+    return inclination_interval<T>::max();
+}
 
 
 
