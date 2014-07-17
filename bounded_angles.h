@@ -1,3 +1,14 @@
+/*****************************************************************************
+ *
+ * AM numeric facilities
+ *
+ * released under MIT license
+ *
+ * 2008-2014 André Müller
+ *
+ *****************************************************************************/
+
+
 #ifndef AM_NUMERIC_ANGLES_H_
 #define AM_NUMERIC_ANGLES_H_
 
@@ -16,8 +27,8 @@ namespace num {
  *
  *
  *****************************************************************************/
-template<class Turn>
-using clipped_angle = clipped<angle<Turn>, turn_interval<angle<Turn>>>;
+template<class Turn, class Interval = turn_interval<angle<Turn>>>
+using clipped_angle = clipped<angle<Turn>, Interval>;
 
 template<class T>
 using clipped_degrees = clipped_angle<degrees_turn<T>>;
@@ -61,7 +72,29 @@ using inclination_gons = inclination_angle<gons_turn<T>>;
  *
  *****************************************************************************/
 template<class Turn>
-using wrapped_angle = wrapped<angle<Turn>, turn_interval<angle<Turn>>>;
+using fov_angle = clipped<angle<Turn>, half_turn_interval<angle<Turn>>>;
+
+template<class T>
+using fov_degrees = fov_angle<degrees_turn<T>>;
+
+template<class T>
+using fov_radians = fov_angle<radians_turn<T>>;
+
+template<class T>
+using fov_gons = fov_angle<gons_turn<T>>;
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class Turn, class Interval = turn_interval<angle<Turn>>>
+using wrapped_angle = wrapped<angle<Turn>, Interval>;
 
 template<class T>
 using wrapped_degrees = wrapped_angle<degrees_turn<T>>;

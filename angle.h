@@ -710,7 +710,7 @@ constexpr gon_ccs<real_t> operator"" _gonccs (unsigned long long int x) {
     return gon_ccs<real_t>{real_t(x)};
 }
 
-}  // anonymous namespace
+}  // unnamed namespace
 
 
 
@@ -724,6 +724,27 @@ constexpr gon_ccs<real_t> operator"" _gonccs (unsigned long long int x) {
  *
  *
  *****************************************************************************/
+
+//-------------------------------------------------------------------
+template<class U1, class U2>
+inline common_numeric_t<typename U1::type, typename U2::type>
+operator / (const angle<U1>& a, const angle<U2>& b)
+{
+    using res_t = common_numeric_t<typename U1::type, typename U2::type>;
+
+    return radians_cast<res_t>(a) / radians_cast<res_t>(b);
+}
+//---------------------------------------------------------
+template<class U>
+inline typename U::type
+operator / (const angle<U>& a, const angle<U>& b)
+{
+    using res_t = typename U::type;
+
+    return radians_cast<res_t>(a) / radians_cast<res_t>(b);
+}
+
+
 
 //-------------------------------------------------------------------
 // I/O
@@ -1309,6 +1330,84 @@ min(const turn_interval<T>&) noexcept { return turn_interval<T>::min(); }
 template<class T>
 inline constexpr T
 max(const turn_interval<T>&) noexcept { return turn_interval<T>::max(); }
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class Angle>
+struct half_turn_interval
+{
+    using value_type = Angle;
+
+    static constexpr value_type
+    min() noexcept {
+        return value_type(0);
+    }
+
+    static constexpr value_type
+    max() noexcept {
+        return value_type{Angle::turn()/2};
+    }
+};
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const half_turn_interval<T>&) noexcept {
+    return half_turn_interval<T>::min();
+}
+
+template<class T>
+inline constexpr T
+max(const half_turn_interval<T>&) noexcept {
+    return half_turn_interval<T>::max();
+}
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class Angle>
+struct quarter_turn_interval
+{
+    using value_type = Angle;
+
+    static constexpr value_type
+    min() noexcept {
+        return value_type(0);
+    }
+
+    static constexpr value_type
+    max() noexcept {
+        return value_type{Angle::turn()/2};
+    }
+};
+
+//-------------------------------------------------------------------
+template<class T>
+inline constexpr T
+min(const quarter_turn_interval<T>&) noexcept {
+    return quarter_turn_interval<T>::min();
+}
+
+template<class T>
+inline constexpr T
+max(const quarter_turn_interval<T>&) noexcept {
+    return quarter_turn_interval<T>::max();
+}
 
 
 

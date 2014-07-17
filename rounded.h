@@ -723,29 +723,32 @@ operator <= (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator + (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
+    -> decltype(x.value() + y.value())
 {
-    return common_numeric_t<T1,T2>{x.value() + y.value()};
+    return (x.value() + y.value());
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator + (const rounded<T1,R>& x, const T2& y)
+    -> decltype(x.value() + y)
 {
-    return common_numeric_t<T1,T2>{x.value() + y};
+    return (x.value() + y);
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator + (const T2& y, const rounded<T1,R>& x)
+    -> decltype(y + x.value())
 {
-    return common_numeric_t<T1,T2>{y + x.value()};
+    return (y + x.value());
 }
 
 
@@ -755,29 +758,32 @@ operator + (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator - (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
+    -> decltype(x.value() - y.value())
 {
-    return common_numeric_t<T1,T2>{x.value() - y.value()};
+    return (x.value() - y.value());
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator - (const rounded<T1,R>& x, const T2& y)
+    -> decltype(x.value() - y)
 {
-    return common_numeric_t<T1,T2>{x.value() - y};
+    return (x.value() - y);
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator - (const T2& y, const rounded<T1,R>& x)
+    -> decltype(y - x.value())
 {
-    return common_numeric_t<T1,T2>{y - x.value()};
+    return (y - x.value());
 }
 
 
@@ -787,29 +793,32 @@ operator - (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator * (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
+    -> decltype(x.value() * y.value())
 {
-    return common_numeric_t<T1,T2>{x.value() * y.value()};
+    return (x.value() * y.value());
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator * (const rounded<T1,R>& x, const T2& y)
+    -> decltype(x.value() * y)
 {
-    return common_numeric_t<T1,T2>{x.value() * y};
+    return (x.value() * y);
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-rounded<common_numeric_t<T1,T2>,R>
+auto
 operator * (const T2& y, const rounded<T1,R>& x)
+    -> decltype(y * x.value())
 {
-    return common_numeric_t<T1,T2>{y * x.value()};
+    return (y * x.value());
 }
 
 
@@ -819,29 +828,32 @@ operator * (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator / (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
+    -> decltype(x.value() / y.value())
 {
-    return common_numeric_t<T1,T2>{x.value() / y.value()};
+    return (x.value() / y.value());
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator / (const rounded<T1,R>& x, const T2& y)
+    -> decltype(x.value() / y)
 {
-    return common_numeric_t<T1,T2>{x.value() / y};
+    return (x.value() / y);
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator / (const T2& y, const rounded<T1,R>& x)
+    -> decltype(y / x.value())
 {
-    return common_numeric_t<T1,T2>{y / x.value()};
+    return (y / x.value());
 }
 
 
@@ -851,29 +863,32 @@ operator / (const T2& y, const rounded<T1,R>& x)
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator % (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
+    -> decltype(x.value() % y.value())
 {
-    return common_numeric_t<T1,T2>{x.value() % y.value()};
+    return (x.value() % y.value());
 }
 
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator % (const rounded<T1,R>& x, const T2& y)
+    -> decltype(x.value() % y)
 {
-    return common_numeric_t<T1,T2>{x.value() % y};
+    return (x.value() % y);
 }
 //---------------------------------------------------------
 template<class T1, class R, class T2, class = typename
     std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
 inline constexpr
-common_numeric_t<T1,T2>
+auto
 operator % (const T2& y, const rounded<T1,R>& x)
+    -> decltype(y % x.value())
 {
-    return common_numeric_t<T1,T2>{y % x.value()};
+    return (y % x.value());
 }
 
 
