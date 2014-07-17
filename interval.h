@@ -172,30 +172,42 @@ interval_div(const T& al, const T& ar, const T& bl, const T& br, T& l, T& r)
 
 /*****************************************************************************
  *
- * @brief empty interval
+ * @brief static interval
  *
  *****************************************************************************/
-template<class T>
-class empty_interval
+template<class T, long long int left, long long int right>
+class static_interval
 {
 public:
     using value_type = T;
     using numeric_type = T;
 
-    static constexpr value_type min() noexcept {return value_type(0); }
-    static constexpr value_type max() noexcept {return value_type(0); }
+    static constexpr value_type min() noexcept {return left; }
+    static constexpr value_type max() noexcept {return right; }
 };
 
 //-------------------------------------------------------------------
-template<class T>
+template<class T, long long int left, long long int right>
 inline constexpr T
-min(const empty_interval<T>&) noexcept { return empty_interval<T>::min(); }
+min(const static_interval<T,left,right>&) noexcept { return left; }
 
-template<class T>
+template<class T, long long int left, long long int right>
 inline constexpr T
-max(const empty_interval<T>&) noexcept { return empty_interval<T>::max(); }
+max(const static_interval<T,left,right>&) noexcept { return right; }
 
 
+
+
+
+
+
+/*****************************************************************************
+ *
+ * @brief empty interval
+ *
+ *****************************************************************************/
+template<class T>
+using empty_interval = static_interval<T,0,0>;
 
 
 
@@ -206,25 +218,7 @@ max(const empty_interval<T>&) noexcept { return empty_interval<T>::max(); }
  *
  *****************************************************************************/
 template<class T>
-struct unit_interval
-{
-    using value_type = T;
-    using numeric_type = T;
-
-    static constexpr T min() noexcept {return T(0); }
-    static constexpr T max() noexcept {return T(1); }
-};
-
-//-------------------------------------------------------------------
-template<class T>
-inline constexpr T
-min(const unit_interval<T>&) noexcept { return unit_interval<T>::min(); }
-
-template<class T>
-inline constexpr T
-max(const unit_interval<T>&) noexcept { return unit_interval<T>::max(); }
-
-
+using unit_interval = static_interval<T,0,1>;
 
 
 
@@ -235,29 +229,7 @@ max(const unit_interval<T>&) noexcept { return unit_interval<T>::max(); }
  *
  *****************************************************************************/
 template<class T>
-struct symmetric_unit_interval
-{
-    using value_type = T;
-    using numeric_type = T;
-
-    static constexpr T min() noexcept {return T(-1); }
-    static constexpr T max() noexcept {return T(+1); }
-};
-
-//-------------------------------------------------------------------
-template<class T>
-inline constexpr T
-min(const symmetric_unit_interval<T>&) noexcept {
-    return symmetric_unit_interval<T>::min();
-}
-
-template<class T>
-inline constexpr T
-max(const symmetric_unit_interval<T>&) noexcept {
-    return symmetric_unit_interval<T>::max();
-}
-
-
+using symmetric_unit_interval = static_interval<T,-1,1>;
 
 
 
@@ -277,7 +249,7 @@ struct pow2_interval
         return T(0);
     }
     static constexpr T max() noexcept {
-        return pow2_interval<n-1,T>::max() * T(2);
+        return T(pow2_interval<n-1,T>::max() * T(2));
     }
 };
 
