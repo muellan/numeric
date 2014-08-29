@@ -233,11 +233,11 @@ public:
     angle&
     wrap() {
         using std::fmod;
-        if(v_ < numeric_type(0)) {
-            v_ = -v_;
-        }
-        if(v_ > turn()) {
+        if(v_ < numeric_type(0) || v_ > turn()) {
             v_ = fmod(v_, turn());
+            if(v_ < numeric_type(0)) {
+                v_ += turn();
+            }
         }
         return *this;
     }
