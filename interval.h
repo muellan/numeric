@@ -603,14 +603,7 @@ public:
     {
         AM_CHECK_NARROWING(value_type,T)
 
-        AM_CHECK_NARROWING(value_type,T)
-
-        auto omf = (value_type(1) - factor);
-        auto opf = (value_type(1) + factor);
-        auto l = l_;
-
-        l_ = omf * r_ + opf * l_;
-        r_ = opf * r_ + omf * l;
+        width(width() * factor);
 
         return *this;
     }
