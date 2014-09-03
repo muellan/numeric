@@ -442,6 +442,23 @@ public:
         return *this;
     }
 
+    //-----------------------------------------------------
+    template<class T1, class T2, class = typename std::enable_if<
+        is_number<T1,T2>::value>::type>
+    void
+    assign(T1&& left, T2&& right)
+    {
+        AM_CHECK_NARROWING2(value_type,T1,T2)
+
+        if(left < right) {
+            l_ = std::forward<T1>(left);
+            r_ = std::forward<T2>(right);
+        } else {
+            r_ = std::forward<T1>(left);
+            l_ = std::forward<T2>(right);
+        }
+    }
+
 
     //---------------------------------------------------------------
     // BOUNDS
@@ -704,24 +721,6 @@ public:
 
 
 private:
-    //---------------------------------------------------------------
-    template<class T1, class T2, class = typename std::enable_if<
-        is_number<T1,T2>::value>::type>
-    void
-    assign(T1&& left, T2&& right)
-    {
-        AM_CHECK_NARROWING2(value_type,T1,T2)
-
-        if(left < right) {
-            l_ = std::forward<T1>(left);
-            r_ = std::forward<T2>(right);
-        } else {
-            r_ = std::forward<T1>(left);
-            l_ = std::forward<T2>(right);
-        }
-    }
-
-
     //---------------------------------------------------------------
     value_type l_, r_;
 };

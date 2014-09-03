@@ -1,6 +1,13 @@
 /Release
+/Release_GUI
 /Debug
 /Profile
+/Coverage
+/build_release
+/build_release_gui
+/build_debug
+/build_profile
+/build_coverage
 .project
 .cproject
 .settings

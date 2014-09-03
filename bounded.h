@@ -29,16 +29,17 @@ namespace num {
 /*****************************************************************************
  *
  * @brief silently cut off at interval bounds
+ *        no check for narrowing!
  *
  *****************************************************************************/
 struct silent_clip
 {
-    template<class T1, class T2>
-    constexpr T1
-    operator () (T1 x, T2 min, T2 max) const noexcept
+    template<class In, class Tgt>
+    constexpr
+    Tgt operator () (In x, Tgt min, Tgt max) const noexcept
     {
-        return (x < min ? T1(std::move(min))
-                        : (x > max ? T1(std::move(max)) : x));
+        return (Tgt(x) < min ? std::move(min)
+                             : (Tgt(x) > max ? std::move(max) : Tgt(x)));
     }
 };
 
@@ -48,20 +49,22 @@ struct silent_clip
 /*****************************************************************************
  *
  * @brief silently wrap around ("modulo")
+ *        no check for narrowing!
  *
  *****************************************************************************/
 struct silent_wrap
 {
     //this relies on max beeing greater than min
-    template<class T>
-    T operator () (T x, const T& min, const T& max) const {
+    template<class In, class Tgt>
+    Tgt operator () (In x, const Tgt& min, const Tgt& max) const {
         using std::fmod;
 
-        if(x < min || x > max) {
-            return fmod(x - min, max-min) + min;
+        auto res = Tgt(x);
+        if(res < min || res > max) {
+            return (fmod(res - min, max-min) + min);
         }
 
-        return x;
+        return res;
     }
 };
 
@@ -75,19 +78,21 @@ struct silent_wrap
  *****************************************************************************/
 struct clip_and_report
 {
-    template<class T1, class T2>
-    T1
-    operator () (T1 x, T2 min, T2 max) const noexcept
+    template<class In, class Tgt>
+    Tgt operator () (In x, Tgt min, Tgt max) const noexcept
     {
-        if(x < min) {
-            std::cerr << x << " below [" << min << ',' << max << "]\n";
-            return T1(std::move(min));
+        AM_CHECK_NARROWING(Tgt,In);
+
+        auto res = Tgt(std::move(x));
+        if(res < min) {
+            std::cerr << res << " below [" << min << ',' << max << "]\n";
+            return Tgt(std::move(min));
         }
-        else if(x > max) {
-            std::cerr << x << " above [" << min << ',' << max << "]\n";
-            return T1(std::move(max));
+        else if(res > max) {
+            std::cerr << res << " above [" << min << ',' << max << "]\n";
+            return Tgt(std::move(max));
         }
-        return x;
+        return res;
     }
 };
 
@@ -190,10 +195,8 @@ public:
             bounding_policy bp = bounding_policy())
     :
         interval_type(ival), bounding_policy(bp),
-        v_(get_bounded(value_type(std::forward<T>(v)), ival, bp))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
+        v_(get_bounded(std::forward<T>(v), ival, bp))
+    { }
     //-----------------------------------------------------
     /// @brief
     explicit constexpr
@@ -212,10 +215,8 @@ public:
             bounding_policy bp = bounding_policy())
      :
         interval_type(ival), bounding_policy(bp),
-        v_(get_bounded(value_type(v), ival, bp))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
+        v_(get_bounded(v, ival, bp))
+    { }
 
     //-----------------------------------------------------
     constexpr
@@ -230,21 +231,15 @@ public:
     explicit constexpr
     bounded(const bounded<T,B,P>& src):
         interval_type(), bounding_policy(),
-        v_(get_bounded(
-            value_type(src), interval_type(), bounding_policy()))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
+        v_(get_bounded(src, interval_type(), bounding_policy()))
+    { }
     //-----------------------------------------------------
     template<class T, class B, class P>
     explicit constexpr
     bounded(bounded<T,B,P>&& src):
         interval_type(), bounding_policy(),
-        v_(get_bounded(
-            value_type(std::move(src)), interval_type(), bounding_policy()))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
+        v_(get_bounded(std::move(src), interval_type(), bounding_policy()))
+    { }
 
 
     //---------------------------------------------------------------
@@ -268,9 +263,7 @@ public:
     bounded&
     operator = (const bounded<T,B,P>& b)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = get_bounded(value_type(b));
+        v_ = get_bounded(b);
 
         return *this;
     }
@@ -279,9 +272,7 @@ public:
     bounded&
     operator = (bounded<T,B,P>&& b)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = get_bounded(value_type(std::move(b)));
+        v_ = get_bounded(std::move(b));
 
         return *this;
     }
@@ -293,9 +284,7 @@ public:
     bounded&
     operator = (T&& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = get_bounded(value_type(std::forward<T>(v)));
+        v_ = get_bounded(std::forward<T>(v));
 
         return *this;
     }
@@ -325,9 +314,7 @@ public:
     bounded&
     operator += (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = get_bounded(v_ + value_type(v));
+        v_ = get_bounded(v_ + v);
 
         return *this;
     }
@@ -337,9 +324,7 @@ public:
     bounded&
     operator -= (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = get_bounded(v_ - value_type(v));
+        v_ = get_bounded(v_ - v);
 
         return *this;
     }
@@ -349,9 +334,7 @@ public:
     bounded&
     operator *= (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = get_bounded(v_ * value_type(v));
+        v_ = get_bounded(v_ * v);
 
         return *this;
     }
@@ -361,9 +344,7 @@ public:
     bounded&
     operator /= (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = get_bounded(v_ /= value_type(v));
+        v_ = get_bounded(v_ /= v);
 
         return *this;
     }
@@ -411,8 +392,6 @@ public:
     bounded&
     operator += (const bounded<T,B,P>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = get_bounded(v_ + o.value());
 
         return *this;
@@ -422,8 +401,6 @@ public:
     bounded&
     operator -= (const bounded<T,B,P>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = get_bounded(v_ - o.value());
 
         return *this;
@@ -433,8 +410,6 @@ public:
     bounded&
     operator *= (const bounded<T,B,P>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = get_bounded(v_ * o.value());
 
         return *this;
@@ -444,8 +419,6 @@ public:
     bounded&
     operator /= (const bounded<T,B,P>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = get_bounded(v_ / o.value());
 
         return *this;
@@ -455,8 +428,6 @@ public:
     bounded&
     operator %= (const bounded<T,B,P>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = get_bounded(v_ % o.value());
 
         return *this;
@@ -465,16 +436,17 @@ public:
 
 private:
     //---------------------------------------------------------------
+    template<class T>
     constexpr value_type
-    get_bounded(value_type v) const noexcept {
+    get_bounded(T v) const noexcept {
         return bounding_policy::operator()(std::move(v), min(), max());
     }
 
     //-----------------------------------------------------
     /// @brief needed for constexpr construction
+    template<class T>
     static constexpr value_type
-    get_bounded(
-        value_type v, const interval_type& i, const bounding_policy& p) noexcept
+    get_bounded(T v, const interval_type& i, const bounding_policy& p) noexcept
     {
         using num::min;
         using num::max;
@@ -499,6 +471,11 @@ private:
  *****************************************************************************/
 template<class NumericT, class BoundingInterval>
 using clipped = bounded<NumericT,BoundingInterval,silent_clip>;
+
+
+//-------------------------------------------------------------------
+template<class NumericT, long long int left, long long int right>
+using static_clipped = clipped<NumericT,static_interval<NumericT,left,right>>;
 
 
 //-------------------------------------------------------------------
@@ -627,6 +604,11 @@ make_clipped(const clipped<T1,B>& x, const symmetric_unit_interval<T2>&)
  *****************************************************************************/
 template<class NumericT, class BoundingInterval>
 using wrapped = bounded<NumericT,BoundingInterval,silent_wrap>;
+
+
+//-------------------------------------------------------------------
+template<class NumericT, long long int left, long long int right>
+using static_wrapped = wrapped<NumericT,static_interval<NumericT,left,right>>;
 
 
 //-------------------------------------------------------------------

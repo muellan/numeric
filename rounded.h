@@ -144,10 +144,8 @@ public:
     constexpr
     rounded(T&& v, rounding_method rm = rounding_method()) :
         rounding_method(rm),
-        v_(corrected(value_type(std::forward<T>(v)), rm))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
+        v_(corrected(std::forward<T>(v), rm))
+    {}
     //-----------------------------------------------------
     /// @brief
     explicit constexpr
@@ -161,10 +159,8 @@ public:
     explicit constexpr
     rounded(const rounded<T,R>& v, rounding_method rm = rounding_method()) :
         rounding_method(rm),
-        v_(corrected(value_type(v), rm))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
+        v_(corrected(v, rm))
+    {}
 
     //-----------------------------------------------------
     constexpr
@@ -179,10 +175,8 @@ public:
     explicit constexpr
     rounded(const rounded<T,R>& src):
         rounding_method(src),
-        v_(corrected(value_type(src), rounding_method()))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
+        v_(corrected(src, rounding_method()))
+    {}
 
 
     //---------------------------------------------------------------
@@ -204,9 +198,7 @@ public:
     rounded&
     operator = (const rounded<T,R>& b)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = corrected(value_type(b));
+        v_ = corrected(b);
 
         return *this;
     }
@@ -215,9 +207,7 @@ public:
     rounded&
     operator = (rounded<T,R>&& b)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = corrected(value_type(std::move(b)));
+        v_ = corrected(std::move(b));
 
         return *this;
     }
@@ -229,9 +219,7 @@ public:
     rounded&
     operator = (T&& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = corrected(value_type(std::forward<T>(v)));
+        v_ = corrected(std::forward<T>(v));
 
         return *this;
     }
@@ -259,9 +247,7 @@ public:
     rounded&
     operator += (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = corrected(v_ + value_type(v));
+        v_ = corrected(v_ + v);
 
         return *this;
     }
@@ -271,9 +257,7 @@ public:
     rounded&
     operator -= (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = corrected(v_ - value_type(v));
+        v_ = corrected(v_ - v);
 
         return *this;
     }
@@ -283,9 +267,7 @@ public:
     rounded&
     operator *= (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = corrected(v_ * value_type(v));
+        v_ = corrected(v_ * v);
 
         return *this;
     }
@@ -295,9 +277,7 @@ public:
     rounded&
     operator /= (const T& v)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = corrected(v_ /= value_type(v));
+        v_ = corrected(v_ /= v);
 
         return *this;
     }
@@ -345,8 +325,6 @@ public:
     rounded&
     operator += (const rounded<T,R>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = corrected(v_ + o.value());
 
         return *this;
@@ -356,8 +334,6 @@ public:
     rounded&
     operator -= (const rounded<T,R>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = corrected(v_ - o.value());
 
         return *this;
@@ -367,8 +343,6 @@ public:
     rounded&
     operator *= (const rounded<T,R>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = corrected(v_ * o.value());
 
         return *this;
@@ -378,8 +352,6 @@ public:
     rounded&
     operator /= (const rounded<T,R>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = corrected(v_ / o.value());
 
         return *this;
@@ -389,8 +361,6 @@ public:
     rounded&
     operator %= (const rounded<T,R>& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         v_ = corrected(v_ % o.value());
 
         return *this;
@@ -399,15 +369,17 @@ public:
 
 private:
     //---------------------------------------------------------------
+    template<class T>
     constexpr value_type
-    corrected(value_type v) const noexcept {
+    corrected(T v) const noexcept {
         return rounding_method::operator()(std::move(v));
     }
 
     //-----------------------------------------------------
     /// @brief needed for constexpr construction
+    template<class T>
     static constexpr value_type
-    corrected(value_type v, const rounding_method& rm) noexcept {
+    corrected(T v, const rounding_method& rm) noexcept {
         return rm(std::move(v));
     }
 
