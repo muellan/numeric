@@ -488,7 +488,8 @@ public:
     // DERIVED VALUES
     //---------------------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        is_number<T>::value &&
+        is_floating_point<T>::value>::type>
     void
     center(const T& c)
     {
@@ -497,15 +498,16 @@ public:
         operator+=(c - center());
     }
     //-----------------------------------------------------
-    value_type
+    floating_point_t<value_type>
     center() const
     {
-        return value_type{(l_ + r_) / value_type(2)};
+        return ((l_ + r_) / floating_point_t<value_type>(2));
     }
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        is_number<T>::value &&
+        is_floating_point<T>::value>::type>
     void
     half_width(const T& w)
     {
@@ -514,10 +516,10 @@ public:
         expand(w - half_width());
     }
     //-----------------------------------------------------
-    value_type
+    floating_point_t<value_type>
     half_width() const
     {
-        return value_type{(r_ - l_) / value_type(2)};
+        return ((r_ - l_) / floating_point_t<value_type>(2));
     }
 
     //-----------------------------------------------------
@@ -528,7 +530,8 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+        is_number<T>::value &&
+        is_floating_point<T>::value>::type>
     void
     width(const T& w)
     {
@@ -779,7 +782,8 @@ make_interval_half_width_center(const W& hwidth, const C& center)
     return make_interval(center - hwidth, center + hwidth);
 }
 //-----------------------------------------------------
-template<class W, class C>
+template<class W, class C, class = typename std::enable_if<
+    is_floating_point<W>::value>::type>
 auto
 make_interval_width_center(const W& width, C&& center)
     -> decltype(make_interval_half_width_center(
