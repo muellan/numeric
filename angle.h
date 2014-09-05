@@ -262,7 +262,7 @@ public:
     {
         AM_CHECK_NARROWING(numeric_type, typename T::type)
 
-        v_ += a.as<turn_type>();
+        v_ -= a.as<turn_type>();
         return *this;
     }
     //-----------------------------------------------------
