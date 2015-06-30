@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_QUATERNION_H_
-#define AM_NUMERIC_QUATERNION_H_
+#ifndef AMLIB_NUMERIC_QUATERNION_H_
+#define AMLIB_NUMERIC_QUATERNION_H_
 
 #include <cmath>
 #include <random>
@@ -19,6 +19,7 @@
 #include "constants.h"
 #include "limits.h"
 #include "narrowing.h"
+#include "conversion.h"
 
 
 namespace am {
@@ -147,8 +148,6 @@ public:
 
 
     //---------------------------------------------------------------
-    // ELEMENT ACCESS
-    //---------------------------------------------------------------
     constexpr const_reference
     real() const noexcept {
         return w_;
@@ -168,6 +167,29 @@ public:
     imag_k() const noexcept {
         return z_;
     }
+
+
+    //---------------------------------------------------------------
+    void
+    real(const_reference w) {
+        w_ = w;
+    }
+    //-----------------------------------------------------
+    void
+    imag_i(const_reference x) {
+        x_ = x;
+    }
+    //-----------------------------------------------------
+    void
+    imag_j(const_reference y) {
+        y_ = y;
+    }
+    //-----------------------------------------------------
+    void
+    imag_k(const_reference z) {
+        z_ = z;
+    }
+
 
     //---------------------------------------------------------------
     static constexpr dimension_type
@@ -378,14 +400,10 @@ private:
 /*****************************************************************************
  *
  *
- *
  * CONVENIENCE DEFINITIONS
  *
  *
- *
  *****************************************************************************/
-
-//---------------------------------------------------------
 using quatf  = quaternion<float>;
 using quatd  = quaternion<double>;
 using quatld = quaternion<long double>;
@@ -401,15 +419,10 @@ using quat   = quaternion<real_t>;
 /*****************************************************************************
  *
  *
- *
  * EXTERNAL ACCESSORS
  *
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
-
 template<class T>
 inline constexpr auto
 real(const quaternion<T>& q) noexcept -> decltype(q.real())
@@ -455,8 +468,6 @@ imag_k(const quaternion<T>& q) noexcept -> decltype(q.imag_k())
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class Ostream, class T>
 inline Ostream&
 operator << (Ostream& os, const quaternion<T>& q)
@@ -650,8 +661,6 @@ normalized(quaternion<T> q)
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 inline constexpr T
 norm2(const quaternion<T>& q)
@@ -807,9 +816,6 @@ imag_product(
  *
  *
  *****************************************************************************/
-
-
-//-------------------------------------------------------------------
 template<class T1, class T2, class T3, class T4, class = typename
     std::enable_if<is_number<T1,T2,T3,T4>::value>::type>
 inline constexpr quaternion<common_numeric_t<T1,T2,T3,T4>>
@@ -833,7 +839,7 @@ random_unit_quaternion(URNG& urng)
 {
     static_assert(
         is_floating_point<T>::value,
-        "quaternion<T>: T must be a floating-point number type");
+        "random_unit_quaternion<T>(urng): T must be a floating-point number type");
 
     using std::cos;
     using std::sin;

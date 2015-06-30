@@ -4,35 +4,27 @@
  *
  * released under MIT license
  *
- *2008-2014  André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
 
-
-#include <vector>
-//#include <iostream>
-//#include "../traversal/traversable.h"
-
-
 #include "sequ_linear.h"
-#include "sequ_geom.h"
+#include "sequ_geometric.h"
 #include "sequ_fibonacci.h"
 #include "sequ_repeated.h"
 #include "sequ_combined.h"
-
-#include "sequence_test.h"
 #include "equality.h"
 
+#include <vector>
 
-namespace am {
-namespace num {
-namespace test {
+using namespace am;
+using namespace am::num;
 
 
 //-------------------------------------------------------------------
-void linear_sequence_generation_correctness()
+void num_linear_sequence_generation_correctness()
 {
     {
         auto v = std::vector<int>{};
@@ -78,7 +70,7 @@ void linear_sequence_generation_correctness()
 
 
 //-------------------------------------------------------------------
-void geometric_sequence_generation_correctness()
+void num_geometric_sequence_generation_correctness()
 {
     {
         auto v = std::vector<double>{};
@@ -130,7 +122,7 @@ void geometric_sequence_generation_correctness()
 
 
 //-------------------------------------------------------------------
-void fibonacci_sequence_generation_correctness()
+void num_fibonacci_sequence_generation_correctness()
 {
     {
         auto v = std::vector<double>{};
@@ -153,7 +145,7 @@ void fibonacci_sequence_generation_correctness()
 
 
 //-------------------------------------------------------------------
-void repeated_sequence_generation_correctness()
+void num_repeated_sequence_generation_correctness()
 {
     {
         auto v = std::vector<double>{};
@@ -209,7 +201,7 @@ void repeated_sequence_generation_correctness()
 
 
 //-------------------------------------------------------------------
-void combined_sequence_generation_correctness()
+void num_combined_sequence_generation_correctness()
 {
     {
         auto v = std::vector<double>{};
@@ -259,13 +251,13 @@ void combined_sequence_generation_correctness()
  *****************************************************************************/
 
 //-------------------------------------------------------------------
-void sequence_generation_correctness()
+void num_sequence_generation_correctness()
 {
-    linear_sequence_generation_correctness();
-    geometric_sequence_generation_correctness();
-    fibonacci_sequence_generation_correctness();
-    repeated_sequence_generation_correctness();
-    combined_sequence_generation_correctness();
+    num_linear_sequence_generation_correctness();
+    num_geometric_sequence_generation_correctness();
+    num_fibonacci_sequence_generation_correctness();
+    num_repeated_sequence_generation_correctness();
+    num_combined_sequence_generation_correctness();
 
 
 //    std::cout << content(make_ascending_sequence(2,10)) << std::endl;
@@ -292,11 +284,5 @@ void sequence_generation_correctness()
 
 
 }
-
-
-}  // namespace test
-}  // namespace num
-}  // namespace am
-
 
 #endif

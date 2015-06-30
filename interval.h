@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_RANGE_H_
-#define AM_NUMERIC_RANGE_H_
+#ifndef AMLIB_NUMERIC_RANGE_H_
+#define AMLIB_NUMERIC_RANGE_H_
 
 #include <type_traits>
 #include <utility>
@@ -545,10 +545,11 @@ public:
     //---------------------------------------------------------------
     // SHRINK / EXPAND
     //---------------------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+    template<class T,
+        class = typename std::enable_if<is_number<T>::value>::type>
     void
-    expand_include(const interval<T>& i, const T& offset = 0)
+    expand_include(const interval<T>& i,
+                   const value_type& offset = value_type(0))
     {
         AM_CHECK_NARROWING(value_type,T)
 
@@ -556,10 +557,11 @@ public:
         if(i.r_ > r_) r_ = i.r_ + offset;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+    template<class T,
+        class = typename std::enable_if<is_number<T>::value>::type>
     void
-    expand_include(const T& bound, const T& offset = 0)
+    expand_include(const T& bound,
+                   const value_type& offset = value_type(0))
     {
         AM_CHECK_NARROWING(value_type,T)
 
@@ -567,10 +569,11 @@ public:
         if(bound > r_) r_ = bound + offset;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
+    template<class T, class T2,
+        class = typename std::enable_if<is_number<T>::value>::type>
     void
-    shrink_exclude(const T& bound, const T& offset = tolerance<T>::value())
+    shrink_exclude(const T& bound,
+                   const value_type& offset = tolerance<value_type>::value())
     {
         AM_CHECK_NARROWING(value_type,T)
 
@@ -708,6 +711,15 @@ public:
         return ((p >= l_) && (p <= r_));
     }
     //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+    constexpr bool
+    contains(const T& p, const T& tolerance) const
+    {
+        return ( ((p + tolerance) >= l_) &&
+                 ((p - tolerance) <= r_) );
+    }
+
+    //-----------------------------------------------------
     template<class T>
     constexpr bool
     contains(const interval<T>& o) const
@@ -715,11 +727,29 @@ public:
         return ((l_ <= o.l_) && (r_ >= o.r_));
     }
     //-----------------------------------------------------
+    template<class T1, class T2>
+    constexpr bool
+    contains(const interval<T1>& o, const T2& tolerance) const
+    {
+        return ( ((l_ - tolerance) <= o.l_) &&
+                 ((r_ + tolerance) >= o.r_));
+    }
+
+    //-----------------------------------------------------
     template<class T>
     constexpr bool
     intersects(const interval<T>& o) const
     {
         return (l_ < o.l_) ? (r_ >= o.l_) : (l_ <= o.r_);
+    }
+    //-----------------------------------------------------
+    template<class T1, class T2>
+    constexpr bool
+    intersects(const interval<T1>& o, const T2& tolerance) const
+    {
+        return ((l_ - tolerance) < o.l_)
+                ? ((r_ + tolerance) >= o.l_)
+                : ((l_ - tolerance) <= o.r_);
     }
 
 
@@ -1045,6 +1075,16 @@ intersects(const interval<T1>& a, const interval<T2>& b)
     return a.intersects(b);
 }
 
+//---------------------------------------------------------
+template<class T1, class T2, class T3>
+inline constexpr bool
+intersects(const interval<T1>& a, const interval<T2>& b, const T3& tolerance)
+{
+    return a.intersects(b, tolerance);
+}
+
+
+
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
@@ -1052,6 +1092,16 @@ disjoint(const interval<T1>& a, const interval<T2>& b)
 {
     return !a.intersects(b);
 }
+
+//---------------------------------------------------------
+template<class T1, class T2, class T3>
+inline constexpr bool
+disjoint(const interval<T1>& a, const interval<T2>& b, const T3& tolerance)
+{
+    return !a.intersects(b, tolerance);
+}
+
+
 
 //-------------------------------------------------------------------
 template<class T1, class T2>
@@ -1062,12 +1112,31 @@ contains(const interval<T1>& a, const interval<T2>& b)
 }
 
 //---------------------------------------------------------
+template<class T1, class T2, class T3>
+inline constexpr bool
+contains(const interval<T1>& a, const interval<T2>& b, const T3& tolerance)
+{
+    return a.contains(b, tolerance);
+}
+
+
+
+//-------------------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<is_number<T2>::value>::type>
 inline constexpr bool
 contains(const interval<T1>& i, const T2& v)
 {
     return i.contains(v);
+}
+
+//---------------------------------------------------------
+template<class T1, class T2, class T3, class = typename
+    std::enable_if<is_number<T2>::value>::type>
+inline constexpr bool
+contains(const interval<T1>& i, const T2& v, const T3& tolerance)
+{
+    return i.contains(v, tolerance);
 }
 
 

@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_DUAL_H_
-#define AM_NUMERIC_DUAL_H_
+#ifndef AMLIB_NUMERIC_DUAL_H_
+#define AMLIB_NUMERIC_DUAL_H_
 
 #include <cmath>
 #include <cfloat>
@@ -924,7 +924,6 @@ floor(const dual<T>& x)
     using std::floor;
     return dual<T>{floor(x.real()), floor(x.imag())};
 }
-
 
 
 //-------------------------------------------------------------------

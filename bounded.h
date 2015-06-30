@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_BOUNDED_H_
-#define AM_NUMERIC_BOUNDED_H_
+#ifndef AMLIB_NUMERIC_BOUNDED_H_
+#define AMLIB_NUMERIC_BOUNDED_H_
 
 
 #include <cmath>
@@ -304,6 +304,18 @@ public:
     {
         return v_;
     }
+    //-----------------------------------------------------
+//    constexpr
+//    operator const value_type& () const & noexcept
+//    {
+//        return v_;
+//    }
+//    //-----------------------------------------------------
+//    constexpr
+//    operator value_type&& () && noexcept
+//    {
+//        return std::move(v_);
+//    }
 
 
     //---------------------------------------------------------------

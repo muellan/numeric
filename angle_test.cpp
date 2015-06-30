@@ -4,43 +4,40 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
 
-#include <stdexcept>
-
 #include "angle.h"
-#include "angle_test.h"
 #include "limits.h"
 
+#include <stdexcept>
 
-namespace am {
-namespace num {
-namespace test {
 
-using namespace literals;
+using namespace am;
+using namespace am::num;
 
 
 //-------------------------------------------------------------------
 template<int a>
-struct angle_tester {
+struct num_angle_tester {
     static constexpr int get() noexcept {return a; }
 };
 
 
 //-------------------------------------------------------------------
-void angle_init_correctness()
+void num_angle_init_correctness()
 {
+    using namespace am::num::literals;
     using std::abs;
     constexpr auto eps = tolerance<float>::value();
 
     auto d0 = deg{15};
     deg  d1 {45.0f};
     auto d2 = 90_deg;    //via user-defined literal
-    auto d3 = 1_pi_rad;    //via user-defined literal + implicit angle conversion
+    auto d3 = 1_pi_rad;  //via user-defined literal + implicit angle conversion
     auto d4 = radf{4.5f};
     auto d5 = radd{double(pi)};
 
@@ -58,8 +55,9 @@ void angle_init_correctness()
 
 
 //-------------------------------------------------------------------
-void angle_conversion_correctness()
+void num_angle_conversion_correctness()
 {
+    using namespace am::num::literals;
     using std::abs;
     constexpr auto eps = tolerance<float>::value();
 
@@ -69,9 +67,9 @@ void angle_conversion_correctness()
     if(!((abs(radians_cast<double>(degi{180}) - 1.0_pi) < eps) &&
          (abs(degrees_cast<double>(rad{real_t(pi)/4}) - 45) < eps) &&
          (abs(gons_cast<double>(rad{real_t(pi)/4}) - 50) < eps) &&
-         (abs(angle_cast<radians_turn<float>>(a) - 0.5_pi) < eps) &&
-         (abs(angle_cast<degrees_turn<double>>(b) - 90) < eps) &&
-         (abs(angle_cast<gons_turn<long double>>(b) - 100) < eps) ))
+         (abs(angle_cast<num::radians_turn<float>>(a) - 0.5_pi) < eps) &&
+         (abs(angle_cast<num::degrees_turn<double>>(b) - 90) < eps) &&
+         (abs(angle_cast<num::gons_turn<long double>>(b) - 100) < eps) ))
     {
         throw std::logic_error("am::num::angle conversion");
     }
@@ -79,8 +77,9 @@ void angle_conversion_correctness()
 
 
 //-------------------------------------------------------------------
-void angle_arithmetic_correctness()
+void num_angle_arithmetic_correctness()
 {
+    using namespace am::num::literals;
     using std::abs;
     constexpr auto eps = tolerance<float>::value();
 
@@ -100,7 +99,7 @@ void angle_arithmetic_correctness()
 
 
 //-------------------------------------------------------------------
-void angle_modification_correctness()
+void num_angle_modification_correctness()
 {
     //integral angles are incrementable
     degi di{65};
@@ -117,13 +116,13 @@ void angle_modification_correctness()
 
 
 //-------------------------------------------------------------------
-void angle_static_eval_correctness()
+void num_angle_static_eval_correctness()
 {
     //compile-time evaluation
     constexpr auto ca = degi{45};
 
-    if( (angle_tester<degrees_cast<int>(ca)>::get() != 45) ||
-        (angle_tester<degrees_cast<int>(degi{70})>::get() != 70) )
+    if( (num_angle_tester<degrees_cast<int>(ca)>::get() != 45) ||
+        (num_angle_tester<degrees_cast<int>(degi{70})>::get() != 70) )
     {
         throw std::logic_error("am::num::angle static eval");
     }
@@ -131,7 +130,7 @@ void angle_static_eval_correctness()
 
 
 //-------------------------------------------------------------------
-void angle_functions_correctness()
+void num_angle_functions_correctness()
 {
     using std::abs;
     constexpr auto eps = tolerance<float>::value();
@@ -158,7 +157,7 @@ void angle_functions_correctness()
 
 
 //-------------------------------------------------------------------
-void angle_comparison_correctness()
+void num_angle_comparison_correctness()
 {
     //comparison: == and != only possible for integral angles
     if(!(
@@ -175,21 +174,15 @@ void angle_comparison_correctness()
 
 
 //-------------------------------------------------------------------
-void angle_correctness()
+void num_angle_correctness()
 {
-    angle_init_correctness();
-    angle_static_eval_correctness();
-    angle_conversion_correctness();
-    angle_arithmetic_correctness();
-    angle_modification_correctness();
-    angle_functions_correctness();
-    angle_comparison_correctness();
+    num_angle_init_correctness();
+    num_angle_static_eval_correctness();
+    num_angle_conversion_correctness();
+    num_angle_arithmetic_correctness();
+    num_angle_modification_correctness();
+    num_angle_functions_correctness();
+    num_angle_comparison_correctness();
 }
-
-
-}  // namespace test
-}  // namespace num
-}  // namespace am
-
 
 #endif

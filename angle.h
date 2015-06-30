@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 Andr� M�ller
+ * 2008-2015 Andr� M�ller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_ANGLE_H_
-#define AM_NUMERIC_ANGLE_H_
+#ifndef AMLIB_NUMERIC_ANGLE_H_
+#define AMLIB_NUMERIC_ANGLE_H_
 
 #include <cmath>
 #include <utility>
@@ -189,7 +189,10 @@ public:
     /// @brief implicit conversion from simple values is not allowed
     explicit constexpr
     angle(numeric_type a):
-        v_{std::move(a)}
+        //TODO doesn't compile with gcc 5.1
+        //but desirable for move-enabled 'heavy' number types
+        //v_{std::move(a)}
+        v_{a}
     {}
     //-----------------------------------------------------
     /// @brief implicit conversion from simple values is not allowed
@@ -213,7 +216,6 @@ public:
     }
 
     //-----------------------------------------------------
-    constexpr
     angle(const angle&) = default;
 
     //---------------------------------------------------------------
@@ -231,7 +233,7 @@ public:
     //---------------------------------------------------------------
     /// @brief maps the stored value to the range [0, turn]
     angle&
-    wrap() {
+    normalize() {
         using std::fmod;
         if(v_ < numeric_type(0) || v_ > turn()) {
             v_ = fmod(v_, turn());
@@ -379,37 +381,37 @@ public:
     //---------------------------------------------------------------
     template<class T>
     constexpr bool
-    operator == (const angle<T>& other) {
+    operator == (const angle<T>& other) const {
         return (v_ == other.as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator != (const angle<T>& other) {
+    operator != (const angle<T>& other) const {
         return (v_ != other.as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator < (const angle<T>& other) {
+    operator < (const angle<T>& other) const {
         return (v_ < other.as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator > (const angle<T>& other) {
+    operator > (const angle<T>& other) const {
         return (v_ > other.as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator <= (const angle<T>& other) {
+    operator <= (const angle<T>& other) const {
         return (v_ <= other.as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator >= (const angle<T>& other) {
+    operator >= (const angle<T>& other) const {
         return (v_ >= other.as<turn_type>());
     }
 
@@ -547,14 +549,14 @@ private:
     template<class OutTurn, class = typename
         std::enable_if<std::is_same<turn_type,OutTurn>::value>::type>
     constexpr numeric_type
-    as() const {
+    as() const noexcept {
         return v_;
     }
     //-----------------------------------------------------
     template<class OutTurn, class = typename
         std::enable_if<!std::is_same<turn_type,OutTurn>::value>::type>
     constexpr conversion_t<OutTurn>
-    as() const {
+    as() const noexcept {
         using res_t = conversion_t<OutTurn>;
         return ( (res_t(OutTurn::value) / res_t(turn())) * v_);
     }
@@ -631,7 +633,8 @@ using goni = angle<gons_turn<int>>;
  *
  *****************************************************************************/
 
-namespace literals {
+inline namespace literals {
+inline namespace angle_literals {
 
 //-------------------------------------------------------------------
 constexpr degrees<real_t> operator"" _deg (long double x) {
@@ -710,7 +713,8 @@ constexpr gon_ccs<real_t> operator"" _gonccs (unsigned long long int x) {
     return gon_ccs<real_t>{real_t(x)};
 }
 
-}  // unnamed namespace
+} //inline namespace angle_literals
+} //inline namespace literals
 
 
 
@@ -908,19 +912,29 @@ template<class T>
 inline constexpr angle<T>
 mod_turn(angle<T> a)
 {
-    return angle<T>{a.wrap()};
+    return angle<T>{a.normalize()};
 }
 
 
 //-------------------------------------------------------------------
-/// @brief returns turn - wrapped(angle)
+/// @brief returns turn - mod_turn(angle)
 template<class T>
 inline angle<T>
 turn_remainder(angle<T> a)
 {
     auto r = angle<T>{a.turn() - angle_cast<T>(a)};
-    r.wrap();
+    r.normalize();
     return r;
+}
+
+
+//-------------------------------------------------------------------
+/// @brief returns angle / turn
+template<class T>
+inline constexpr typename T::type
+turn_multiple(angle<T> a)
+{
+    return angle_cast<T>(a) / a.turn();
 }
 
 
@@ -998,36 +1012,33 @@ make_gons(const angle<U>& a)
 //-------------------------------------------------------------------
 // TRIGONOMETRIC FUNCTIONS
 //-------------------------------------------------------------------
-template<class T>
-inline typename std::common_type<typename T::type,real_t>::type
-sin(const angle<T>& r)
+template<class T, class R = floating_point_t<typename T::type>>
+inline R
+sin(const angle<T>& a)
 {
     using std::sin;
-    using res_t = typename std::common_type<typename T::type,real_t>::type;
 
-    return sin(radians_cast<res_t>(r));
+    return sin(radians_cast<R>(a));
 }
 
 //-----------------------------------------------------
-template<class T>
-inline typename std::common_type<typename T::type,real_t>::type
-cos(const angle<T>& r)
+template<class T, class R = floating_point_t<typename T::type>>
+inline R
+cos(const angle<T>& a)
 {
     using std::cos;
-    using res_t = typename std::common_type<typename T::type,real_t>::type;
 
-    return cos(radians_cast<res_t>(r));
+    return cos(radians_cast<R>(a));
 }
 
 //-----------------------------------------------------
-template<class T>
-inline typename std::common_type<typename T::type,real_t>::type
-tan(const angle<T>& r)
+template<class T, class R = floating_point_t<typename T::type>>
+inline R
+tan(const angle<T>& a)
 {
     using std::tan;
-    using res_t = typename std::common_type<typename T::type,real_t>::type;
 
-    return tan(radians_cast<res_t>(r));
+    return tan(radians_cast<R>(a));
 }
 
 
@@ -1035,36 +1046,33 @@ tan(const angle<T>& r)
 //-------------------------------------------------------------------
 // HYPERBOLIC FUNCTIONS
 //-------------------------------------------------------------------
-template<class T>
-inline typename std::common_type<typename T::type,real_t>::type
-sinh(const angle<T>& r)
+template<class T, class R = floating_point_t<typename T::type>>
+inline R
+sinh(const angle<T>& a)
 {
     using std::sinh;
-    using res_t = typename std::common_type<typename T::type,real_t>::type;
 
-    return sinh(radians_cast<res_t>(r));
+    return sinh(radians_cast<R>(a));
 }
 
 //-----------------------------------------------------
-template<class T>
-inline typename std::common_type<typename T::type,real_t>::type
-cosh(const angle<T>& r)
+template<class T, class R = floating_point_t<typename T::type>>
+inline R
+cosh(const angle<T>& a)
 {
     using std::cosh;
-    using res_t = typename std::common_type<typename T::type,real_t>::type;
 
-    return cosh(radians_cast<res_t>(r));
+    return cosh(radians_cast<R>(a));
 }
 
 //-----------------------------------------------------
-template<class T>
-inline typename std::common_type<typename T::type,real_t>::type
-tanh(const angle<T>& r)
+template<class T, class R = floating_point_t<typename T::type>>
+inline R
+tanh(const angle<T>& a)
 {
     using std::tanh;
-    using res_t = typename std::common_type<typename T::type,real_t>::type;
 
-    return tanh(radians_cast<res_t>(r));
+    return tanh(radians_cast<R>(a));
 }
 
 
@@ -1072,47 +1080,43 @@ tanh(const angle<T>& r)
 //-------------------------------------------------------------------
 // INVERSE TRIGONOMETRIC FUNCTIONS
 //-------------------------------------------------------------------
-template<class T>
-inline radians<floating_point_t<T>>
-rad_asin(T v)
+template<class T, class R = floating_point_t<typename T::type>>
+inline radians<R>
+rad_asin(T a)
 {
     using std::asin;
-    using res_t = floating_point_t<T>;
 
-    return radians<res_t>{res_t(asin(v))};
+    return radians<R>{R(asin(a))};
 }
 
 //-----------------------------------------------------
-template<class T>
-inline radians<floating_point_t<T>>
-rad_acos(T v)
+template<class T, class R = floating_point_t<typename T::type>>
+inline radians<R>
+rad_acos(T a)
 {
     using std::acos;
-    using res_t = floating_point_t<T>;
 
-    return radians<res_t>{res_t(acos(v))};
+    return radians<R>{R(acos(a))};
 }
 
 //-----------------------------------------------------
-template<class T>
-inline radians<floating_point_t<T>>
-rad_atan(T v)
+template<class T, class R = floating_point_t<typename T::type>>
+inline radians<R>
+rad_atan(T a)
 {
     using std::atan;
-    using res_t = floating_point_t<T>;
 
-    return radians<res_t>{res_t(atan(v))};
+    return radians<R>{R(atan(a))};
 }
 
 //-----------------------------------------------------
-template<class T>
-inline radians<floating_point_t<T>>
+template<class T, class R = floating_point_t<typename T::type>>
+inline radians<R>
 rad_atan2(T x, T y)
 {
     using std::atan2;
-    using res_t = floating_point_t<T>;
 
-    return radians<res_t>{res_t(atan2(x,y))};
+    return radians<R>{R(atan2(x,y))};
 }
 
 
@@ -1120,36 +1124,33 @@ rad_atan2(T x, T y)
 //-------------------------------------------------------------------
 // INVERSE HYPERBOLIC FUNCTIONS
 //-------------------------------------------------------------------
-template<class T>
-inline radians<floating_point_t<T>>
-rad_asinh(T v)
+template<class T, class R = floating_point_t<typename T::type>>
+inline radians<R>
+rad_asinh(T a)
 {
     using std::asinh;
-    using res_t = floating_point_t<T>;
 
-    return radians<res_t>{res_t(asinh(v))};
+    return radians<R>{R(asinh(a))};
 }
 
 //-----------------------------------------------------
-template<class T>
-inline radians<floating_point_t<T>>
-rad_acosh(T v)
+template<class T, class R = floating_point_t<typename T::type>>
+inline radians<R>
+rad_acosh(T a)
 {
     using std::acosh;
-    using res_t = floating_point_t<T>;
 
-    return radians<res_t>{res_t(acosh(v))};
+    return radians<R>{R(acosh(a))};
 }
 
 //-----------------------------------------------------
-template<class T>
-inline radians<floating_point_t<T>>
-rad_atanh(T v)
+template<class T, class R = floating_point_t<typename T::type>>
+inline radians<R>
+rad_atanh(T a)
 {
     using std::atanh;
-    using res_t = floating_point_t<T>;
 
-    return radians<res_t>{res_t(atanh(v))};
+    return radians<R>{R(atanh(a))};
 }
 
 
@@ -1274,6 +1275,14 @@ public:
         const numeric_type& max = numeric_type(Turn::value))
     :
         base_t_{param_type{min,max}}
+    {}
+    //-----------------------------------------------------
+    template<class U1, class U2>
+    explicit
+    uniform_angle_distribution(const angle<U1>& min,
+                               const angle<U2>& max)
+    :
+        base_t_{param_type{angle_cast<Turn>(min),angle_cast<Turn>(max)}}
     {}
     //-----------------------------------------------------
     explicit

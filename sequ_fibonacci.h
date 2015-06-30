@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_FIBONACCI_SEQUENCE_GENERATOR_H_
-#define AM_NUMERIC_FIBONACCI_SEQUENCE_GENERATOR_H_
+#ifndef AMLIB_NUMERIC_FIBONACCI_SEQUENCE_GENERATOR_H_
+#define AMLIB_NUMERIC_FIBONACCI_SEQUENCE_GENERATOR_H_
 
 
 #include <iterator>
@@ -101,6 +101,13 @@ public:
         }
 
         return *this;
+    }
+    //-----------------------------------------------------
+    fibonacci_sequence
+    operator + (size_type offset) const {
+        auto res = *this;
+        res += offset;
+        return res;
     }
 
 

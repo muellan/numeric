@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_BIQUATERNION_H_
-#define AM_NUMERIC_BIQUATERNION_H_
+#ifndef AMLIB_NUMERIC_BIQUATERNION_H_
+#define AMLIB_NUMERIC_BIQUATERNION_H_
 
 
 #include <complex>
@@ -18,7 +18,6 @@
 
 
 namespace am {
-
 namespace num {
 
 
@@ -140,10 +139,10 @@ make_biquaternion(
     using res_t = common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>;
 
     return biquaternion<res_t>{
-        dual<res_t>{std::forward<T1>(aw), std::forward<T5>(bw)},
-        dual<res_t>{std::forward<T2>(ax), std::forward<T6>(bx)},
-        dual<res_t>{std::forward<T3>(ay), std::forward<T7>(by)},
-        dual<res_t>{std::forward<T4>(az), std::forward<T8>(bz)} };
+        std::complex<res_t>{std::forward<T1>(aw), std::forward<T5>(bw)},
+        std::complex<res_t>{std::forward<T2>(ax), std::forward<T6>(bx)},
+        std::complex<res_t>{std::forward<T3>(ay), std::forward<T7>(by)},
+        std::complex<res_t>{std::forward<T4>(az), std::forward<T8>(bz)} };
 }
 
 

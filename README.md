@@ -14,7 +14,7 @@ Generic classes
   - safe angle 
   - choice (provides arithmetic modulo N)
   - interval (incl. interval arithmetic)
-  - quantity (unsigned integer with bounds check and infinity type)
+  - natural number adapter (provides unsigned integer with bounds check and infinity type)
   - bounded number adapter (+ aliases for clipped and wrapped numbers)
   - rounded number adapter 
   - rational number
@@ -25,7 +25,7 @@ Generic classes
   - split-biquaternion
   - dual quaternion (study biquaternion)  
   - sequences (linear, geometric, repeated, fibonacci)
-    
+  
 Other
   - number conversion factories
   - number concept checking
@@ -34,4 +34,4 @@ Other
 
 Prerequisites
   - requires (mostly) C++11 conforming compiler
-  - tested with g++ 4.7.2 and g++ 4.9.0
+  - tested with g++ 4.7.2, g++ 4.9.2, g++ 5.1.0

@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_RATIONAL_H_
-#define AM_NUMERIC_RATIONAL_H_
+#ifndef AMLIB_NUMERIC_RATIONAL_H_
+#define AMLIB_NUMERIC_RATIONAL_H_
 
 #include <cmath>
 #include <cfloat>
@@ -275,7 +275,6 @@ public:
 
         n_ *= o.numer();
         d_ *= o.denom();
-        normalize();
         return *this;
     }
     //-----------------------------------------------------
@@ -287,7 +286,6 @@ public:
 
         n_ *= o.denom();
         d_ *= o.numer();
-        normalize();
         return *this;
     }
 
@@ -336,9 +334,6 @@ private:
  *
  *
  *****************************************************************************/
-
-
-//-------------------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<is_integral<T1>::value && is_integral<T2>::value>::type>
 inline constexpr
@@ -479,8 +474,6 @@ print(Ostream& os, const rational<T>& d)
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 const T&
 numer(const rational<T>& x) {
@@ -542,8 +535,6 @@ reciprocal(const rational<T>& x)
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T1, class T2>
 inline bool
 operator == (const rational<T1>& x, const rational<T2>& y)
@@ -836,9 +827,6 @@ operator - (const rational<T> x)
  *
  *
  *****************************************************************************/
-
-
-//-------------------------------------------------------------------
 template<class T>
 inline
 rational<T>
@@ -901,8 +889,6 @@ pow(const rational<T> b, const T& e)
 
 
 //-------------------------------------------------------------------
-//
-//-------------------------------------------------------------------
 template<class T>
 inline bool
 isfinite(const rational<T>& x)
@@ -952,8 +938,6 @@ isnormal(const rational<T>& x)
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 struct is_number<rational<T>> : std::true_type
 {};

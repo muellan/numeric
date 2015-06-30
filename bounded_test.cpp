@@ -4,27 +4,25 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
 
+#include "bounded.h"
+
 #include <stdexcept>
 #include <cstdint>
 #include <iostream>
 
-#include "bounded.h"
-#include "bounded_test.h"
 
-
-namespace am {
-namespace num {
-namespace test {
+using namespace am;
+using namespace am::num;
 
 
 //-------------------------------------------------------------------
-void clipped_correctness()
+void num_clipped_correctness()
 {
     using std::abs;
     constexpr auto eps = 0.01;
@@ -102,9 +100,11 @@ void clipped_correctness()
 }
 
 
-}  // namespace test
-}  // namespace num
-}  // namespace am
 
+//-------------------------------------------------------------------
+void num_bounded_correctness()
+{
+    num_clipped_correctness();
+}
 
 #endif

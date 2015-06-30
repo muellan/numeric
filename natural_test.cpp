@@ -4,34 +4,32 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
 
+#include "natural.h"
+
 #include <stdexcept>
 #include <cstdint>
 #include <iostream>
 
-#include "quantity.h"
-#include "quantity_test.h"
 
-
-namespace am {
-namespace num {
-namespace test {
+using namespace am;
+using namespace am::num;
 
 
 //-------------------------------------------------------------------
-void quantity_init_correctness()
+void num_natural_init_correctness()
 {
-    auto c1 = quantity<std::int_least8_t>{std::int_least8_t(0)};
-    auto c2 = quantity<std::int_least16_t>{std::int_least16_t(1)};
-    auto c3 = quantity<std::int_least32_t>{5};
-    auto c4 = quantity<std::int_least64_t>{8};
-    auto c5 = quantity<std::intmax_t>{123};
-    auto c6 = quantity<long long int>{12345678};
+    auto c1 = natural<std::int_least8_t>{std::int_least8_t(0)};
+    auto c2 = natural<std::int_least16_t>{std::int_least16_t(1)};
+    auto c3 = natural<std::int_least32_t>{5};
+    auto c4 = natural<std::int_least64_t>{8};
+    auto c5 = natural<std::intmax_t>{123};
+    auto c6 = natural<long long int>{12345678};
 
     if ((intmax_t(c1) != 0) ||
         (intmax_t(c2) != 1) ||
@@ -40,21 +38,21 @@ void quantity_init_correctness()
         (intmax_t(c5) != 123) ||
         (intmax_t(c6) != 12345678) )
     {
-        throw std::logic_error("am::quantity init");
+        throw std::logic_error("am::num::natural init");
     }
 }
 
 
 //-------------------------------------------------------------------
-void quantity_arithmetic_correctness()
+void num_natural_arithmetic_correctness()
 {
-    auto a = quantity<int>{0};
-    auto b = quantity<int>{1};
-    auto c = quantity<long long>{5};
-    auto d = quantity<long long int>{10};
+    auto a = natural<int>{0};
+    auto b = natural<int>{1};
+    auto c = natural<long long>{5};
+    auto d = natural<long long int>{10};
 
-    auto e = quantity<int>::infinity();
-    auto f = quantity<long long int>::infinity();
+    auto e = natural<int>::infinity();
+    auto f = natural<long long int>::infinity();
 
     if(!(
         ((a * a) == 0) &&     ((b * a) == 0) &&     ((c * a) == 0) &&
@@ -101,20 +99,20 @@ void quantity_arithmetic_correctness()
 
         true ))
     {
-        throw std::logic_error("am::quantity arithmetic");
+        throw std::logic_error("am::num::natural arithmetic");
     }
 }
 
 
 
 //-------------------------------------------------------------------
-void quantity_comparison_correctness()
+void num_natural_comparison_correctness()
 {
-    auto a = quantity<int>{0};
-    auto b = quantity<int>{1};
-    auto c = quantity<int>{5};
-    auto d = quantity<int>::infinity();
-    auto e = quantity<long long int>::infinity();
+    auto a = natural<int>{0};
+    auto b = natural<int>{1};
+    auto c = natural<int>{5};
+    auto d = natural<int>::infinity();
+    auto e = natural<long long int>::infinity();
 
     //== != <= < > >=
     if(!(
@@ -152,24 +150,18 @@ void quantity_comparison_correctness()
         (a >= a)
     ))
     {
-        throw std::logic_error("am::quantity comparison");
+        throw std::logic_error("am::num::natural comparison");
     }
 }
 
 
 
 //-------------------------------------------------------------------
-void quantity_correctness()
+void num_natural_correctness()
 {
-    quantity_init_correctness();
-    quantity_arithmetic_correctness();
-    quantity_comparison_correctness();
+    num_natural_init_correctness();
+    num_natural_arithmetic_correctness();
+    num_natural_comparison_correctness();
 }
-
-
-}  // namespace test
-}  // namespace num
-}  // namespace am
-
 
 #endif

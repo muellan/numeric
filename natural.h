@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_QUANTITY_H_
-#define AM_NUMERIC_QUANTITY_H_
+#ifndef AMLIB_NUMERIC_NATURAL_H_
+#define AMLIB_NUMERIC_NATURAL_H_
 
 
 #include <cstdint>
@@ -31,15 +31,15 @@ namespace num {
  *
  *
  *****************************************************************************/
-template<class> class quantity;
+template<class> class natural;
 
 template<class>
-struct is_quantity :
+struct is_natural :
     std::false_type
 {};
 
 template<class T>
-struct is_quantity<quantity<T>> :
+struct is_natural<natural<T>> :
     std::true_type
 {};
 
@@ -50,16 +50,16 @@ struct is_quantity<quantity<T>> :
 
 /*****************************************************************************
  *
- * @brief   represents an integral quantity "safe unsigned int"
+ * @brief   represents an integral natural "safe unsigned int"
  * @details value is either in range [0,max] or infinity
  *
  *
  *****************************************************************************/
 template<class IntT = int>
-class quantity
+class natural
 {
     static_assert(is_integral<IntT>::value && !is_unsigned<IntT>::value,
-        "quantity<T>: T has to be a signed integral number type");
+        "natural<T>: T has to be a signed integral number type");
 
 public:
     //---------------------------------------------------------------
@@ -69,40 +69,40 @@ public:
 
     //---------------------------------------------------------------
     constexpr
-    quantity(value_type v = zero_val()) noexcept :
+    natural(value_type v = zero_val()) noexcept :
         v_(v >= zero_val() ? v : zero_val())
     {}
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        !is_quantity<decay_t<T>>::value &&
+        !is_natural<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
     constexpr
-    quantity(T&& v) noexcept :
+    natural(T&& v) noexcept :
         v_(v < zero_val() ? zero_val() :
             (v > max_val()
                 ? infty_val()
                 : value_type(std::forward<T>(v)) ))
     {
          static_assert(is_integral<decay_t<T>>::value,
-            "quantity<T>(x) : x has to be an integral number");
+            "natural<T>(x) : x has to be an integral number");
 
          AM_CHECK_NARROWING(value_type,T)
     }
 
     //-----------------------------------------------------
     constexpr
-    quantity(const quantity& source) noexcept :
+    natural(const natural& source) noexcept :
         v_(source.v_)
     {}
     //-----------------------------------------------------
     constexpr
-    quantity(quantity&& source) noexcept :
+    natural(natural&& source) noexcept :
         v_(std::move(source.v_))
     {}
     //-----------------------------------------------------
     template<class T>
     constexpr
-    quantity(const quantity<T>& v) noexcept :
+    natural(const natural<T>& v) noexcept :
         v_((isinf(v) || (v > max_val())
             ? infty_val()
             : value_type(v) ))
@@ -111,21 +111,21 @@ public:
     }
 
     //---------------------------------------------------------------
-    quantity&
-    operator = (const quantity& source) noexcept {
+    natural&
+    operator = (const natural& source) noexcept {
         v_ = source.v_;
         return *this;
     }
     //-----------------------------------------------------
-    quantity&
-    operator = (quantity&& source) noexcept {
+    natural&
+    operator = (natural&& source) noexcept {
         v_ = std::move(source.v_);
         return *this;
     }
     //-----------------------------------------------------
     template<class T>
-    quantity&
-    operator = (const quantity<T>& v) noexcept
+    natural&
+    operator = (const natural<T>& v) noexcept
     {
         AM_CHECK_NARROWING(value_type,T)
 
@@ -138,13 +138,13 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        !is_quantity<decay_t<T>>::value &&
+        !is_natural<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
-    quantity&
+    natural&
     operator = (T&& v) noexcept
     {
         static_assert(is_integral<decay_t<T>>::value,
-            "quantity<T> = x : x has to be an integral number");
+            "natural<T> = x : x has to be an integral number");
 
         AM_CHECK_NARROWING(value_type,T)
 
@@ -177,39 +177,39 @@ public:
 
 
     //---------------------------------------------------------------
-    static constexpr quantity
+    static constexpr natural
     zero() noexcept {
-        return quantity(zero_val());
+        return natural(zero_val());
     }
     //-----------------------------------------------------
-    static constexpr quantity
+    static constexpr natural
     max() noexcept {
-        return quantity(max_val());
+        return natural(max_val());
     }
     //-----------------------------------------------------
-    static constexpr quantity
+    static constexpr natural
     infinity() noexcept {
-        return quantity{0,0};
+        return natural{0,0};
     }
 
 
     //---------------------------------------------------------------
     inline friend
     constexpr bool
-    isinf(const quantity& q) noexcept {
+    isinf(const natural& q) noexcept {
         return (q.v_ < zero_val());
     }
     //-----------------------------------------------------
     inline friend
     constexpr bool
-    isfinite(const quantity& q) noexcept {
+    isfinite(const natural& q) noexcept {
         return (q.v_ > zero_val());
     }
 
 
     //---------------------------------------------------------------
-    quantity&
-    operator += (const quantity& c) noexcept
+    natural&
+    operator += (const natural& c) noexcept
     {
         if(!isinf(*this)) {
             if(isinf(c)) {
@@ -227,8 +227,8 @@ public:
 
     //-----------------------------------------------------
     template<class T>
-    quantity&
-    operator += (const quantity<T>& c) noexcept
+    natural&
+    operator += (const natural<T>& c) noexcept
     {
         AM_CHECK_NARROWING(value_type,T)
 
@@ -250,13 +250,13 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        !is_quantity<decay_t<T>>::value &&
+        !is_natural<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
-    quantity&
+    natural&
     operator += (T&& v) noexcept
     {
         static_assert(is_integral<decay_t<T>>::value,
-            "quantity += x : x has to be an integral number");
+            "natural += x : x has to be an integral number");
 
         AM_CHECK_NARROWING(value_type,T)
 
@@ -277,8 +277,8 @@ public:
 
 
     //---------------------------------------------------------------
-    quantity&
-    operator -= (const quantity& c) noexcept
+    natural&
+    operator -= (const natural& c) noexcept
     {
         if(isinf(*this)) {
             if(isinf(c))
@@ -295,8 +295,8 @@ public:
 
     //-----------------------------------------------------
     template<class T>
-    quantity&
-    operator -= (const quantity<T>& c) noexcept
+    natural&
+    operator -= (const natural<T>& c) noexcept
     {
         AM_CHECK_NARROWING(value_type,T)
 
@@ -316,13 +316,13 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        !is_quantity<decay_t<T>>::value &&
+        !is_natural<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
-    quantity&
+    natural&
     operator -= (T&& v) noexcept
     {
         static_assert(is_integral<decay_t<T>>::value,
-            "quantity += x : x has to be an integral number");
+            "natural += x : x has to be an integral number");
 
         AM_CHECK_NARROWING(value_type,T)
 
@@ -338,8 +338,8 @@ public:
 
 
     //---------------------------------------------------------------
-    quantity&
-    operator *= (const quantity& c) noexcept
+    natural&
+    operator *= (const natural& c) noexcept
     {
         if(!isinf(*this)) {
             if(isinf(c) || (c.v_ > max_val())) {
@@ -357,8 +357,8 @@ public:
 
     //-----------------------------------------------------
     template<class T>
-    quantity&
-    operator *= (const quantity<T>& c) noexcept
+    natural&
+    operator *= (const natural<T>& c) noexcept
     {
         AM_CHECK_NARROWING(value_type,T)
 
@@ -381,13 +381,13 @@ public:
 
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        !is_quantity<decay_t<T>>::value &&
+        !is_natural<decay_t<T>>::value &&
         is_number<decay_t<T>>::value>::type>
-    quantity&
+    natural&
     operator *= (T&& v) noexcept
     {
         static_assert(is_integral<decay_t<T>>::value,
-            "quantity *= x : x has to be an integral number");
+            "natural *= x : x has to be an integral number");
 
         AM_CHECK_NARROWING(value_type,T)
 
@@ -412,20 +412,20 @@ public:
 
 
     //---------------------------------------------------------------
-    quantity&
+    natural&
     operator ++ () noexcept {
         if(v_ != infty_val() && v_ < max_val()) ++v_;
         return *this;
     }
     //-----------------------------------------------------
-    quantity
+    natural
     operator ++ (int) noexcept {
         auto old = *this;
         ++*this;
         return old;
     }
     //-----------------------------------------------------
-    quantity&
+    natural&
     operator -- () noexcept {
         if(v_ != infty_val()) {
             if(v_ > zero_val()) --v_; else v_ = zero_val();
@@ -433,7 +433,7 @@ public:
         return *this;
     }
     //-----------------------------------------------------
-    quantity
+    natural
     operator -- (int) noexcept {
         auto old = *this;
         ++*this;
@@ -459,7 +459,7 @@ private:
     //---------------------------------------------------------------
     /// @brief special ctor for infinity initialization
     constexpr
-    quantity(int,int) noexcept :
+    natural(int,int) noexcept :
         v_(infty_val())
     {}
 
@@ -488,13 +488,13 @@ private:
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-quantity<common_numeric_t<T1,T2>>
-operator + (const quantity<T1>& a, const quantity<T2>& b) noexcept
+natural<common_numeric_t<T1,T2>>
+operator + (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     using std::isinf;
 
     using cv_t = common_numeric_t<T1,T2>;
-    using res_t = quantity<cv_t>;
+    using res_t = natural<cv_t>;
 
     return (isinf(a) || isinf(b))
         ? res_t::infinity()
@@ -505,9 +505,9 @@ operator + (const quantity<T1>& a, const quantity<T2>& b) noexcept
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr common_numeric_t<T1,T2>
-operator + (const quantity<T1>& a, const T2& b) noexcept
+operator + (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -521,9 +521,9 @@ operator + (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator + (const T2& b, const quantity<T1>& a) noexcept
+operator + (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -543,13 +543,13 @@ operator + (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-quantity<common_numeric_t<T1,T2>>
-operator - (const quantity<T1>& a, const quantity<T2>& b) noexcept
+natural<common_numeric_t<T1,T2>>
+operator - (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     using std::isinf;
 
     using cv_t = common_numeric_t<T1,T2>;
-    using res_t = quantity<cv_t>;
+    using res_t = natural<cv_t>;
 
     return (isinf(a))
         ? (isinf(b)) ? res_t::zero() : res_t::infinity()
@@ -561,9 +561,9 @@ operator - (const quantity<T1>& a, const quantity<T2>& b) noexcept
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr common_numeric_t<T1,T2>
-operator - (const quantity<T1>& a, const T2& b) noexcept
+operator - (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -578,9 +578,9 @@ operator - (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator - (const T2& b, const quantity<T1>& a) noexcept
+operator - (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -601,13 +601,13 @@ operator - (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
-quantity<common_numeric_t<T1,T2>>
-operator * (const quantity<T1>& a, const quantity<T2>& b) noexcept
+natural<common_numeric_t<T1,T2>>
+operator * (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     using std::isinf;
 
     using cv_t = common_numeric_t<T1,T2>;
-    using res_t = quantity<cv_t>;
+    using res_t = natural<cv_t>;
 
     return (isinf(a))
         ? ( (isinf(b))
@@ -627,9 +627,9 @@ operator * (const quantity<T1>& a, const quantity<T2>& b) noexcept
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr common_numeric_t<T1,T2>
-operator * (const quantity<T1>& a, const T2& b) noexcept
+operator * (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -652,9 +652,9 @@ operator * (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator * (const T2& b, const quantity<T1>& a) noexcept
+operator * (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -692,16 +692,16 @@ operator * (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
-operator == (const quantity<T1>& a, const quantity<T2>& b) noexcept
+operator == (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     return isinf(a) ? isinf(b) : (isinf(b) ? false : (T1(a) == T2(b)) );
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator == (const quantity<T1>& a, const T2& b) noexcept
+operator == (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -709,9 +709,9 @@ operator == (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator == (const T2& b, const quantity<T1>& a) noexcept
+operator == (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -723,24 +723,24 @@ operator == (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
-operator != (const quantity<T1>& a, const quantity<T2>& b) noexcept
+operator != (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     return !(a == b);
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator != (const quantity<T1>& a, const T2& b) noexcept
+operator != (const natural<T1>& a, const T2& b) noexcept
 {
     return !(a == b);
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator != (const T2& b, const quantity<T1>& a) noexcept
+operator != (const T2& b, const natural<T1>& a) noexcept
 {
     return !(a == b);
 }
@@ -750,16 +750,16 @@ operator != (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
-operator <= (const quantity<T1>& a, const quantity<T2>& b) noexcept
+operator <= (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     return isinf(b) || (!isinf(a) && (T1(a) <= T2(b)));
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator <= (const quantity<T1>& a, const T2& b) noexcept
+operator <= (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -767,9 +767,9 @@ operator <= (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator <= (const T2& b, const quantity<T1>& a) noexcept
+operator <= (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -781,16 +781,16 @@ operator <= (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
-operator <  (const quantity<T1>& a, const quantity<T2>& b) noexcept
+operator <  (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     return !isinf(a) && (isinf(b) || (T1(a) < T2(b)));
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator <  (const quantity<T1>& a, const T2& b) noexcept
+operator <  (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -798,9 +798,9 @@ operator <  (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator <  (const T2& b, const quantity<T1>& a) noexcept
+operator <  (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -811,16 +811,16 @@ operator <  (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
-operator >= (const quantity<T1>& a, const quantity<T2>& b) noexcept
+operator >= (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     return isinf(a) || (!isinf(b) && (T1(a) >= T2(b)));
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator >= (const quantity<T1>& a, const T2& b) noexcept
+operator >= (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -828,9 +828,9 @@ operator >= (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator >= (const T2& b, const quantity<T1>& a) noexcept
+operator >= (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -841,16 +841,16 @@ operator >= (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
-operator >  (const quantity<T1>& a, const quantity<T2>& b) noexcept
+operator >  (const natural<T1>& a, const natural<T2>& b) noexcept
 {
     return !isinf(b) && (isinf(a) || (T1(a) > T2(b)) );
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator >  (const quantity<T1>& a, const T2& b) noexcept
+operator >  (const natural<T1>& a, const T2& b) noexcept
 {
     using std::isinf;
 
@@ -858,9 +858,9 @@ operator >  (const quantity<T1>& a, const T2& b) noexcept
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename std::enable_if<
-    !is_quantity<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
+    !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
-operator >  (const T2& b, const quantity<T1>& a) noexcept
+operator >  (const T2& b, const natural<T1>& a) noexcept
 {
     using std::isinf;
 
@@ -881,7 +881,7 @@ operator >  (const T2& b, const quantity<T1>& a) noexcept
 //-------------------------------------------------------------------
 template<class Ostream, class Int>
 inline Ostream&
-operator << (Ostream& os, const quantity<Int>& c)
+operator << (Ostream& os, const natural<Int>& c)
 {
     if(isinf(c))
         os << "inf";
@@ -894,7 +894,7 @@ operator << (Ostream& os, const quantity<Int>& c)
 //---------------------------------------------------------
 template<class Ostream, class Int>
 inline Ostream&
-print(Ostream& os, const quantity<Int>& c)
+print(Ostream& os, const natural<Int>& c)
 {
     if(isinf(c))
         os << "oo";
@@ -916,9 +916,9 @@ print(Ostream& os, const quantity<Int>& c)
  *
  *****************************************************************************/
 template<class T>
-class numeric_limits<quantity<T>>
+class numeric_limits<natural<T>>
 {
-    using val_t = quantity<T>;
+    using val_t = natural<T>;
 
 public:
     static constexpr bool is_specialized = true;
@@ -995,25 +995,25 @@ public:
 
 //-------------------------------------------------------------------
 template<class T>
-struct is_number<quantity<T>> : std::true_type {};
+struct is_number<natural<T>> : std::true_type {};
 
 template<class T>
-struct is_number<quantity<T>&> : std::true_type {};
+struct is_number<natural<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<quantity<T>&&> : std::true_type {};
+struct is_number<natural<T>&&> : std::true_type {};
 
 template<class T>
-struct is_number<const quantity<T>&> : std::true_type {};
+struct is_number<const natural<T>&> : std::true_type {};
 
 template<class T>
-struct is_number<const quantity<T>> : std::true_type {};
+struct is_number<const natural<T>> : std::true_type {};
 
 
 
 //-------------------------------------------------------------------
 template<class T>
-struct is_floating_point<quantity<T>> :
+struct is_floating_point<natural<T>> :
     std::integral_constant<bool, is_floating_point<T>::value>
 {};
 
@@ -1021,21 +1021,21 @@ struct is_floating_point<quantity<T>> :
 
 //-------------------------------------------------------------------
 template<class T, class T2>
-struct common_numeric_type<quantity<T>,T2>
+struct common_numeric_type<natural<T>,T2>
 {
-    using type = quantity<common_numeric_t<T,T2>>;
+    using type = natural<common_numeric_t<T,T2>>;
 };
 //---------------------------------------------------------
 template<class T, class T2>
-struct common_numeric_type<T2,quantity<T>>
+struct common_numeric_type<T2,natural<T>>
 {
-    using type = quantity<common_numeric_t<T,T2>>;
+    using type = natural<common_numeric_t<T,T2>>;
 };
 //---------------------------------------------------------
 template<class T1, class T2>
-struct common_numeric_type<quantity<T1>,quantity<T2>>
+struct common_numeric_type<natural<T1>,natural<T2>>
 {
-    using type = quantity<common_numeric_t<T1,T2>>;
+    using type = natural<common_numeric_t<T1,T2>>;
 };
 
 
@@ -1043,19 +1043,19 @@ namespace detail {
 
 //-------------------------------------------------------------------
 template<class To, class From>
-struct is_non_narrowing_helper<true, quantity<To>, From> :
+struct is_non_narrowing_helper<true, natural<To>, From> :
     public is_non_narrowing_helper<true,To,From>
 {};
 
 //---------------------------------------------------------
 template<class To, class From>
-struct is_non_narrowing_helper<true, quantity<To>, quantity<From> > :
+struct is_non_narrowing_helper<true, natural<To>, natural<From> > :
     public is_non_narrowing_helper<true,To,From>
 {};
 
 //---------------------------------------------------------
 template<class To, class From>
-struct is_non_narrowing_helper<true, To, quantity<From> > :
+struct is_non_narrowing_helper<true, To, natural<From> > :
     public is_non_narrowing_helper<true,To,From>
 {};
 
@@ -1077,15 +1077,15 @@ struct is_non_narrowing_helper<true, To, quantity<From> > :
  *****************************************************************************/
 
 template<class IntT>
-inline constexpr quantity<signed_t<decay_t<IntT>>>
-make_quantity(IntT&& x)
+inline constexpr natural<signed_t<decay_t<IntT>>>
+make_natural(IntT&& x)
 {
     static_assert(is_integral<IntT>::value,
-        "make_quantity(x): x has to be an integral number");
+        "make_natural(x): x has to be an integral number");
 
 //    assert(x <= numeric_limits<signed_t<decay_t<IntT>>>::max());
 
-    return quantity<signed_t<decay_t<IntT>>>{make_signed(std::forward<IntT>(x))};
+    return natural<signed_t<decay_t<IntT>>>{make_signed(std::forward<IntT>(x))};
 }
 
 
@@ -1093,13 +1093,13 @@ make_quantity(IntT&& x)
 namespace literals {
 
 //-------------------------------------------------------------------
-constexpr quantity<long long int>
-operator "" _qty (unsigned long long int x)
+constexpr natural<long long int>
+operator "" _n (unsigned long long int x)
 {
     return (x > static_cast<unsigned long long int>(
             std::numeric_limits<long long int>::max()))
-               ? quantity<long long int>::infinity()
-               : quantity<long long int>(static_cast<long long int>(x));
+               ? natural<long long int>::infinity()
+               : natural<long long int>(static_cast<long long int>(x));
 }
 
 } // namespace literals

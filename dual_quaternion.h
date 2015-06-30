@@ -4,12 +4,12 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
-#ifndef AM_NUMERIC_DUAL_QUATERNION_H_
-#define AM_NUMERIC_DUAL_QUATERNION_H_
+#ifndef AMLIB_NUMERIC_DUAL_QUATERNION_H_
+#define AMLIB_NUMERIC_DUAL_QUATERNION_H_
 
 
 #include "quaternion.h"

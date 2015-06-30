@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2014 André Müller
+ * 2008-2015 André Müller
  *
  *****************************************************************************/
 
@@ -13,16 +13,13 @@
 #include <stdexcept>
 
 #include "choice.h"
-#include "choice_test.h"
 
-
-namespace am {
-namespace num {
-namespace test {
+using namespace am;
+using namespace am::num;
 
 
 //-------------------------------------------------------------------
-void choice_init_correctness()
+void num_choice_init_correctness()
 {
     auto c1 = choice<std::int8_t,8>{0};
     auto c2 = choice<std::int8_t,8>{1};
@@ -36,13 +33,13 @@ void choice_init_correctness()
         (int(c4) != 0) ||
         (int(c5) != 3)    )
     {
-        throw std::logic_error("am::choice init");
+        throw std::logic_error("am::num::choice init");
     }
 }
 
 
 //-------------------------------------------------------------------
-void choice_arithmetic_correctness()
+void num_choice_arithmetic_correctness()
 {
     auto c1 = choice<std::int8_t,8>{2};
 
@@ -76,23 +73,17 @@ void choice_arithmetic_correctness()
         (int(c2) == 3) &&
         (int(c3) == 2) ) )
     {
-        throw std::logic_error("am::choice arithmetic");
+        throw std::logic_error("am::num::choice arithmetic");
     }
 }
 
 
 
 //-------------------------------------------------------------------
-void choice_correctness()
+void num_choice_correctness()
 {
-    choice_init_correctness();
-    choice_arithmetic_correctness();
+    num_choice_init_correctness();
+    num_choice_arithmetic_correctness();
 }
-
-
-}  // namespace test
-}  // namespace num
-}  // namespace am
-
 
 #endif
