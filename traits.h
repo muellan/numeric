@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
@@ -173,8 +173,8 @@ check_is_invertable(T, long)
 //-------------------------------------------------------------------
 template<class T>
 constexpr auto
-check_has_dimensions(T&& t, int)
-    -> decltype(t.dimensions(), std::true_type{});
+check_has_dimensions(T&&, int)
+    -> decltype(std::declval<T>().dimensions(), std::true_type{});
 
 template<class T>
 constexpr auto
@@ -185,8 +185,8 @@ check_has_dimensions(T&&, long) -> std::false_type;
 //-------------------------------------------------------------------
 template<class T>
 constexpr auto
-check_has_min(T&& t, int)
-    -> decltype(min(t), std::true_type{});
+check_has_min(T&&, int)
+    -> decltype(min(std::declval<T>()), std::true_type{});
 
 template<class T>
 constexpr auto
@@ -197,8 +197,8 @@ check_has_min(T&&, long) -> std::false_type;
 //-------------------------------------------------------------------
 template<class T>
 constexpr auto
-check_has_max(T&& t, int)
-    -> decltype(max(t), std::true_type{});
+check_has_max(T&&, int)
+    -> decltype(max(std::declval<T>()), std::true_type{});
 
 template<class T>
 constexpr auto

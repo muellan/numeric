@@ -1,14 +1,15 @@
 /*****************************************************************************
  *
- * AM numeric facilities
+ * AM utilities
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
+
 
 #include "natural.h"
 
@@ -16,6 +17,8 @@
 #include <cstdint>
 #include <iostream>
 
+
+namespace test {
 
 using namespace am;
 using namespace am::num;
@@ -163,5 +166,7 @@ void num_natural_correctness()
     num_natural_arithmetic_correctness();
     num_natural_comparison_correctness();
 }
+
+} //namespace test
 
 #endif

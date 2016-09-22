@@ -16,7 +16,6 @@
 #include <random>
 
 #include "param.h"
-
 #include "narrowing.h"
 #include "traits.h"
 
@@ -1401,7 +1400,7 @@ struct quarter_turn_interval
 
     static constexpr value_type
     max() noexcept {
-        return value_type{Angle::turn()/2};
+        return value_type{Angle::turn()/4};
     }
 };
 

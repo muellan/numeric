@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
@@ -313,6 +313,24 @@ public:
         l_(numeric_limits<value_type>::lowest()),
         r_(numeric_limits<value_type>::max())
     {}
+
+    //-----------------------------------------------------
+    explicit constexpr
+    interval(value_type value):
+        l_{value},
+        r_{value}
+    {}
+
+    //-----------------------------------------------------
+    template<class T, class = typename std::enable_if<
+        is_number<T>::value>::type>
+    explicit constexpr
+    interval(const T& value):
+        l_(value),
+        r_(value)
+    {
+        AM_CHECK_NARROWING(value_type,T)
+    }
 
     //-----------------------------------------------------
     constexpr
@@ -771,8 +789,15 @@ private:
  *
  *
  *****************************************************************************/
+template<class T>
+inline constexpr
+interval<T>
+make_interval(const T& a)
+{
+    return interval<T>{a, a};
+}
 
-//-------------------------------------------------------------------
+//---------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
 interval<common_numeric_t<T1,T2>>
@@ -833,8 +858,6 @@ make_interval_width_center(const W& width, C&& center)
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class Ostream, class T>
 inline Ostream&
 operator << (Ostream& os, const interval<T>& r)
@@ -862,8 +885,6 @@ print(Ostream& os, const interval<T>& r)
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 inline constexpr auto
 min(const interval<T>& i) noexcept -> decltype(i.min())
@@ -890,8 +911,6 @@ max(const interval<T>& i) noexcept -> decltype(i.max())
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 inline auto
 centroid(const interval<T>& i) -> decltype(i.center())
@@ -1066,8 +1085,6 @@ operator / (const T1& b, interval<T2> a)
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
 intersects(const interval<T1>& a, const interval<T2>& b)
@@ -1151,9 +1168,6 @@ contains(const interval<T1>& i, const T2& v, const T3& tolerance)
  *
  *
  *****************************************************************************/
-
-
-//-------------------------------------------------------------------
 template<class T1, class T2, class =
     typename std::enable_if<is_number<T2>::value>::type>
 inline common_numeric_t<T1,T2>
@@ -1223,8 +1237,6 @@ distance(const interval<T1>& a, const interval<T2>& b)
  *
  *
  *****************************************************************************/
-
-//-----------------------------------------------------
 template<class T1, class T2>
 inline interval<common_numeric_t<T1,T2>>
 intersection(interval<T1> a, const interval<T2>& b)
@@ -1255,9 +1267,6 @@ intersection(interval<T1> a, const interval<T2>& b)
  *
  *
  *****************************************************************************/
-
-
-//-------------------------------------------------------------------
 template<class T>
 inline bool
 operator == (const interval<T>& a, const interval<T>& b) {

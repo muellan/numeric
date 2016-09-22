@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
@@ -55,12 +55,12 @@ public:
 
     //---------------------------------------------------------------
     reference
-    operator * () const {
+    operator * () const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
     pointer
-    operator -> () const {
+    operator -> () const noexcept {
         return std::addressof(cur_);
     }
     //-----------------------------------------------------
@@ -93,7 +93,7 @@ public:
 
     //---------------------------------------------------------------
     reference
-    front() const {
+    front() const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
@@ -109,19 +109,19 @@ public:
     }
     //-----------------------------------------------------
     bool
-    empty() const {
+    empty() const noexcept {
         return (cur_ > uBound_);
     }
     //-----------------------------------------------------
     explicit operator
-    bool() const {
+    bool() const noexcept {
         return !empty();
     }
 
 
     //---------------------------------------------------------------
     const ascending_sequence&
-    begin() const {
+    begin() const noexcept {
         return *this;
     }
     //-----------------------------------------------------
@@ -140,12 +140,12 @@ public:
 
     //---------------------------------------------------------------
     bool
-    operator == (const ascending_sequence& o) const {
+    operator == (const ascending_sequence& o) const noexcept {
         return approx_equal(cur_, o.cur_) && approx_equal(uBound_, o.uBound_);
     }
     //-----------------------------------------------------
     bool
-    operator != (const ascending_sequence& o) const {
+    operator != (const ascending_sequence& o) const noexcept {
         return !(*this == o);
     }
 
@@ -194,12 +194,12 @@ public:
 
     //---------------------------------------------------------------
     reference
-    operator * () const {
+    operator * () const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
     pointer
-    operator -> () const {
+    operator -> () const noexcept {
         return std::addressof(cur_);
     }
     //-----------------------------------------------------
@@ -225,7 +225,7 @@ public:
 
     //---------------------------------------------------------------
     reference
-    front() const {
+    front() const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
@@ -241,12 +241,12 @@ public:
     }
     //-----------------------------------------------------
     bool
-    empty() const {
+    empty() const noexcept {
         return (cur_ < lBound_);
     }
     //-----------------------------------------------------
     explicit operator
-    bool() const {
+    bool() const noexcept {
         return !empty();
     }
 
@@ -272,12 +272,12 @@ public:
 
     //---------------------------------------------------------------
     bool
-    operator == (const descending_sequence& o) const {
+    operator == (const descending_sequence& o) const noexcept {
         return approx_equal(cur_, o.cur_) && approx_equal(lBound_, o.lBound_);
     }
     //-----------------------------------------------------
     bool
-    operator != (const descending_sequence& o) const {
+    operator != (const descending_sequence& o) const noexcept {
         return !(*this == o);
     }
 
@@ -328,12 +328,12 @@ public:
 
     //---------------------------------------------------------------
     value_type
-    operator * () const {
+    operator * () const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
     pointer
-    operator -> () const {
+    operator -> () const noexcept {
         return std::addressof(cur_);
     }
     //-----------------------------------------------------
@@ -359,14 +359,14 @@ public:
 
     //---------------------------------------------------------------
     reference
-    stride() const {
+    stride() const noexcept {
         return stride_;
     }
 
 
     //---------------------------------------------------------------
     reference
-    front() const {
+    front() const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
@@ -383,12 +383,12 @@ public:
     }
     //-----------------------------------------------------
     bool
-    empty() const {
+    empty() const noexcept {
         return ((stride_> 0) ? (cur_ > uBound_) : (cur_ < uBound_));
     }
     //-----------------------------------------------------
     explicit operator
-    bool() const {
+    bool() const noexcept {
         return !empty();
     }
 
@@ -414,7 +414,7 @@ public:
 
     //---------------------------------------------------------------
     bool
-    operator == (const linear_sequence& o) const {
+    operator == (const linear_sequence& o) const noexcept {
         return
             approx_equal(cur_, o.cur_) &&
             approx_equal(stride_, o.stride_) &&
@@ -422,7 +422,7 @@ public:
     }
     //-----------------------------------------------------
     bool
-    operator != (const linear_sequence& o) const {
+    operator != (const linear_sequence& o) const noexcept {
         return !(*this == o);
     }
 

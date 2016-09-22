@@ -1,18 +1,21 @@
 /*****************************************************************************
  *
- * AM numeric facilities
+ * AM utilities
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
 
+
 #include <stdexcept>
 
 #include "choice.h"
+
+namespace test {
 
 using namespace am;
 using namespace am::num;
@@ -85,5 +88,7 @@ void num_choice_correctness()
     num_choice_init_correctness();
     num_choice_arithmetic_correctness();
 }
+
+} //namespace test
 
 #endif

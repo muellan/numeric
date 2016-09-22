@@ -1,20 +1,23 @@
 /*****************************************************************************
  *
- * AM numeric facilities
+ * AM utilities
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
+
 
 #include "angle.h"
 #include "limits.h"
 
 #include <stdexcept>
 
+
+namespace test {
 
 using namespace am;
 using namespace am::num;
@@ -184,5 +187,7 @@ void num_angle_correctness()
     num_angle_functions_correctness();
     num_angle_comparison_correctness();
 }
+
+} //namespace test
 
 #endif

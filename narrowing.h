@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
@@ -17,7 +17,6 @@
 
 
 namespace am {
-
 namespace num {
 
 
@@ -114,7 +113,7 @@ struct is_non_narrowing :
 
 
 //-------------------------------------------------------------------
-#ifndef AM_ALLOW_NARROWING
+#ifndef AMLIB_ALLOW_NARROWING
 
 #define AM_CHECK_NARROWING(TARGET,SOURCE) \
     static_assert(num::is_non_narrowing< \

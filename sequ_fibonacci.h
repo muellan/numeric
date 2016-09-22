@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
@@ -58,12 +58,12 @@ public:
 
     //---------------------------------------------------------------
     value_type
-    operator * () const {
+    operator * () const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
     pointer
-    operator -> () const {
+    operator -> () const noexcept {
         return std::addressof(cur_);
     }
     //-----------------------------------------------------
@@ -113,7 +113,7 @@ public:
 
     //---------------------------------------------------------------
     reference
-    front() const {
+    front() const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
@@ -125,24 +125,24 @@ public:
 
     //-----------------------------------------------------
     size_type
-    size() const {
+    size() const noexcept {
         return maxN_;
     }
     //-----------------------------------------------------
     bool
-    empty() const {
+    empty() const noexcept {
         return (n_ >= maxN_);
     }
     //-----------------------------------------------------
     explicit operator
-    bool() const {
+    bool() const noexcept {
         return !empty();
     }
 
 
     //---------------------------------------------------------------
     const fibonacci_sequence&
-    begin() const {
+    begin() const noexcept {
         return *this;
     }
     //-----------------------------------------------------
@@ -154,12 +154,12 @@ public:
 
     //---------------------------------------------------------------
     bool
-    operator == (const fibonacci_sequence& o) const {
+    operator == (const fibonacci_sequence& o) const noexcept {
         return (n_ == o.n_) && (maxN_ == o.maxN_);
     }
     //-----------------------------------------------------
     bool
-    operator != (const fibonacci_sequence& o) const {
+    operator != (const fibonacci_sequence& o) const noexcept {
         return !(*this == o);
     }
 

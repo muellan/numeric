@@ -1,14 +1,15 @@
 /*****************************************************************************
  *
- * AM numeric facilities
+ * AM utilities
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
 #ifdef AM_USE_TESTS
+
 
 #include "sequ_linear.h"
 #include "sequ_geometric.h"
@@ -18,6 +19,8 @@
 #include "equality.h"
 
 #include <vector>
+
+namespace test {
 
 using namespace am;
 using namespace am::num;
@@ -79,18 +82,6 @@ void num_geometric_sequence_generation_correctness()
         }
         if(!approx_equal(v.front(),1) || !approx_equal(v.back(),1) ||
             v.size() != 1)
-        {
-            throw std::logic_error("geometric_sequence");
-        }
-    }
-
-    {
-        auto v = std::vector<double>{};
-        for(auto x : geometric_sequence<double>{2.0, 128.0}) {
-            v.push_back(x);
-        }
-        if(!approx_equal(v.front(),1) || !approx_equal(v.back(),128) ||
-            v.size() != 8)
         {
             throw std::logic_error("geometric_sequence");
         }
@@ -284,5 +275,7 @@ void num_sequence_generation_correctness()
 
 
 }
+
+} //namespace test
 
 #endif

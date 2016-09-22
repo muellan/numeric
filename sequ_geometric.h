@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2015 André Müller
+ * 2008-2016 André Müller
  *
  *****************************************************************************/
 
@@ -27,7 +27,7 @@ namespace num {
 
 /*****************************************************************************
  *
- * v(n) = scaleFactor * base^n,  for n with v(n) <= upperBound
+ * v(n) = scaleFactor * ratio^n,  for n with v(n) <= upperBound
  *
  *
  *
@@ -49,51 +49,45 @@ public:
     //---------------------------------------------------------------
     constexpr explicit
     geometric_sequence(
-        value_type base = value_type(1),
+        value_type initial = value_type(0),
+        value_type ratio = value_type(1),
         value_type upperBound = numeric_limits<value_type>::max())
     :
-        cur_(1), base_{std::move(base)}, uBound_{std::move(upperBound)}
-    {}
-    //-----------------------------------------------------
-    constexpr explicit
-    geometric_sequence(
-        value_type scaleFactor, value_type base, value_type upperBound)
-    :
-        cur_{std::move(scaleFactor)},
-        base_{std::move(base)},
+        cur_{std::move(initial)},
+        ratio_{std::move(ratio)},
         uBound_{std::move(upperBound)}
     {}
 
 
     //---------------------------------------------------------------
     reference
-    operator * () const {
+    operator * () const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
     pointer
-    operator -> () const {
+    operator -> () const noexcept {
         return std::addressof(cur_);
     }
     //-----------------------------------------------------
     value_type
     operator [] (size_type offset) const {
        using std::pow;
-       return cur_ * pow(base_,offset);
+       return cur_ * pow(ratio_,offset);
     }
 
 
     //---------------------------------------------------------------
     geometric_sequence&
     operator ++ () {
-        cur_ *= base_;
+        cur_ *= ratio_;
         return *this;
     }
     //-----------------------------------------------------
     geometric_sequence&
     operator += (size_type offset) {
         using std::pow;
-        cur_ *= pow(base_,offset);
+        cur_ *= pow(ratio_,offset);
         return *this;
     }
     //-----------------------------------------------------
@@ -107,14 +101,14 @@ public:
 
     //---------------------------------------------------------------
     reference
-    base() const {
-        return base_;
+    ratio() const noexcept {
+        return ratio_;
     }
 
 
     //---------------------------------------------------------------
     reference
-    front() const {
+    front() const noexcept {
         return cur_;
     }
     //-----------------------------------------------------
@@ -128,32 +122,32 @@ public:
         using std::log;
 
         return (1 + static_cast<size_type>(
-            0.5 + (log(uBound_/cur_) / log(base_)) ) );
+            0.5 + (log(uBound_/cur_) / log(ratio_)) ) );
     }
     //-----------------------------------------------------
     bool
-    empty() const {
+    empty() const noexcept {
         return
             (cur_ >= 0 && uBound_ >= 0)
-            ? (base_ > 1) ? (cur_ > uBound_) : (cur_ < uBound_)
-            : (base_ > 1) ? (cur_ < uBound_) : (cur_ > uBound_);
+            ? (ratio_ > 1) ? (cur_ > uBound_) : (cur_ < uBound_)
+            : (ratio_ > 1) ? (cur_ < uBound_) : (cur_ > uBound_);
     }
     //-----------------------------------------------------
     explicit operator
-    bool() const {
+    bool() const noexcept {
         return !empty();
     }
 
 
     //---------------------------------------------------------------
     const geometric_sequence&
-    begin() const {
+    begin() const noexcept {
         return *this;
     }
     //-----------------------------------------------------
     geometric_sequence
     end() const {
-        return geometric_sequence{(*this)[size()], base_, uBound_};
+        return geometric_sequence{(*this)[size()], ratio_, uBound_};
     }
 
 
@@ -164,28 +158,28 @@ public:
         using std::log;
 
         return (1 +    static_cast<difference_type>(
-            0.5 + (log(b.cur_/a.cur_) / log(a.base_)) ) );
+            0.5 + (log(b.cur_/a.cur_) / log(a.ratio_)) ) );
     }
 
 
     //---------------------------------------------------------------
     bool
-    operator == (const geometric_sequence& o) const {
+    operator == (const geometric_sequence& o) const noexcept {
         return
             approx_equal(cur_, o.cur_) &&
-            approx_equal(base_, o.base_) &&
+            approx_equal(ratio_, o.ratio_) &&
             approx_equal(uBound_, o.uBound_);
     }
     //-----------------------------------------------------
     bool
-    operator != (const geometric_sequence& o) const {
+    operator != (const geometric_sequence& o) const noexcept {
         return !(*this == o);
     }
 
 
 private:
     value_type cur_;
-    value_type base_;
+    value_type ratio_;
     value_type uBound_;
 };
 
@@ -245,46 +239,26 @@ cend(const geometric_sequence<T>& s) -> decltype(s.end()) {
  *
  *****************************************************************************/
 
-//---------------------------------------------------------
-template<class Base, class UpperBound>
+template<class Initial, class Ratio, class UpperBound>
 inline constexpr
 geometric_sequence<common_numeric_t<
-        typename std::decay<Base>::type,
-        typename std::decay<UpperBound>::type>>
-make_geometric_sequence(Base&& base, UpperBound&& upperBound)
-{
-//    assert( (base <  1 && cur >= upperBound) ||
-//            (base >  1 && cur <= upperBound) );
-
-    using num_t = common_numeric_t<
-        typename std::decay<Base>::type,
-        typename std::decay<UpperBound>::type>;
-
-    return geometric_sequence<num_t>
-        {std::forward<Base>(base), std::forward<UpperBound>(upperBound)};
-}
-
-//---------------------------------------------------------
-template<class ScaleFac, class Base, class UpperBound>
-inline constexpr
-geometric_sequence<common_numeric_t<
-        typename std::decay<ScaleFac>::type,
+        typename std::decay<Initial>::type,
         typename std::decay<UpperBound>::type,
-        typename std::decay<Base>::type>>
+        typename std::decay<Ratio>::type>>
 make_geometric_sequence(
-    ScaleFac&& scaleFactor, Base&& base, UpperBound&& upperBound)
+    Initial&& initial, Ratio&& ratio, UpperBound&& upperBound)
 {
-//    assert( (base <  1 && cur >= upperBound) ||
-//            (base >  1 && cur <= upperBound) );
+//    assert( (ratio <  1 && cur >= upperBound) ||
+//            (ratio >  1 && cur <= upperBound) );
 
     using num_t = common_numeric_t<
-        typename std::decay<ScaleFac>::type,
+        typename std::decay<Initial>::type,
         typename std::decay<UpperBound>::type,
-        typename std::decay<Base>::type>;
+        typename std::decay<Ratio>::type>;
 
     return geometric_sequence<num_t> {
-        std::forward<ScaleFac>(scaleFactor),
-        std::forward<Base>(base),
+        std::forward<Initial>(initial),
+        std::forward<Ratio>(ratio),
         std::forward<UpperBound>(upperBound)};
 }
 
