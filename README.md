@@ -1,16 +1,14 @@
 AM numeric
 ==========
 
-Collection of numeric facilities for C++
-
-**Note**: All classes and functions are work in progress.
-Interfaces are still likely to change over time and documentation is limited to some comments so far. 
+some numeric facilities for C++
 
 All components are header-only.
 
+## Contents
 
-## Generic classes
-  - safe angle 
+### Generic classes
+  - safe angle (that is tagged with its unit)
   - choice (provides arithmetic modulo N)
   - interval (incl. interval arithmetic)
   - natural number adapter (provides unsigned integer with bounds check and infinity type)
@@ -25,7 +23,7 @@ All components are header-only.
   - dual quaternion (study biquaternion)  
   - sequences (linear, geometric, repeated, fibonacci)
   
-## Other
+### Other
   - number conversion factories
   - number concept checking
   - checking for narrowing
