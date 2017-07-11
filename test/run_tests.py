@@ -1,5 +1,16 @@
 #!/usr/bin/python
 
+###############################################################################
+#
+# builds and runs tests, resolves include dependencies
+#
+# see help for usage:
+#    ./run_tests.py --help
+#
+# (c) 2013-2017 Andre Mueller
+#
+###############################################################################
+
 import re
 import os
 import shutil
@@ -16,7 +27,7 @@ macros     = ["NO_DEBUG", "NDEBUG"]
 compiler   = "g++"
 compileopt = "-std=c++14 -O3 -Wall -Wextra -Wpedantic -Wno-unknown-pragmas"
 tuext      = "cpp"
-
+separator  = "-----------------------------------------------------------------"
 
 # [ (needs compilation, dependency regex) ]
 deprxp = [re.compile('^\s*#pragma\s+test\s+needs\(\s*"(.+\..+)"\s*\)\s*$'),
@@ -26,11 +37,12 @@ deprxp = [re.compile('^\s*#pragma\s+test\s+needs\(\s*"(.+\..+)"\s*\)\s*$'),
 testrxp = re.compile('(.+)\.' + tuext)
 
 def dependencies(source, searchpaths = [], sofar = Set()):
-    """ return set of dependencies (found by DFS)
-        dependencies look like this:
+    """ return set of dependencies for a C++ source file
+        the following dependency definitions are recocnized:
           - #include "path/to/file.ext"
           - #include <path/to/file.ext>
           - #pragma test needs("path/to/file.ext")
+        note: uses DFS
     """
     result = Set()
 
@@ -80,27 +92,40 @@ includes = []
 showDependencies = False
 haltOnFail = True
 recompile = False
+allpass = True
 
-# gather source file names
+# process input args
 if len(argv) > 1:
     for i in range(1,len(argv)):
         arg = argv[i]
         if arg == "-h" or arg == "--help":
-            print "usage: " + argv[0] + \
+            print "Usage:"
+            print "  " + argv[0] + \
+                " [--help]" \
                 " [--clean]" \
-                " [-r|--recompile]" \
-                " [-h|--help]" \
-                " [-d|--show-dependecies]" \
-                " [-c|--compiler EXEC]" \
-                " [{-m|--macro MACRO}]" \
-                " [{-i|--include INCLUDE_PATH}]" \
+                " [-r]" \
+                " [-d]" \
+                " [-c <compiler>]" \
+                " [-o <compiler-options>]" \
+                " [-m <macro>]..." \
+                " [-i <include-path>]..." \
                 " [--continue-on-fail]" \
-                " [{directory|file}]"
+                " [<directory|file>...]"
+            print ""
+            print "Options:"
+            print "  -h, --help                         print this screen"
+            print "  --clean                            do a clean re-build; removes entire build directory"
+            print "  -r, --recompile                    recompile all source files before running"
+            print "  -d, --show-dependecies             show all resolved includes during compilation"
+            print "  -c, --compiler <executable>        specify compiler executable"
+            print "  -o, --compiler-options <options>   specify compiler options"
+            print "  -m, --macro <macro>                add macro definition"
+            print "  -i, --include <path>               add include path"
+            print "  --continue-on-fail                 continue running regardless of failed builds or tests";
             exit()
         elif arg == "--clean":
             if os.path.exists(builddir):
                 shutil.rmtree(builddir)
-            print "-- clean build --"
         elif arg == "-r" or arg == "--recompile":
             recompile = True
         elif arg == "-d" or arg == "--show-dependencies":
@@ -109,6 +134,8 @@ if len(argv) > 1:
             haltOnFail = False
         elif arg == "-c" or arg == "--compiler":
             if i+1 < len(argv): compiler = argv[i+1]
+        elif arg == "-o" or arg == "--compiler-options":
+            if i+1 < len(argv): compileopt = argv[i+1]
         elif arg == "-i" or arg == "--include":
             if i+1 < len(argv): incpats.add(argv[i+1])
         elif arg == "-m" or arg == "--macro":
@@ -116,6 +143,7 @@ if len(argv) > 1:
         else:
             paths.append(arg)
 
+# gather source file names
 if len(paths) < 1:
     paths = [os.getcwd()]
 
@@ -133,12 +161,14 @@ if len(sources) < 1:
     exit()
 
 # make build directory
-if not os.path.exists(builddir): os.makedirs(builddir)
+if not os.path.exists(builddir):
+    os.makedirs(builddir)
+    print separator
+    print "C L E A N  B U I L D"
+
+print separator
 
 # compile and run tests
-
-print "----------------------------------------------------------------------"
-
 compilecmd = compiler + " " + compileopt
 for m in macros:
     if m != "": compilecmd = compilecmd + " -D" + m
@@ -192,6 +222,7 @@ for source in sources:
             system(compilecmd + " " + tus + " -o " + artifact)
             if not path.exists(artifact):
                 print "FAILED!"
+                allpass = False
                 if haltOnFail: exit();
 
         #execute test; backslashes make sure that it works with cmd.exe
@@ -205,7 +236,13 @@ for source in sources:
             print "passed."
         else:
             print "FAILED!"
+            allpass = False
             if haltOnFail : exit()
 
-print "----------------------------------------------------------------------"
-print "All tests passed."
+print separator
+
+if allpass:
+    print "All tests passed."
+else:
+    print "Some tests failed."
+
