@@ -1,11 +1,10 @@
 AM numeric
 ==========
 
-some numeric facilities for C++
+Header-only numeric facilities for C++11.
 
-All components are header-only.
 
-## Contents
+## Quick Overview
 
 ### Generic classes
   - safe angle (that is tagged with its unit)
@@ -31,5 +30,5 @@ All components are header-only.
 
 
 ## Requirements
-  - requires (mostly) C++11 conforming compiler
-  - tested with g++ 4.7.2, g++ 4.9.2, g++ 5.1.0
+  - requires C++11 conforming compiler
+  - tested with g++ 4.7.2, g++ 4.9.2, g++ 5.1.0, g++ 5.3.1

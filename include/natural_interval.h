@@ -1,3 +1,13 @@
+/*****************************************************************************
+ *
+ * AM utilities
+ *
+ * released under MIT license
+ *
+ * 2008-2017 André Müller
+ *
+ *****************************************************************************/
+
 #ifndef AMLIB_NUMERIC_NATURAL_INTERVAL_H_
 #define AMLIB_NUMERIC_NATURAL_INTERVAL_H_
 

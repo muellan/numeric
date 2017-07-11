@@ -1,13 +1,13 @@
-/Release
-/Release_GUI
-/Debug
-/Profile
-/Coverage
+/Release*
+/Debug*
+/Profile*
+/Coverage*
 /build_*
 /dev
 .project
 .cproject
 .settings
+.pydevproject
 
 *.slo
 *.lo
@@ -17,6 +17,3 @@
 *.lai
 *.la
 *.a
-
-design.txt
-main.cpp

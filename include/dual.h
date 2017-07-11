@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2016 André Müller
+ * 2008-2017 André Müller
  *
  *****************************************************************************/
 
@@ -74,7 +74,6 @@ public:
     //---------------------------------------------------------------
     using value_type      = NumberType;
     using numeric_type    = value_type;
-    using const_reference = const value_type&;
 
 
     //---------------------------------------------------------------
@@ -194,13 +193,13 @@ public:
     //---------------------------------------------------------------
     // ELEMENT ACCESS
     //---------------------------------------------------------------
-    constexpr const_reference
+    constexpr const value_type&
     real() const noexcept {
         return r_;
     }
 
     //-----------------------------------------------------
-    constexpr const_reference
+    constexpr const value_type&
     imag() const noexcept {
         return i_;
     }

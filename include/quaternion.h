@@ -4,7 +4,7 @@
  *
  * released under MIT license
  *
- * 2008-2016 André Müller
+ * 2008-2017 André Müller
  *
  *****************************************************************************/
 
@@ -51,10 +51,6 @@ public:
     using numeric_type    = NumberT;
     using value_type      = numeric_type;
     using dimension_type  = dims_t;
-
-    //-----------------------------------------------------
-    using reference       = numeric_type&;
-    using const_reference = const numeric_type&;
 
 
     //---------------------------------------------------------------
@@ -145,22 +141,22 @@ public:
 
 
     //---------------------------------------------------------------
-    constexpr const_reference
+    constexpr const value_type&
     real() const noexcept {
         return w_;
     }
     //-----------------------------------------------------
-    constexpr const_reference
+    constexpr const value_type&
     imag_i() const noexcept {
         return x_;
     }
     //-----------------------------------------------------
-    constexpr const_reference
+    constexpr const value_type&
     imag_j() const noexcept {
         return y_;
     }
     //-----------------------------------------------------
-    constexpr const_reference
+    constexpr const value_type&
     imag_k() const noexcept {
         return z_;
     }
@@ -168,22 +164,22 @@ public:
 
     //---------------------------------------------------------------
     void
-    real(const_reference w) {
+    real(const value_type& w) {
         w_ = w;
     }
     //-----------------------------------------------------
     void
-    imag_i(const_reference x) {
+    imag_i(const value_type& x) {
         x_ = x;
     }
     //-----------------------------------------------------
     void
-    imag_j(const_reference y) {
+    imag_j(const value_type& y) {
         y_ = y;
     }
     //-----------------------------------------------------
     void
-    imag_k(const_reference z) {
+    imag_k(const value_type& z) {
         z_ = z;
     }
 
