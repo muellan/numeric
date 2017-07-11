@@ -21,7 +21,7 @@ All components are header-only.
   - ordinary biquaternion
   - split-biquaternion
   - dual quaternion (study biquaternion)  
-  - sequences (linear, geometric, repeated, fibonacci)
+  - random number distribution adapter
   
 ### Other
   - number conversion factories
