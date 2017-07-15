@@ -1172,7 +1172,7 @@ class angle_distribution
     AM_CHECK_NARROWING(typename Turn::type,typename ValueDistr::result_type)
 
 public:
-    using param_type   = num::param_t<ValueDistr>;
+    using param_type   = typename ValueDistr::param_type;
     using numeric_type = typename ValueDistr::result_type;
     using result_type  = angle<Turn>;
 
@@ -1265,7 +1265,7 @@ class uniform_angle_distribution :
 public:
     //---------------------------------------------------------------
     using numeric_type = typename Turn::type;
-    using param_type = num::param_t<base_t_>;
+    using param_type   = typename base_t_::param_type;
 
     //---------------------------------------------------------------
     explicit

@@ -57,9 +57,7 @@ using uniform_number_distribution = typename
 
 
 
-
 /*****************************************************************************
- *
  *
  *
  *
@@ -73,7 +71,7 @@ class distribution_adapter
 public:
     //---------------------------------------------------------------
     using result_type = Result;
-    using param_type = param_t<ValueDistribution>;
+    using param_type = typename ValueDistribution::param_type;
 
 
     //---------------------------------------------------------------
@@ -163,9 +161,7 @@ using uniform_distribution_adapter =
     distribution_adapter<Result, uniform_number_distribution<numeric_t<Result>> >;
 
 
-
 }  // namespace num
-
 }  // namespace am
 
 #endif // AMLIB_GEOMETRY_CREATION_POINTS_H_
