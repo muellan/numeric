@@ -41,9 +41,6 @@ using clipped_gons = clipped_angle<gons_turn<T>>;
 
 
 
-
-
-
 /*****************************************************************************
  *
  *
@@ -63,9 +60,6 @@ using inclination_gons = inclination_angle<gons_turn<T>>;
 
 
 
-
-
-
 /*****************************************************************************
  *
  *
@@ -82,9 +76,6 @@ using fov_radians = fov_angle<radians_turn<T>>;
 
 template<class T>
 using fov_gons = fov_angle<gons_turn<T>>;
-
-
-
 
 
 

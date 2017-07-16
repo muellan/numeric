@@ -27,13 +27,9 @@ namespace num {
 
 /*****************************************************************************
  *
- *
  * NUMERICAL PRECISION HELPER FUNCTIONS
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
 approx_equal(const T1& a, const T2& b)
@@ -159,10 +155,9 @@ template<class InputIter, class T, class = typename
         is_number<T>::value>::type
 >
 bool
-approx_equal(
-    InputIter begin1, InputIter end1,
-    InputIter begin2, InputIter end2,
-    const T& tolerance)
+approx_equal(InputIter begin1, InputIter end1,
+             InputIter begin2, InputIter end2,
+             const T& tolerance)
 {
     using std::abs;
 

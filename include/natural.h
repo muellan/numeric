@@ -46,8 +46,6 @@ struct is_natural<natural<T>> :
 
 
 
-
-
 /*****************************************************************************
  *
  * @brief   represents an integral natural "safe unsigned int"
@@ -473,19 +471,11 @@ private:
 
 
 
-
-
 /*****************************************************************************
- *
  *
  * ARITHMETIC
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
-// +
-//-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
 natural<common_numeric_t<T1,T2>>
@@ -538,8 +528,6 @@ operator + (const T2& b, const natural<T1>& a) noexcept
 
 
 
-//-------------------------------------------------------------------
-// -
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
@@ -596,8 +584,6 @@ operator - (const T2& b, const natural<T1>& a) noexcept
 
 
 
-//-------------------------------------------------------------------
-// *
 //-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr
@@ -679,17 +665,11 @@ operator * (const T2& b, const natural<T1>& a) noexcept
 
 
 
-
-
 /*****************************************************************************
- *
  *
  * COMPARISONS
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T1, class T2>
 inline constexpr bool
 operator == (const natural<T1>& a, const natural<T2>& b) noexcept
@@ -870,15 +850,11 @@ operator >  (const T2& b, const natural<T1>& a) noexcept
 
 
 
-
-
 /*****************************************************************************
  *
  * I/O
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class Ostream, class Int>
 inline Ostream&
 operator << (Ostream& os, const natural<Int>& c)
@@ -903,9 +879,6 @@ print(Ostream& os, const natural<Int>& c)
 
     return os;
 }
-
-
-
 
 
 
@@ -981,19 +954,11 @@ public:
 
 
 
-
-
-
-
 /*****************************************************************************
- *
  *
  * TRAITS SPECIALIZATIONS
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 struct is_number<natural<T>> : std::true_type {};
 
@@ -1065,17 +1030,11 @@ struct is_non_narrowing_helper<true, To, natural<From> > :
 
 
 
-
-
-
-
 /*****************************************************************************
  *
  *
  *
- *
  *****************************************************************************/
-
 template<class IntT>
 inline constexpr natural<signed_t<decay_t<IntT>>>
 make_natural(IntT&& x)
@@ -1105,9 +1064,7 @@ operator "" _n (unsigned long long int x)
 } // namespace literals
 
 
-
 }  // namespace num
 }  // namespace am
-
 
 #endif

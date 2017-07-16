@@ -28,10 +28,7 @@ namespace num {
  *
  *
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T1, class T2>
 inline typename std::common_type<T1,T2>::type
 min(const std::pair<T1,T2>& p) noexcept(noexcept(p.first < p.second))
@@ -51,17 +48,11 @@ max(const std::pair<T1,T2>& p) noexcept(noexcept(p.first > p.second))
 
 
 
-
-
 /*****************************************************************************
- *
  *
  * INTERVAL ARITHMETIC
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 inline void
 interval_add(const T& al, const T& ar, const T& bl, const T& br, T& l, T& r)
@@ -166,10 +157,6 @@ interval_div(const T& al, const T& ar, const T& bl, const T& br, T& l, T& r)
 
 
 
-
-
-
-
 /*****************************************************************************
  *
  * @brief static interval
@@ -198,9 +185,6 @@ max(const static_interval<T,left,right>&) noexcept { return right; }
 
 
 
-
-
-
 /*****************************************************************************
  *
  * @brief empty interval
@@ -208,7 +192,6 @@ max(const static_interval<T,left,right>&) noexcept { return right; }
  *****************************************************************************/
 template<class T>
 using empty_interval = static_interval<T,0,0>;
-
 
 
 
@@ -222,7 +205,6 @@ using unit_interval = static_interval<T,0,1>;
 
 
 
-
 /*****************************************************************************
  *
  * @brief interval [-1,-1]
@@ -230,7 +212,6 @@ using unit_interval = static_interval<T,0,1>;
  *****************************************************************************/
 template<class T>
 using symmetric_unit_interval = static_interval<T,-1,1>;
-
 
 
 
@@ -278,15 +259,9 @@ max(const pow2_interval<n,T>&) noexcept { return pow2_interval<n,T>::max(); }
 
 
 
-
-
-
 /*****************************************************************************
  *
  * @brief 1-dimensional interval represented by two numbers
- *
- *
- *
  *
  *****************************************************************************/
 template<class ValueType>
@@ -781,10 +756,7 @@ private:
 
 
 
-
-
 /*****************************************************************************
- *
  *
  *
  *
@@ -850,10 +822,7 @@ make_interval_width_center(const W& width, C&& center)
 
 
 
-
-
 /*****************************************************************************
- *
  *
  *
  *
@@ -876,13 +845,9 @@ print(Ostream& os, const interval<T>& r)
 
 
 
-
-
 /*****************************************************************************
  *
- *
  * BOUNDS
- *
  *
  *****************************************************************************/
 template<class T>
@@ -902,13 +867,9 @@ max(const interval<T>& i) noexcept -> decltype(i.max())
 
 
 
-
-
 /*****************************************************************************
  *
- *
  * DERIVED POINTS
- *
  *
  *****************************************************************************/
 template<class T>
@@ -921,20 +882,11 @@ centroid(const interval<T>& i) -> decltype(i.center())
 
 
 
-
-
-
 /*****************************************************************************
- *
  *
  * INTERVAL ARITHMETIC
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
-// +
-//-------------------------------------------------------------------
 template<class T1, class T2>
 interval<common_numeric_t<T1,T2>>
 operator + (const interval<T1>& a, const interval<T2>& b)
@@ -968,8 +920,6 @@ operator + (const T1& b, interval<T2> a)
 
 
 
-//-------------------------------------------------------------------
-// -
 //-------------------------------------------------------------------
 template<class T1, class T2>
 interval<common_numeric_t<T1,T2>>
@@ -1005,8 +955,6 @@ operator - (const T1& b, interval<T2> a)
 
 
 //-------------------------------------------------------------------
-// *
-//-------------------------------------------------------------------
 template<class T1, class T2>
 interval<common_numeric_t<T1,T2>>
 operator * (const interval<T1>& a, const interval<T2>& b)
@@ -1039,8 +987,7 @@ operator * (const T1& b, interval<T2> a)
 }
 
 
-//-------------------------------------------------------------------
-// /
+
 //-------------------------------------------------------------------
 template<class T1, class T2>
 interval<common_numeric_t<T1,T2>>
@@ -1076,13 +1023,9 @@ operator / (const T1& b, interval<T2> a)
 
 
 
-
-
 /*****************************************************************************
  *
- *
  * INTERVAL CONTAINMENT/INTERSECTION TESTS
- *
  *
  *****************************************************************************/
 template<class T1, class T2>
@@ -1159,13 +1102,9 @@ contains(const interval<T1>& i, const T2& v, const T3& tolerance)
 
 
 
-
-
 /*****************************************************************************
  *
- *
  * PENETRATION DEPTH
- *
  *
  *****************************************************************************/
 template<class T1, class T2, class =
@@ -1228,13 +1167,9 @@ distance(const interval<T1>& a, const interval<T2>& b)
 
 
 
-
-
 /*****************************************************************************
  *
- *
  * JOIN / INTERSECTION
- *
  *
  *****************************************************************************/
 template<class T1, class T2>
@@ -1256,15 +1191,9 @@ intersection(interval<T1> a, const interval<T2>& b)
 
 
 
-
-
-
-
 /*****************************************************************************
  *
- *
  * COMPARISON
- *
  *
  *****************************************************************************/
 template<class T>
@@ -1311,8 +1240,6 @@ wider(const interval<T1>& a, const interval<T2>& b)
 
 
 
-
-
 /*****************************************************************************
  *
  * @brief
@@ -1350,26 +1277,16 @@ private:
 
 
 
-
-
-
-
 /*****************************************************************************
  *
+ * @brief
  *
+ * @param  current : list of intervals
+ * @param  toAdd   : new interval to be merged with current intervals
  *
- * FUNCTIONS WORKING ON COLLECTIONS OF INTERVALS
- *
- *
+ * @return false, if current intervals remain unchanged
  *
  *****************************************************************************/
-
-/**
- * @brief
- * @param current list of intervals
- * @param toAdd   new interval to be merged with current intervals
- * @return false, if current intervals remain unchanged
- */
 template<class T>
 bool
 consolidate_intervals(std::vector<interval<T>>& ivals, const interval<T>& toAdd)

@@ -42,21 +42,6 @@ namespace num {
 
 
 
-//-------------------------------------------------------------------
-/// @brief default dimension type
-//-------------------------------------------------------------------
-#ifdef AM_NUMERIC_DIMENSIONS_32BIT
-    using dims_t = std::int_fast32_t;
-#else
-    #ifdef AM_NUMERIC_DIMENSIONS_16BIT
-        using dims_t = std::int_fast16_t;
-    #else
-        using dims_t = std::int_fast8_t;
-    #endif
-#endif
-
-
-
 
 
 
@@ -70,7 +55,7 @@ namespace num {
 
 //---------------------------------------------------------------
 /// @brief mathematical constants
-//  TODO C++14 replace with variable templates
+//  TODO C++14 replace with variable templates ?
 //---------------------------------------------------------------
 constexpr long double pi = 3.141592653589793238462643383279500;
 

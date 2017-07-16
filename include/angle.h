@@ -15,7 +15,6 @@
 #include <utility>
 #include <random>
 
-#include "param.h"
 #include "narrowing.h"
 #include "traits.h"
 
@@ -26,14 +25,9 @@ namespace num {
 
 /*****************************************************************************
  *
- *
  * ANGLE UNITS
  *
- *
  *****************************************************************************/
-
-
-//-------------------------------------------------------------------
 /// @brief degrees full turn
 template<class T = real_t>
 struct degrees_turn
@@ -99,13 +93,9 @@ struct gon_ccs_turn
 
 
 
-
-
 /*****************************************************************************
  *
- *
  * TRAITS
- *
  *
  *****************************************************************************/
 template<class> class angle;
@@ -128,9 +118,6 @@ template<class T>
 struct is_angle<angle<T>> :
     std::true_type
 {};
-
-
-
 
 
 
@@ -569,21 +556,15 @@ private:
 
 
 
-
-
 /*****************************************************************************
- *
  *
  * CONVENIENCE DEFINITIONS
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class V>
 using radians = angle<radians_turn<V>>;
 
-//---------------------------------------------------------
+
 template<class V>
 using degrees = angle<degrees_turn<V>>;
 
@@ -593,7 +574,7 @@ using arcmins = angle<arcmins_turn<V>>;
 template<class V>
 using arcsecs = angle<arcsecs_turn<V>>;
 
-//---------------------------------------------------------
+
 template<class V>
 using gons = angle<gons_turn<V>>;
 
@@ -604,7 +585,6 @@ template<class V>
 using gon_ccs = angle<gon_ccs_turn<V>>;
 
 
-//-------------------------------------------------------------------
 using rad  = angle<radians_turn<real_t>>;
 using radf = angle<radians_turn<float>>;
 using radd = angle<radians_turn<double>>;
@@ -626,9 +606,7 @@ using goni = angle<gons_turn<int>>;
 
 /*****************************************************************************
  *
- *
  * LITERALS
- *
  *
  *****************************************************************************/
 
@@ -722,13 +700,9 @@ constexpr gon_ccs<real_t> operator"" _gonccs (unsigned long long int x) {
 
 /*****************************************************************************
  *
- *
  * I/O
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class U1, class U2>
 inline common_numeric_t<typename U1::type, typename U2::type>
 operator / (const angle<U1>& a, const angle<U2>& b)
@@ -825,13 +799,9 @@ print(Ostream& os, const angle<gon_ccs_turn<T>>& a)
 
 /*****************************************************************************
  *
- *
  * TRAITS SPECIALIZATIONS
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 struct is_number<angle<T>> : std::true_type {};
 
@@ -901,11 +871,7 @@ struct is_non_narrowing_helper<true, To, angle<From> > :
  *
  *
  *
- *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 /// @brief maps the input angle to the turn range
 template<class T>
 inline constexpr angle<T>
@@ -941,16 +907,11 @@ turn_multiple(angle<T> a)
 
 
 
-
 /*****************************************************************************
- *
  *
  * FACTORIES
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 inline constexpr radians<T>
 make_radians(const T& t)
@@ -1002,15 +963,9 @@ make_gons(const angle<U>& a)
 
 /*****************************************************************************
  *
- *
  * TRIGONOMETRY
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
-// TRIGONOMETRIC FUNCTIONS
-//-------------------------------------------------------------------
 template<class T, class R = floating_point_t<typename T::type>>
 inline R
 sin(const angle<T>& a)
@@ -1157,13 +1112,9 @@ rad_atanh(T a)
 
 
 
-
-
 /*****************************************************************************
  *
  * @brief distribution adapter producing angles from random numbers
- *
- *
  *
  *****************************************************************************/
 template<class Turn, class ValueDistr>
@@ -1250,7 +1201,6 @@ private:
 /*****************************************************************************
  *
  * @brief produces uniformly distributed angles
- *
  *
  *****************************************************************************/
 template<class Turn>

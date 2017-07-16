@@ -462,7 +462,7 @@ struct has_dimensions: public
 //-------------------------------------------------------------------
 template<class T, bool hasdim = has_dimensions<T>::value>
 struct dimensions :
-    std::integral_constant<dims_t, dims_t(0)>
+    std::integral_constant<int, int(0)>
 {};
 
 //---------------------------------------------------------
@@ -476,7 +476,7 @@ struct dimensions<T,true> :
 //-------------------------------------------------------------------
 template<class T, std::size_t n>
 struct dimensions<std::array<T,n>,false> :
-    std::integral_constant<dims_t,n>
+    std::integral_constant<int,n>
 {};
 
 
@@ -484,7 +484,7 @@ struct dimensions<std::array<T,n>,false> :
 //-------------------------------------------------------------------
 //
 //-------------------------------------------------------------------
-template<dims_t n, class H, class... T>
+template<int n, class H, class... T>
 struct same_dimension :
     std::integral_constant<bool,
         (same_dimension<n,H>::value &&
@@ -493,22 +493,10 @@ struct same_dimension :
 };
 
 //---------------------------------------------------------
-template<dims_t n, class T>
+template<int n, class T>
 struct same_dimension<n,T> :
     std::integral_constant<bool, (dimensions<T>::value == n)>
 {};
-
-
-
-//-------------------------------------------------------------------
-template<class T>
-struct dimension_type
-{
-    using type = typename std::decay<decltype(dimensions<T>::value)>::type;
-};
-
-template<class T>
-using dimension_t = typename dimension_type<T>::type;
 
 
 

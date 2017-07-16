@@ -157,9 +157,7 @@ struct is_non_narrowing :
 
 
 }  // namespace num
-
 }  // namespace am
-
 
 
 #endif

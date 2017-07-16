@@ -46,20 +46,11 @@ class quaternion
 
 public:
     //---------------------------------------------------------------
-    // TYPES
-    //---------------------------------------------------------------
     using numeric_type    = NumberT;
     using value_type      = numeric_type;
-    using dimension_type  = dims_t;
 
 
     //---------------------------------------------------------------
-    // CONSTRUCTION / DESTRUCTION
-    //---------------------------------------------------------------
-
-    //-----------------------------------------------------
-    /// @brief
-    //-----------------------------------------------------
     constexpr
     quaternion():
         w_(numeric_type(1)),
@@ -185,7 +176,7 @@ public:
 
 
     //---------------------------------------------------------------
-    static constexpr dimension_type
+    static constexpr int
     dimensions() noexcept {
         return 4;
     }

@@ -19,7 +19,6 @@ namespace am {
 namespace num {
 
 
-
 /*****************************************************************************
  *
  *
@@ -155,7 +154,6 @@ max(const natural_interval<T>& i) noexcept -> decltype(i.max())
 {
     return i.max();
 }
-
 
 
 

@@ -24,20 +24,13 @@ namespace num {
  *
  *
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class T>
 using split_biquaternion = quaternion<scomplex<T>>;
 
-
-//-------------------------------------------------------------------
 using split_biquatf = split_biquaternion<float>;
 using split_biquatd = split_biquaternion<double>;
 using split_biquat  = split_biquaternion<real_t>;
-
-
 
 
 
@@ -46,13 +39,7 @@ using split_biquat  = split_biquaternion<real_t>;
  *
  *
  *
- *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
-// I/O
-//-------------------------------------------------------------------
 template<class T, class Ostream>
 inline Ostream&
 print(Ostream& os, const split_biquaternion<T>& q)
@@ -100,8 +87,6 @@ full_conj(const split_biquaternion<T>& q)
 
 
 //-------------------------------------------------------------------
-// REAL PART
-//-------------------------------------------------------------------
 template<class T>
 inline constexpr
 quaternion<T>
@@ -115,8 +100,6 @@ real(const split_biquaternion<T>& dq)
 
 
 
-//-------------------------------------------------------------------
-// DUAL PART
 //-------------------------------------------------------------------
 template<class T>
 inline constexpr
@@ -132,17 +115,11 @@ imag(const split_biquaternion<T>& dq)
 
 
 
-
-
 /*****************************************************************************
- *
  *
  * CREATION
  *
- *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<
     class T1, class T2, class T3, class T4,
     class T5, class T6, class T7, class T8
