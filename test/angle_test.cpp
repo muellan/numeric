@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#include  "../include/angle.h"
-#include  "../include/limits.h"
+#include  "angle.h"
+#include  "limits.h"
 
 #include <stdexcept>
 #include <iostream>

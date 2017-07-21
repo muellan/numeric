@@ -8,7 +8,7 @@
  *
  *****************************************************************************/
 
-#include  "../include/choice.h"
+#include  "choice.h"
 
 #include <stdexcept>
 #include <iostream>

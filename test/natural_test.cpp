@@ -9,7 +9,7 @@
  *****************************************************************************/
 
 
-#include  "../include/natural.h"
+#include  "natural.h"
 
 #include <stdexcept>
 #include <cstdint>
