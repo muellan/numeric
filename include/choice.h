@@ -24,7 +24,7 @@ namespace am {
 namespace num {
 
 
-/*****************************************************************************
+/*************************************************************************//***
  *
  * @brief represents an element of IN / IN(numChoices)
  *
@@ -358,8 +358,6 @@ AM_CHOICE_ARITHMETIC_OP(*)
  * COMPARISON
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class Int1, Int1 n, class Int2, Int2 m>
 inline constexpr
 bool
@@ -419,8 +417,6 @@ operator >= (choice<Int1,n> a, choice<Int2,m> b) {
  * FACTORIES
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<std::uintmax_t n, class T>
 inline constexpr choice<decay_t<T>,n>
 make_choice(T&& x)
@@ -441,8 +437,6 @@ make_choice(T&& x)
  * I/O
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class Ostream, class Int, Int n>
 inline constexpr Ostream&
 operator << (Ostream& os, const choice<Int,n>& c)
@@ -473,8 +467,6 @@ inverse(choice<Int,n> c)
 {
     return choice<Int,n>{-c};
 }
-
-
 
 
 

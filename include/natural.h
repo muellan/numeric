@@ -46,7 +46,7 @@ struct is_natural<natural<T>> :
 
 
 
-/*****************************************************************************
+/*************************************************************************//***
  *
  * @brief   represents an integral natural "safe unsigned int"
  * @details value is either in range [0,max] or infinity

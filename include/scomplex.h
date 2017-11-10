@@ -43,7 +43,7 @@ struct is_scomplex<scomplex<T>> :
 
 
 
-/*****************************************************************************
+/*************************************************************************//***
  *
  * @brief
  * represents a split complex number (aka real tessarine) r + j * d where

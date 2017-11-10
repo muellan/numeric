@@ -4,6 +4,8 @@
 /Coverage*
 /build_*
 /dev
+/docs/*
+!/docs/doxyfile
 .project
 .cproject
 .settings

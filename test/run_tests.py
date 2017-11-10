@@ -14,13 +14,12 @@
 import re
 import os
 import shutil
-import posixpath
+import ntpath
 from os import path
 from os import system
 from sys import stdout
 from sys import argv
 from sets import Set
-from __builtin__ import file
 
 #default settings
 builddir   = "../build_test"
@@ -46,11 +45,11 @@ def dependencies(source, searchpaths = [], sofar = Set()):
           - #pragma test needs("path/to/file.ext")
         note: uses DFS
     """
-    result = Set()
+    active = Set()
     files = Set()
 
     if not path.exists(source):
-        return result
+        return active
 
     curpath = path.dirname(source) + "/"
 
@@ -62,32 +61,27 @@ def dependencies(source, searchpaths = [], sofar = Set()):
                 # if line encodes dependency
                 res = rxp.match(line)
                 if res is not None:
-                    file = res.group(1)
-                    if file != "":
-                        found = path.exists(file)
-                        if found:
-                            dep = file
+                    dep = res.group(1)
+                    if dep != "":
+                        if not path.exists(dep):
+                            # try same path as current dependency
+                            if path.exists(curpath + dep):
+                                dep = curpath + dep
+                            else: # try include paths
+                                for sp in searchpaths:
+                                    if path.exists(sp + dep):
+                                        dep = sp + dep
+                                        break
 
-                        if not found and path.exists(curpath + file):
-                            dep = curpath + file
-                            found = True
+                        active.add(dep)
+                        file = path.basename(dep)
+                        if dep not in sofar and file not in files:
+                            files.add(file)
+                            active.update(dependencies(dep, searchpaths, active.union(sofar)))
+                        break
 
-                        if not found:
-                            for sp in searchpaths:
-                                if path.exists(sp + file):
-                                    dep = sp + file
-                                    found = True
-                                    break
-
-                        if found :
-                            dep = posixpath.normpath(dep)
-                            if dep not in sofar:
-                                result.add(dep)
-                                result.update(dependencies(dep, searchpaths, result.union(sofar)))
-                                break
-
-    result.add(source)
-    return result
+    active.add(source)
+    return active
 
 
 # initialize
