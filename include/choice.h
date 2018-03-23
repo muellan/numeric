@@ -53,7 +53,7 @@ public:
         is_number<T>::value>::type>
     constexpr explicit
     choice(const T& x):
-        x_((x < 0) ? (numChoices + (x % numChoices)) : (x % numChoices))
+        x_(IntT((x < 0) ? (numChoices + (x % numChoices)) : (x % numChoices)))
     {
         static_assert(is_integral<T>::value,
             "choice::choice(N) : N has to be an integral number type");

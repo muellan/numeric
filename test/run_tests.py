@@ -13,20 +13,78 @@
 
 import re
 import os
+import glob
 import shutil
 import ntpath
 from os import path
 from os import system
 from sys import stdout
 from sys import argv
+from sys import exit
 from sets import Set
 
 #default settings
-builddir   = "../build_test"
-incpaths   = ["", "../include/", "../src/"]
-macros     = ["NO_DEBUG", "NDEBUG"]
-compiler   = "g++"
-compileopt = "-std=c++14 -O3 -Wall -Wextra -Wpedantic -Wno-unknown-pragmas"
+builddir = "../build_test"
+incpaths = ["", "../include/"]
+macros   = [] # ["NO_DEBUG", "NDEBUG"]
+compiler = "gcc"
+valgrind = "valgrind --error-exitcode=1"
+gcov     = "gcov -l "
+
+gccflags = ("-std=c++0x -O0 -g "
+                    " -Wall -Wextra -Wpedantic "
+                    " -Wno-unknown-pragmas"
+                    " -Wno-unknown-warning"
+                    " -Wno-unknown-warning-option"
+                    " -Wformat=2 "
+                    " -Wall -Wextra -Wpedantic "
+                    " -Wcast-align -Wcast-qual "
+                    " -Wconversion "
+                    " -Wctor-dtor-privacy "
+                    " -Wdisabled-optimization "
+                    " -Wdouble-promotion "
+                    " -Winit-self "
+                    " -Wlogical-op "
+                    " -Wmissing-include-dirs "
+                    " -Wno-sign-conversion "
+                    " -Wnoexcept "
+                    " -Wold-style-cast "
+                    " -Woverloaded-virtual "
+                    " -Wredundant-decls "
+                    " -Wshadow "
+                    " -Wstrict-aliasing=1 "
+                    " -Wstrict-null-sentinel "
+                    " -Wstrict-overflow=5 "
+                    " -Wswitch-default "
+                    " -Wundef "
+                    " -Wno-unknown-pragmas "
+                    " -Wuseless-cast ")
+
+#available compilers
+compilers = {
+    "gcc"   : {"exe": "g++",
+               "flags" : gccflags,
+               "macro" : "-D", "incpath" : "-I",
+               "obj" : "",
+               "cov" : "-fprofile-arcs -ftest-coverage",
+               "link" : "-o "
+    },
+    "clang" : {"exe": "clang++",
+               "flags" : gccflags,
+               "macro" : "-D", "incpath" : "-I",
+               "obj" : "",
+               "cov" : "-fprofile-arcs -ftest-coverage",
+               "link" : "-o "
+    },
+    "msvc" : {"exe": "cl",
+              "flags" : " /W4 /EHsc ",
+              "macro" : "/D:", "incpath" : "/I:",
+              "obj" : "/Foc:",
+              "cov" : "",
+              "link" : "/link /out:"
+    }
+}
+
 tuext      = "cpp"
 separator  = "-----------------------------------------------------------------"
 
@@ -37,6 +95,9 @@ deprxp = [re.compile('^\s*#pragma\s+test\s+needs\(\s*"(.+\..+)"\s*\)\s*$'),
 
 testrxp = re.compile('(.+)\.' + tuext)
 
+
+
+# support functions
 def dependencies(source, searchpaths = [], sofar = Set()):
     """ return set of dependencies for a C++ source file
         the following dependency definitions are recocnized:
@@ -84,11 +145,15 @@ def dependencies(source, searchpaths = [], sofar = Set()):
     return active
 
 
+
 # initialize
 onwindows = os.name == "nt"
 
 artifactext = ""
-if onwindows: artifactext = ".exe"
+pathsep = "/"
+if onwindows:
+    artifactext = ".exe"
+    pathsep = "\\"
 
 paths = []
 sources = []
@@ -97,55 +162,85 @@ showDependencies = False
 haltOnFail = True
 recompile = False
 allpass = True
+useValgrind = False
+useGcov = False
+doClean = False
 
 # process input args
 if len(argv) > 1:
+    next = 0
     for i in range(1,len(argv)):
-        arg = argv[i]
-        if arg == "-h" or arg == "--help":
-            print "Usage:"
-            print "  " + argv[0] + \
-                " [--help]" \
-                " [--clean]" \
-                " [-r]" \
-                " [-d]" \
-                " [-c <compiler>]" \
-                " [-o <compiler-options>]" \
-                " [-m <macro>]..." \
-                " [-i <include-path>]..." \
-                " [--continue-on-fail]" \
-                " [<directory|file>...]"
-            print ""
-            print "Options:"
-            print "  -h, --help                         print this screen"
-            print "  --clean                            do a clean re-build; removes entire build directory"
-            print "  -r, --recompile                    recompile all source files before running"
-            print "  -d, --show-dependecies             show all resolved includes during compilation"
-            print "  -c, --compiler <executable>        specify compiler executable"
-            print "  -o, --compiler-options <options>   specify compiler options"
-            print "  -m, --macro <macro>                add macro definition"
-            print "  -i, --include <path>               add include path"
-            print "  --continue-on-fail                 continue running regardless of failed builds or tests";
-            exit()
-        elif arg == "--clean":
-            if os.path.exists(builddir):
-                shutil.rmtree(builddir)
-        elif arg == "-r" or arg == "--recompile":
-            recompile = True
-        elif arg == "-d" or arg == "--show-dependencies":
-            showDependencies = True
-        elif arg == "--continue-on-fail":
-            haltOnFail = False
-        elif arg == "-c" or arg == "--compiler":
-            if i+1 < len(argv): compiler = argv[i+1]
-        elif arg == "-o" or arg == "--compiler-options":
-            if i+1 < len(argv): compileopt = argv[i+1]
-        elif arg == "-i" or arg == "--include":
-            if i+1 < len(argv): incpats.add(argv[i+1])
-        elif arg == "-m" or arg == "--macro":
-            if i+1 < len(argv): macros.add(argv[i+1])
-        else:
-            paths.append(arg)
+        if i >= next:
+            arg = argv[i]
+            if arg == "-h" or arg == "--help":
+                print "Usage:"
+                print "  " + argv[0] + \
+                    " [--help]" \
+                    " [--clean]" \
+                    " [-c (gcc|clang|msvc)]" \
+                    " [-r]" \
+                    " [-d]" \
+                    " [--continue-on-fail]" \
+                    " [--valgrind]" \
+                    " [--gcov]" \
+                    " [<directory|file>...]"
+                print ""
+                print "Options:"
+                print "  -h, --help                        print this screen"
+                print "  --clean                           do a clean re-build; removes entire build directory"
+                print "  -r, --recompile                   recompile all source files before running"
+                print "  -d, --show-dependecies            show all resolved includes during compilation"
+                print "  -c, --compiler (gcc|clang|msvc)   select compiler"
+                print "  --valgrind                        run test through valgrind"
+                print "  --gcov                            run test through gcov"
+                print "  --continue-on-fail                continue running regardless of failed builds or tests";
+                exit(0)
+            elif arg == "--clean":
+                doClean = True
+            elif arg == "-r" or arg == "--recompile":
+                recompile = True
+            elif arg == "-d" or arg == "--show-dependencies":
+                showDependencies = True
+            elif arg == "--continue-on-fail":
+                haltOnFail = False
+            elif arg == "--valgrind":
+                useValgrind = True
+            elif arg == "--gcov":
+                useGcov = True
+            elif arg == "-c" or arg == "--compiler":
+                if i+1 < len(argv):
+                    compiler = argv[i+1]
+                    next = i + 2
+            else:
+                paths.append(arg)
+
+
+
+# get compiler-specific strings
+if compiler not in compilers.keys():
+    print "ERROR: compiler " + compiler + " not supported"
+    print "choose one of:"
+    for key in compilers.keys():
+        print "    " + key
+    exit(1)
+
+compileexec = compilers[compiler]["exe"]
+compileopts = compilers[compiler]["flags"]
+macroOpt    = compilers[compiler]["macro"]
+includeOpt  = compilers[compiler]["incpath"]
+objOutOpt   = compilers[compiler]["obj"]
+linkOpt     = compilers[compiler]["link"]
+coverageOpt = compilers[compiler]["cov"]
+
+if useGcov:
+    compileopts = compileopts + " " + coverageOpt
+
+if onwindows:
+    builddir = builddir.replace("/", "\\")
+
+builddir = builddir + "_" + compiler
+
+
 
 # gather source file names
 if len(paths) < 1:
@@ -162,9 +257,17 @@ for p in paths:
 
 if len(sources) < 1:
     print "ERROR: no source files found"
-    exit()
+    exit(1)
+
+
 
 # make build directory
+if doClean:
+    if os.path.exists(builddir): shutil.rmtree(builddir)
+    for f in glob.glob("*.gcov"): os.remove(f)
+    for f in glob.glob("*.gcda"): os.remove(f)
+    for f in glob.glob("*.gcno"): os.remove(f)
+
 if not os.path.exists(builddir):
     os.makedirs(builddir)
     print separator
@@ -172,17 +275,26 @@ if not os.path.exists(builddir):
 
 print separator
 
+
+
 # compile and run tests
-compilecmd = compiler + " " + compileopt
+compilecmd = compileexec + " " + compileopts
+print "compiler call: "
+print compilecmd
+print separator
+
 for m in macros:
-    if m != "": compilecmd = compilecmd + " -D" + m
+    if onwindows: m = m.replace("/", "\\")
+    if m != "": compilecmd = compilecmd + " " + macroOpt + m
 
 for ip in incpaths:
-    if ip != "": compilecmd = compilecmd + " -I " + ip
+    if onwindows: ip = ip.replace("/", "\\")
+    if ip != "": compilecmd = compilecmd + " " + includeOpt + ip
 
-#print compilecmd
 
 for source in sources:
+    if onwindows: source = source.replace("/", "\\")
+
     res1 = testrxp.match(source)
     res2 = testrxp.match(path.basename(source))
     if res1 is not None and res2 is not None:
@@ -190,7 +302,8 @@ for source in sources:
         sname = res2.group(1)
         stdout.write("testing " + tname + " > checking depdendencies > ")
         stdout.flush()
-        artifact = builddir + "/" + sname + artifactext
+        artifact = builddir + pathsep + sname + artifactext
+        if onwindows: artifact = artifact.replace("/", "\\")
 
         srcdeps = dependencies(source, incpaths)
 
@@ -209,7 +322,7 @@ for source in sources:
                         break
                 else:
                     print "ERROR: dependency " + dep + " could not be found!"
-                    exit()
+                    exit(1)
 
         if doCompile:
             stdout.write("compiling > ")
@@ -223,30 +336,49 @@ for source in sources:
                  if dep.endswith("." + tuext):
                      tus = tus + " " + dep
 
-            system(compilecmd + " " + tus + " -o " + artifact)
+            if onwindows: tus = tus.replace("/", "\\")
+
+            compilecall = compilecmd
+
+            # object file output
+            if objOutOpt != "":
+                objfile = builddir + pathsep + sname + ".o"
+                compilecall = compilecall + " " + objOutOpt + objfile
+
+            compilecall = compilecall + " " + tus + " " + linkOpt + artifact
+
+            system(compilecall)
             if not path.exists(artifact):
                 print "FAILED!"
                 allpass = False
-                if haltOnFail: exit();
-
-        #execute test; backslashes make sure that it works with cmd.exe
-        if onwindows:
-            artifact = artifact.replace("/", "\\")
+                if haltOnFail: exit(1);
 
         stdout.write("running > ")
         stdout.flush()
         runres = system(artifact)
+
+        if runres == 0 and useValgrind:
+            print "valgrind > "
+            runres = system(valgrind + " " + artifact)
+
+        if runres == 0 and useGcov:
+            stdout.write("gcov > ")
+            system(gcov + " " + source)
+
         if runres == 0:
-            print "passed."
+            print "passed"
         else:
             print "FAILED!"
             allpass = False
-            if haltOnFail : exit()
+            if haltOnFail : exit(1)
+
 
 print separator
 
 if allpass:
     print "All tests passed."
+    exit(0)
 else:
     print "Some tests failed."
+    exit(1)
 

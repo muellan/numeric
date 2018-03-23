@@ -121,7 +121,7 @@ template<>
 struct tolerance<float,true>
 {
     static constexpr float
-    value() noexcept {return 10e-5; }
+    value() noexcept {return 10e-5f; }
 };
 
 
@@ -141,6 +141,12 @@ struct tolerance<long double,true>
     static constexpr long double
     value() noexcept {return 10e-16; }
 };
+
+
+#if __cplusplus > 201103L
+template<class T>
+T tolerance_v = tolerance<T>::value();
+#endif
 
 
 
@@ -186,6 +192,11 @@ struct max_infinity
     }
 };
 
+
+#if __cplusplus > 201103L
+template<class T>
+T max_infinity_v = max_infinity<T>::value();
+#endif
 
 }  // namespace num
 }  // namespace am

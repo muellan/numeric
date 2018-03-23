@@ -59,7 +59,7 @@ template<class T = real_t>
 struct radians_turn
 {
     using type = T;
-    static constexpr type value = (2 * pi);
+    static constexpr type value = static_cast<type>(2 * pi);
 };
 
 
@@ -136,10 +136,6 @@ template<class Turn>
 class angle
 {
     //---------------------------------------------------------
-    template<class T>
-    using conversion_t = typename std::common_type<
-            typename T::type, typename Turn::type>::type;
-
     static_assert(is_number<typename Turn::type>::value &&
                   !is_angle<Turn>::value &&
                   !is_angle<typename Turn::type>::value,
@@ -183,10 +179,10 @@ public:
     //-----------------------------------------------------
     /// @brief implicit conversion from simple values is not allowed
     template<class T, class = typename std::enable_if<
-        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
+        is_number<T>::value && !is_angle<T>::value>::type>
     explicit constexpr
-    angle(T&& a):
-        v_(std::forward<T>(a))
+    angle(T a):
+        v_(static_cast<numeric_type>(a))
     {
         AM_CHECK_NARROWING(numeric_type, T)
     }
@@ -196,7 +192,7 @@ public:
     template<class T>
     constexpr
     angle(const angle<T>& a):
-        v_{a.as<turn_type>()}
+        v_{a.template as<turn_type>()}
     {
         AM_CHECK_NARROWING(numeric_type, typename T::type)
     }
@@ -211,7 +207,7 @@ public:
     {
         AM_CHECK_NARROWING(numeric_type, typename T::type)
 
-        v_ = a.as<turn_type>();
+        v_ = a.template as<turn_type>();
         return *this;
     }
 
@@ -240,7 +236,7 @@ public:
     {
         AM_CHECK_NARROWING(numeric_type, typename T::type)
 
-        v_ += a.as<turn_type>();
+        v_ += a.template as<turn_type>();
         return *this;
     }
     //-----------------------------------------------------
@@ -250,12 +246,12 @@ public:
     {
         AM_CHECK_NARROWING(numeric_type, typename T::type)
 
-        v_ -= a.as<turn_type>();
+        v_ -= a.template as<turn_type>();
         return *this;
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
+        is_number<T>::value && !is_angle<T>::value>::type>
     angle&
     operator *= (const T& factor)
     {
@@ -266,7 +262,7 @@ public:
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
-        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
+        is_number<T>::value && !is_angle<T>::value>::type>
     angle&
     operator /= (const T& factor)
     {
@@ -284,14 +280,14 @@ public:
     constexpr angle
     operator + (const angle<T>& a) const
     {
-        return angle{v_ + a.as<turn_type>()};
+        return angle{v_ + a.template as<turn_type>()};
     }
     //-----------------------------------------------------
     template<class T>
     constexpr angle
     operator - (const angle<T>& a) const
     {
-        return angle{v_ - a.as<turn_type>()};
+        return angle{v_ - a.template as<turn_type>()};
     }
     //-----------------------------------------------------
     template<class T, class = typename std::enable_if<
@@ -368,93 +364,40 @@ public:
     template<class T>
     constexpr bool
     operator == (const angle<T>& other) const {
-        return (v_ == other.as<turn_type>());
+        return (v_ == other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
     operator != (const angle<T>& other) const {
-        return (v_ != other.as<turn_type>());
+        return (v_ != other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
     operator < (const angle<T>& other) const {
-        return (v_ < other.as<turn_type>());
+        return (v_ < other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
     operator > (const angle<T>& other) const {
-        return (v_ > other.as<turn_type>());
+        return (v_ > other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
     operator <= (const angle<T>& other) const {
-        return (v_ <= other.as<turn_type>());
+        return (v_ <= other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
     operator >= (const angle<T>& other) const {
-        return (v_ >= other.as<turn_type>());
+        return (v_ >= other.template as<turn_type>());
     }
 
-
-    //---------------------------------------------------------------
-    template<class OutTurn>
-    inline friend constexpr conversion_t<OutTurn>
-    angle_cast(const angle& a)    {
-        return (a.as<OutTurn>());
-    }
-
-    //-----------------------------------------------------
-    template<class T>
-    inline friend constexpr T
-    radians_cast(const angle& a) {
-        return a.as<radians_turn<T>>();
-    }
-
-    //-----------------------------------------------------
-    template<class T>
-    inline friend constexpr T
-    degrees_cast(const angle& a) {
-        return a.as<degrees_turn<T>>();
-    }
-    //-----------------------------------------------------
-    template<class T>
-    inline friend constexpr T
-    arcmins_cast(const angle& a) {
-        return a.as<arcmins_turn<T>>();
-    }
-    //-----------------------------------------------------
-    template<class T>
-    inline friend constexpr T
-    arcsecs_cast(const angle& a) {
-        return a.as<arcsecs_turn<T>>();
-    }
-
-    //-----------------------------------------------------
-    template<class T>
-    inline friend constexpr T
-    gons_cast(const angle& a) {
-        return a.as<gons_turn<T>>();
-    }
-    //-----------------------------------------------------
-    template<class T>
-    inline friend constexpr T
-    gon_cs_cast(const angle& a) {
-        return a.as<gon_cs_turn<T>>();
-    }
-    //-----------------------------------------------------
-    template<class T>
-    inline friend constexpr T
-    gon_ccs_cast(const angle& a) {
-        return a.as<gon_ccs_turn<T>>();
-    }
-
-
+    
     //---------------------------------------------------------------
     inline friend angle
     fmod(const angle& numer, const angle& denom) {
@@ -530,7 +473,8 @@ public:
     }
 
 
-private:
+    //---------------------------------------------------------------
+    // conversion to other angles
     //---------------------------------------------------------------
     template<class OutTurn, class = typename
         std::enable_if<std::is_same<turn_type,OutTurn>::value>::type>
@@ -538,21 +482,88 @@ private:
     as() const noexcept {
         return v_;
     }
+
     //-----------------------------------------------------
+    template<class T>
+    using conversion_t = typename std::common_type<
+            typename T::type, typename Turn::type>::type;
+
     template<class OutTurn, class = typename
         std::enable_if<!std::is_same<turn_type,OutTurn>::value>::type>
     constexpr conversion_t<OutTurn>
     as() const noexcept {
         using res_t = conversion_t<OutTurn>;
-        return ( (res_t(OutTurn::value) / res_t(turn())) * v_);
+        return ( (res_t(OutTurn::value) / res_t(turn())) * res_t(v_));
     }
 
+
+private:
     //---------------------------------------------------------------
     numeric_type v_ = numeric_type(0);
 };
 
 
 
+
+
+
+/*****************************************************************************
+ *
+ * ANGLE CASTS
+ *
+ *****************************************************************************/
+template<class OutTurn, class U>
+inline constexpr auto 
+angle_cast(const angle<U>& a) noexcept 
+    -> decltype(a.template as<OutTurn>())
+{
+    return (a.template as<OutTurn>());
+}
+
+
+template<class T, class U>
+inline constexpr T
+radians_cast(const angle<U>& a) noexcept {
+    return a.template as<radians_turn<T>>();
+}
+
+
+template<class T, class U>
+inline constexpr T
+degrees_cast(const angle<U>& a) noexcept {
+    return a.template as<degrees_turn<T>>();
+}
+
+template<class T, class U>
+inline constexpr T
+arcmins_cast(const angle<U>& a) noexcept {
+    return a.template as<arcmins_turn<T>>();
+}
+
+template<class T, class U>
+inline constexpr T
+arcsecs_cast(const angle<U>& a) noexcept {
+    return a.template as<arcsecs_turn<T>>();
+}
+
+
+template<class T, class U>
+inline constexpr T
+gons_cast(const angle<U>& a) noexcept {
+    return a.template as<gons_turn<T>>();
+}
+
+template<class T, class U>
+inline constexpr T
+gon_cs_cast(const angle<U>& a) noexcept {
+    return a.template as<gon_cs_turn<T>>();
+}
+
+template<class T, class U>
+inline constexpr T
+gon_ccs_cast(const angle<U>& a) noexcept {
+    return a.template as<gon_ccs_turn<T>>();
+}
 
 
 
@@ -602,13 +613,12 @@ using goni = angle<gons_turn<int>>;
 
 
 
-
 /*************************************************************************//***
  *
  * @brief literals
  *
  *****************************************************************************/
-inline namespace literals {
+namespace literals {
 inline namespace angle_literals {
 
 //-------------------------------------------------------------------
@@ -689,9 +699,7 @@ constexpr gon_ccs<real_t> operator"" _gonccs (unsigned long long int x) {
 }
 
 } //inline namespace angle_literals
-} //inline namespace literals
-
-
+} //namespace literals
 
 
 
@@ -793,8 +801,6 @@ print(Ostream& os, const angle<gon_ccs_turn<T>>& a)
 
 
 
-
-
 /*****************************************************************************
  *
  * TRAITS SPECIALIZATIONS
@@ -862,9 +868,6 @@ struct is_non_narrowing_helper<true, To, angle<From> > :
 
 
 
-
-
-
 /*****************************************************************************
  *
  *
@@ -899,8 +902,6 @@ turn_multiple(angle<T> a)
 {
     return angle_cast<T>(a) / a.turn();
 }
-
-
 
 
 
@@ -953,8 +954,6 @@ make_gons(const angle<U>& a)
 {
     return gons<numeric_t<angle<U>>>{a};
 }
-
-
 
 
 
@@ -1108,8 +1107,6 @@ rad_atanh(T a)
 
 
 
-
-
 /*****************************************************************************
  *
  * @brief distribution adapter producing angles from random numbers
@@ -1194,8 +1191,6 @@ private:
 
 
 
-
-
 /*****************************************************************************
  *
  * @brief produces uniformly distributed angles
@@ -1255,8 +1250,6 @@ using uniform_gon_distribution = uniform_angle_distribution<gons_turn<T>>;
 
 
 
-
-
 /*****************************************************************************
  *
  *
@@ -1286,8 +1279,6 @@ min(const turn_interval<T>&) noexcept { return turn_interval<T>::min(); }
 template<class T>
 inline constexpr T
 max(const turn_interval<T>&) noexcept { return turn_interval<T>::max(); }
-
-
 
 
 
@@ -1329,8 +1320,6 @@ max(const half_turn_interval<T>&) noexcept {
 
 
 
-
-
 /*****************************************************************************
  *
  *
@@ -1368,8 +1357,6 @@ max(const quarter_turn_interval<T>&) noexcept {
 
 
 
-
-
 /*****************************************************************************
  *
  *
@@ -1403,8 +1390,6 @@ inline constexpr T
 max(const centered_turn_interval<T>&) noexcept {
     return centered_turn_interval<T>::max();
 }
-
-
 
 
 

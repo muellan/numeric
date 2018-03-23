@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#include  "angle.h"
-#include  "limits.h"
+#include  "../include/angle.h"
+#include  "../include/limits.h"
 
 #include <stdexcept>
 #include <iostream>
@@ -32,22 +32,21 @@ void initialization()
 {
     using namespace am::num::literals;
     using std::abs;
-    constexpr auto eps = tolerance<float>::value();
 
-    auto d0 = deg{15};
-    deg  d1 {45.0f};
-    auto d2 = 90_deg;    //via user-defined literal
-    auto d3 = 1_pi_rad;  //via user-defined literal + implicit angle conversion
+    auto d0 = degd{15};
+    degf d1 {45.0f};
+    auto d2 = 90.0_deg;    //via user-defined literal
+    auto d3 = 1.0_pi_rad;  //via user-defined literal + implicit angle conversion
     auto d4 = radf{4.5f};
     auto d5 = radd{double(pi)};
 
     if(! (
-        (abs(degrees_cast<double>(d0) - 15) < eps) &&
-        (abs(degrees_cast<double>(d1) - 45) < eps) &&
-        (abs(degrees_cast<double>(d2) - 90) < eps) &&
-        (abs(radians_cast<double>(d3) - 1_pi) < eps) &&
-        (abs(radians_cast<double>(d4) - 4.5) < eps) &&
-        (abs(radians_cast<double>(d5) - pi) < eps) ))
+        (abs(degrees_cast<double>(d0) - 15.0)       < tolerance<double>::value()) &&
+        (abs(degrees_cast<double>(d1) - 45.0)       < double(tolerance<float>::value())) &&
+        (abs(degrees_cast<double>(d2) - 90.0)       < tolerance<double>::value()) &&
+        (abs(radians_cast<double>(d3) - 1.0_pi)     < tolerance<double>::value()) &&
+        (abs(radians_cast<double>(d4) - 4.5)        < double(tolerance<float>::value())) &&
+        (abs(radians_cast<double>(d5) - double(pi)) < tolerance<double>::value()) ))
     {
         throw std::logic_error("am::num::angle init");
     }
@@ -59,17 +58,16 @@ void conversion()
 {
     using namespace am::num::literals;
     using std::abs;
-    constexpr auto eps = tolerance<float>::value();
 
     auto a = deg{90};
-    auto b = rad{real_t(0.5_pi)};
+    auto b = rad{float(0.5_pi)};
 
-    if(!((abs(radians_cast<double>(degi{180}) - 1.0_pi) < eps) &&
-         (abs(degrees_cast<double>(rad{real_t(pi)/4}) - 45) < eps) &&
-         (abs(gons_cast<double>(rad{real_t(pi)/4}) - 50) < eps) &&
-         (abs(angle_cast<num::radians_turn<float>>(a) - 0.5_pi) < eps) &&
-         (abs(angle_cast<num::degrees_turn<double>>(b) - 90) < eps) &&
-         (abs(angle_cast<num::gons_turn<long double>>(b) - 100) < eps) ))
+    if(!((abs(radians_cast<double>(degi{180})            - 1.0_pi) < tolerance<double>::value()) &&
+         (abs(degrees_cast<double>(rad{float(pi)/4})     - 45)     < tolerance<double>::value()) &&
+         (abs(gons_cast<double>(rad{float(pi)/4})        - 50)     < tolerance<double>::value()) &&
+         (abs(angle_cast<num::radians_turn<float>>(a)    - float(0.5_pi)) < tolerance<float>::value()) &&
+         (abs(angle_cast<num::degrees_turn<double>>(b)   - 90)     < tolerance<double>::value()) &&
+         (abs(angle_cast<num::gons_turn<long double>>(b) - 100)    < tolerance<long double>::value()) ))
     {
         throw std::logic_error("am::num::angle conversion");
     }
@@ -81,7 +79,7 @@ void arithmetic()
 {
     using namespace am::num::literals;
     using std::abs;
-    constexpr auto eps = tolerance<float>::value();
+    constexpr auto eps = tolerance<double>::value();
 
     auto a = degi{20};
     auto b = degi{30};
@@ -136,18 +134,18 @@ void functions()
     constexpr auto eps = tolerance<float>::value();
 
     if(!(
-        (abs(cos(rad{0}) -  1) < eps) &&
+        (abs(cos(rad(0)) -  1) < eps) &&
         (abs(cos(rad{real_t(pi)/2}) ) < eps) &&
-        (abs(cos(deg{0}) -  1) < eps) &&
-        (abs(cos(deg{90}) ) < eps) &&
-        (abs(cos(deg{30}) - 0.8660254037844386) < eps) &&
-        (abs(cos(rad{real_t(pi)/3}) - 0.5) < eps) &&
-        (abs(sin(deg{30}) - 0.5) < eps) &&
-        (abs(sin(rad{real_t(pi)/3}) - 0.8660254037844386) < eps) &&
-        (abs(sin(rad{0}) ) < eps) &&
+        (abs(cos(deg(0)) -  1) < eps) &&
+        (abs(cos(deg(90)) ) < eps) &&
+        (abs(cos(deg(30)) - real_t(0.8660254037844386)) < eps) &&
+        (abs(cos(rad{real_t(pi)/3}) - real_t(0.5)) < eps) &&
+        (abs(sin(deg(30)) - real_t(0.5)) < eps) &&
+        (abs(sin(rad{real_t(pi)/3}) - real_t(0.8660254037844386)) < eps) &&
+        (abs(sin(rad(0)) ) < eps) &&
         (abs(sin(rad{real_t(pi)/2}) - 1) < eps) &&
-        (abs(sin(deg{0}) ) < eps) &&
-        (abs(sin(deg{90}) - 1) < eps) &&
+        (abs(sin(deg(0)) ) < eps) &&
+        (abs(sin(deg(90)) - 1) < eps) &&
         (abs(degrees_cast<real_t>(rad{real_t(pi)/2}) - 90) < eps) ))
     {
         throw std::logic_error("am::num::angle trigonometric functions");
@@ -163,10 +161,10 @@ void comparison()
     if(!(
         (degi{30} == degi{30}) &&
         (degi{30} != degi{40}) &&
-        (deg{180} >  rad{real_t(pi)/4}) &&
-        (deg{30}  <  rad{real_t(pi)}) &&
-        (rad{real_t(pi)}   >= deg{45}) &&
-        (rad{2*real_t(pi)} <= deg{720}) ))
+        (deg(180) >  rad{real_t(pi)/4}) &&
+        (deg(30)  <  rad{real_t(pi)}) &&
+        (rad{real_t(pi)}   >= deg(45)) &&
+        (rad{2*real_t(pi)} <= deg(720)) ))
     {
         throw std::logic_error("am::num::angle comparison");
     }

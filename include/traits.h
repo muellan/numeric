@@ -454,13 +454,13 @@ struct dimensions<T,true> :
 //-------------------------------------------------------------------
 template<class T, std::size_t n>
 struct dimensions<std::array<T,n>,false> :
-    std::integral_constant<int,n>
+    std::integral_constant<std::size_t,n>
 {};
 
 
 
 //-------------------------------------------------------------------
-template<int n, class H, class... T>
+template<std::size_t n, class H, class... T>
 struct same_dimension :
     std::integral_constant<bool,
         (same_dimension<n,H>::value &&
@@ -469,7 +469,7 @@ struct same_dimension :
 };
 
 //---------------------------------------------------------
-template<int n, class T>
+template<std::size_t n, class T>
 struct same_dimension<n,T> :
     std::integral_constant<bool, (dimensions<T>::value == n)>
 {};

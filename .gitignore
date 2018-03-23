@@ -10,7 +10,7 @@
 .cproject
 .settings
 .pydevproject
-
+*.json
 *.slo
 *.lo
 *.o

@@ -229,7 +229,7 @@ template<> inline
 float
 convert::to<float>(const char* s) noexcept
 {
-    const auto f = std::atof(s);
+    const auto f = std::stof(s);
 
     if(f > std::numeric_limits<float>::max())
         return std::numeric_limits<float>::max();
@@ -244,7 +244,7 @@ convert::to<float>(const char* s) noexcept
 template<> inline
 double
 convert::to<double>(const char* s) noexcept {
-    return std::atof(s);
+    return std::stod(s);
 }
 
 
@@ -252,7 +252,7 @@ convert::to<double>(const char* s) noexcept {
 template<> inline
 long double
 convert::to<long double>(const char* s) noexcept {
-    return std::atof(s);
+    return std::stold(s);
 }
 
 }  // namespace detail

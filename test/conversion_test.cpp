@@ -9,7 +9,7 @@
  *****************************************************************************/
 
 
-#include  "conversion.h"
+#include  "../include/conversion.h"
 
 #include <stdexcept>
 #include <iostream>

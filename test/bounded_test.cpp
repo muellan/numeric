@@ -9,7 +9,7 @@
  *****************************************************************************/
 
 
-#include  "bounded.h"
+#include  "../include/bounded.h"
 
 #include <stdexcept>
 #include <cstdint>

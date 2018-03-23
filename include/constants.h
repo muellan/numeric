@@ -53,17 +53,17 @@ namespace num {
 /// @brief mathematical constants
 //  TODO C++14 replace with variable templates ?
 //---------------------------------------------------------------
-constexpr long double pi = 3.141592653589793238462643383279500;
+constexpr long double pi      = static_cast<long double>(3.141592653589793238462643383279500);
 
-constexpr long double euler_e  = 2.718281828459045235360287471352663;
+constexpr long double euler_e = static_cast<long double>(2.718281828459045235360287471352663);
 
-constexpr long double log2_e   = 1.4426950408889634074;
-constexpr long double log10_e  = 0.43429448190325182765;
-constexpr long double ln2      = 0.69314718055994530942;
-constexpr long double ln10     = 2.30258509299404568402;
+constexpr long double log2_e  = static_cast<long double>(1.4426950408889634074);
+constexpr long double log10_e = static_cast<long double>(0.43429448190325182765);
+constexpr long double ln2     = static_cast<long double>(0.69314718055994530942);
+constexpr long double ln10    = static_cast<long double>(2.30258509299404568402);
 
-constexpr long double sqrt2    = 1.41421356237309504880;
-constexpr long double sqrt1_2  = 0.70710678118654752440;
+constexpr long double sqrt2   = static_cast<long double>(1.41421356237309504880);
+constexpr long double sqrt1_2 = static_cast<long double>(0.70710678118654752440);
 
 
 
