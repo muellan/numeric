@@ -35,18 +35,18 @@ void initialization()
 
     auto d0 = degd{15};
     degf d1 {45.0f};
-    auto d2 = 90.0_deg;    //via user-defined literal
-    auto d3 = 1.0_pi_rad;  //via user-defined literal + implicit angle conversion
+    auto d2 = 90.0_deg;  //via user-defined literal
+    auto d3 = 1_pi_rad;  //via user-defined literal + implicit angle conversion
     auto d4 = radf{4.5f};
     auto d5 = radd{double(pi)};
 
     if(! (
-        (abs(degrees_cast<double>(d0) - 15.0)       < tolerance<double>::value()) &&
-        (abs(degrees_cast<double>(d1) - 45.0)       < double(tolerance<float>::value())) &&
-        (abs(degrees_cast<double>(d2) - 90.0)       < tolerance<double>::value()) &&
-        (abs(radians_cast<double>(d3) - 1.0_pi)     < tolerance<double>::value()) &&
-        (abs(radians_cast<double>(d4) - 4.5)        < double(tolerance<float>::value())) &&
-        (abs(radians_cast<double>(d5) - double(pi)) < tolerance<double>::value()) ))
+        (abs(degrees_cast<double>(d0) - 15.0)         < tolerance<double>::value()) &&
+        (abs(degrees_cast<double>(d1) - 45.0)         < double(tolerance<float>::value())) &&
+        (abs(degrees_cast<double>(d2) - 90.0)         < tolerance<double>::value()) &&
+        (abs(radians_cast<double>(d3) - double(1_pi)) < tolerance<double>::value()) &&
+        (abs(radians_cast<double>(d4) - 4.5)          < double(tolerance<float>::value())) &&
+        (abs(radians_cast<double>(d5) - double(pi))   < tolerance<double>::value()) ))
     {
         throw std::logic_error("am::num::angle init");
     }
@@ -62,7 +62,7 @@ void conversion()
     auto a = deg{90};
     auto b = rad{float(0.5_pi)};
 
-    if(!((abs(radians_cast<double>(degi{180})            - 1.0_pi) < tolerance<double>::value()) &&
+    if(!((abs(radians_cast<double>(degi{180})            - double(1_pi)) < tolerance<double>::value()) &&
          (abs(degrees_cast<double>(rad{float(pi)/4})     - 45)     < tolerance<double>::value()) &&
          (abs(gons_cast<double>(rad{float(pi)/4})        - 50)     < tolerance<double>::value()) &&
          (abs(angle_cast<num::radians_turn<float>>(a)    - float(0.5_pi)) < tolerance<float>::value()) &&

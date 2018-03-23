@@ -31,4 +31,4 @@ Header-only numeric facilities for C++11.
 
 ## Requirements
   - requires C++11 conforming compiler
-  - tested with g++ 4.7.2, g++ 4.9.2, g++ 5.1.0, g++ 5.3.1
+  - tested with g++ 4.7.2, 4.9.2, 5.1.0, 5.3.1, 7.2 and clang++ 5.0.1

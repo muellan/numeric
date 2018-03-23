@@ -156,7 +156,7 @@ template<class InputIter, class T, class = typename
 >
 bool
 approx_equal(InputIter begin1, InputIter end1,
-             InputIter begin2, InputIter end2,
+             InputIter begin2, 
              const T& tolerance)
 {
     using std::abs;
@@ -166,6 +166,20 @@ approx_equal(InputIter begin1, InputIter end1,
     }
 
     return true;
+}
+
+
+template<class InputIter, class T, class = typename
+    std::enable_if<
+        is_number<typename std::iterator_traits<InputIter>::value_type>::value &&
+        is_number<T>::value>::type
+>
+bool
+approx_equal(InputIter begin1, InputIter end1,
+             InputIter begin2, InputIter,
+             const T& tolerance)
+{
+    return approx_equal(begin1, end1, begin2, tolerance);
 }
 
 

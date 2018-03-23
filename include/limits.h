@@ -139,7 +139,7 @@ template<>
 struct tolerance<long double,true>
 {
     static constexpr long double
-    value() noexcept {return 10e-16; }
+    value() noexcept {return static_cast<long double>(10e-16); }
 };
 
 
