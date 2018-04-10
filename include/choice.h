@@ -17,7 +17,6 @@
 
 
 #include "limits.h"
-#include "narrowing.h"
 
 
 namespace am {
@@ -49,24 +48,18 @@ public:
 
 
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
     constexpr explicit
-    choice(const T& x):
-        x_(IntT((x < 0) ? (numChoices + (x % numChoices)) : (x % numChoices)))
-    {
-        static_assert(is_integral<T>::value,
-            "choice::choice(N) : N has to be an integral number type");
-    }
+    choice(const value_type& x):
+        x_(x < 0 ? value_type(numChoices + value_type(x % numChoices)) 
+                 : value_type(x % numChoices) )
+    {}
 
-    //-----------------------------------------------------
     constexpr
     choice(const choice&) = default;
 
-    //-----------------------------------------------------
-    template<class OtherIntT, OtherIntT m>
+    template<value_type m>
     explicit constexpr
-    choice(const choice<OtherIntT,m>& c):
+    choice(const choice<value_type,m>& c):
         x_(c.x_ % numChoices)
     {}
 
@@ -75,17 +68,11 @@ public:
     choice&
     operator = (const choice&) = default;
 
-        //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
     choice&
-    operator = (const T& x)
+    operator = (const value_type& x)
     {
-        static_assert(is_integral<T>::value,
-            "choice::operator=(N) : N has to be an integral number type");
-
-        x_ = value_type(
-            (x < 0) ? (numChoices + (x % numChoices)) : (x % numChoices));
+        x_ = x < 0 ? value_type(numChoices + value_type(x % numChoices)) 
+                   : value_type(x % numChoices);
 
         return *this;
     }
@@ -98,7 +85,6 @@ public:
         return x_;
     }
 
-    //-----------------------------------------------------
     template<class T>
     explicit
     operator T () const noexcept
@@ -112,7 +98,7 @@ public:
     min() noexcept {
         return 0;
     }
-    //-----------------------------------------------------
+    
     static constexpr value_type
     max() noexcept {
         return (numChoices-1);
@@ -126,8 +112,6 @@ public:
 
 
     //---------------------------------------------------------------
-    // +=
-    //---------------------------------------------------------------
     choice&
     operator += (const choice& c)
     {
@@ -136,31 +120,22 @@ public:
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class OtherIntT, OtherIntT m>
+    template<value_type m>
     choice&
-    operator += (const choice<OtherIntT,m>& c)
+    operator += (const choice<value_type,m>& c)
     {
         return (*this += value_type(c));
     }
 
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
     choice&
-    operator += (const T& x)
+    operator += (const value_type& x)
     {
-        static_assert(is_integral<T>::value,
-            "choice::operator+=(T) : T has to be an integral number type");
-
         auto v = (x_ + x) % numChoices;
         x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
     }
 
 
-    //---------------------------------------------------------------
-    // -=
     //---------------------------------------------------------------
     choice&
     operator -= (const choice& c) {
@@ -172,23 +147,16 @@ public:
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class OtherIntT, OtherIntT m>
+    template<value_type m>
     choice&
-    operator -= (const choice<OtherIntT,m>& c)
+    operator -= (const choice<value_type,m>& c)
     {
         return (*this -= value_type(c));
     }
 
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
     choice&
-    operator -= (const T& x)
+    operator -= (const value_type& x)
     {
-        static_assert(is_integral<T>::value,
-            "choice::operator-=(T) : T has to be an integral number type");
-
         auto v = (x_ - x) % numChoices;
         x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
@@ -196,38 +164,23 @@ public:
 
 
     //---------------------------------------------------------------
-    // * /
-    //---------------------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
     choice&
-    operator *= (const T& x)
+    operator *= (const value_type& x)
     {
-        static_assert(is_integral<T>::value,
-            "choice::operator*=(T) : T has to be an integral number type");
-
         auto v = (x_ * x) % numChoices;
         x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value>::type>
     choice&
-    operator /= (const T& x)
+    operator /= (const value_type& x)
     {
-        static_assert(is_integral<T>::value,
-            "choice::operator/=(T) : T has to be an integral number type");
-
         auto v = (x_ / x) % numChoices;
         x_ = (v >= 0) ? value_type(v) : value_type(numChoices+v);
         return *this;
     }
 
 
-    //---------------------------------------------------------------
-    // + -
     //---------------------------------------------------------------
     choice
     operator + (const choice& c) const {
@@ -237,7 +190,6 @@ public:
         return choice{value_type(nx), 0};
     }
 
-    //---------------------------------------------------------
     choice
     operator - (const choice& c) const {
         //use special non-mod ctor
@@ -247,15 +199,12 @@ public:
 
 
     //---------------------------------------------------------------
-    // INVERSION
-    //---------------------------------------------------------------
     constexpr choice
     operator - () const {
         //use special non-mod ctor
         return choice{value_type(numChoices - x_), 0};
     }
 
-    //-----------------------------------------------------
     choice&
     invert() {
         x_ = value_type(numChoices - x_);
@@ -264,27 +213,25 @@ public:
 
 
     //---------------------------------------------------------------
-    // INCREMENT / DECREMENT
-    //---------------------------------------------------------------
     choice&
     operator ++ () {
         if(x_ < (numChoices-1)) ++x_; else x_ = 0;
         return *this;
     }
-    //-----------------------------------------------------
+   
     choice
     operator ++ (int) {
         auto old = *this;
         ++*this;
         return old;
     }
-    //-----------------------------------------------------
+   
     choice&
     operator -- () {
         if(x_ > 0) --x_; else x_ = value_type(numChoices-1);
         return *this;
     }
-    //-----------------------------------------------------
+   
     choice
     operator -- (int) {
         auto old = *this;
@@ -317,8 +264,8 @@ private:
 
 #define AM_CHOICE_ARITHMETIC_OP(OPERATOR) \
 \
-template<class T, class IntT, IntT n, class = typename \
-    std::enable_if<is_number<T>::value>::type \
+template<class T, class IntT, IntT n, class = \
+    std::enable_if_t<is_number<T>::value>\
 > \
 inline constexpr choice<IntT,n> \
 operator OPERATOR (const T& x, const choice<IntT,n>& c) \
@@ -330,8 +277,8 @@ operator OPERATOR (const T& x, const choice<IntT,n>& c) \
 } \
 \
 \
-template<class T, class IntT, IntT n, class = typename \
-    std::enable_if<is_number<T>::value>::type \
+template<class T, class IntT, IntT n, class = \
+    std::enable_if_t<is_number<T>::value> \
 > \
 inline constexpr choice<IntT,n> \
 operator OPERATOR (const choice<IntT,n>& c, const T& x) \
@@ -418,13 +365,13 @@ operator >= (choice<Int1,n> a, choice<Int2,m> b) {
  *
  *****************************************************************************/
 template<std::uintmax_t n, class T>
-inline constexpr choice<decay_t<T>,n>
+inline constexpr choice<std::decay_t<T>,n>
 make_choice(T&& x)
 {
-    static_assert(is_integral<decay_t<T>>::value,
+    static_assert(is_integral<std::decay_t<T>>::value,
             "make_choice(T) : T has to be an integral number type");
 
-    return choice<decay_t<T>,n>{std::forward<T>(x)};
+    return choice<std::decay_t<T>,n>{std::forward<T>(x)};
 }
 
 
@@ -469,7 +416,11 @@ inverse(choice<Int,n> c)
 }
 
 
+}  // namespace num
+}  // namespace am
 
+
+namespace std {
 
 /*****************************************************************************
  *
@@ -477,9 +428,9 @@ inverse(choice<Int,n> c)
  *
  *****************************************************************************/
 template<class T, T n>
-class numeric_limits<choice<T,n>>
+class numeric_limits<am::num::choice<T,n>>
 {
-    using val_t = choice<T,n>;
+    using val_t = am::num::choice<T,n>;
 
 public:
     static constexpr bool is_specialized = true;
@@ -502,7 +453,7 @@ public:
     static constexpr int radix = numeric_limits<T>::radix;
 
     static constexpr val_t
-    tolerance() noexcept { return num::tolerance<T>::value(); }
+    epsilon() noexcept { return std::numeric_limits<T>::epsilon(); }
 
     static constexpr val_t
     round_error() noexcept { return numeric_limits<T>::round_error(); }
@@ -540,8 +491,6 @@ public:
 };
 
 
-}  // namespace num
-}  // namespace am
-
+} // namespace std
 
 #endif

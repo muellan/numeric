@@ -18,7 +18,6 @@
 #include <iostream>
 
 #include "limits.h"
-#include "narrowing.h"
 #include "conversion.h"
 
 
@@ -70,43 +69,17 @@ public:
     natural(value_type v = zero_val()) noexcept :
         v_(v >= zero_val() ? v : zero_val())
     {}
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_natural<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
-    constexpr
-    natural(T&& v) noexcept :
-        v_(v < zero_val() ? zero_val() :
-            (v > max_val()
-                ? infty_val()
-                : value_type(std::forward<T>(v)) ))
-    {
-         static_assert(is_integral<decay_t<T>>::value,
-            "natural<T>(x) : x has to be an integral number");
-
-         AM_CHECK_NARROWING(value_type,T)
-    }
-
-    //-----------------------------------------------------
+    
     constexpr
     natural(const natural& source) noexcept :
         v_(source.v_)
     {}
-    //-----------------------------------------------------
+    
     constexpr
     natural(natural&& source) noexcept :
         v_(std::move(source.v_))
     {}
-    //-----------------------------------------------------
-    template<class T>
-    constexpr
-    natural(const natural<T>& v) noexcept :
-        v_((isinf(v) || (v > max_val())
-            ? infty_val()
-            : value_type(v) ))
-    {
-         AM_CHECK_NARROWING(value_type,T)
-    }
+
 
     //---------------------------------------------------------------
     natural&
@@ -114,63 +87,34 @@ public:
         v_ = source.v_;
         return *this;
     }
-    //-----------------------------------------------------
+
     natural&
     operator = (natural&& source) noexcept {
         v_ = std::move(source.v_);
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T>
+
     natural&
-    operator = (const natural<T>& v) noexcept
+    operator = (const value_type v) noexcept
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = (isinf(v) || v > max_val())
-                ? infty_val()
-                : value_type(v);
-
-        return *this;
-    }
-
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_natural<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
-    natural&
-    operator = (T&& v) noexcept
-    {
-        static_assert(is_integral<decay_t<T>>::value,
-            "natural<T> = x : x has to be an integral number");
-
-        AM_CHECK_NARROWING(value_type,T)
-
-        v_ = v < zero_val() ? zero_val() :
-            (v > max_val()
-                ? infty_val()
-                : value_type(std::forward<T>(v)) );
-
+        v_ = v < zero_val() ? zero_val() 
+                            : v > max_val() ? infty_val() : v;
         return *this;
     }
 
 
     //---------------------------------------------------------------
-    template<class T, class = typename
-        std::enable_if<is_number<T>::value>::type>
+    template<class T, class = std::enable_if_t<is_number<T>::value>>
     explicit
     operator T() const noexcept
     {
-        return (isinf(*this) ? max_infinity<T>::value()
-                             : T(v_));
+        return (isinf(*this) ? num::infinity<T> : T(v_));
     }
 
-    //-----------------------------------------------------
     value_type
     value() const noexcept
     {
-        return (isinf(*this) ? max_infinity<value_type>::value()
-                             : v_);
+        return (isinf(*this) ? num::infinity<value_type> : v_);
     }
 
 
@@ -179,12 +123,12 @@ public:
     zero() noexcept {
         return natural(zero_val());
     }
-    //-----------------------------------------------------
+   
     static constexpr natural
     max() noexcept {
         return natural(max_val());
     }
-    //-----------------------------------------------------
+    
     static constexpr natural
     infinity() noexcept {
         return natural{0,0};
@@ -197,7 +141,7 @@ public:
     isinf(const natural& q) noexcept {
         return (q.v_ < zero_val());
     }
-    //-----------------------------------------------------
+  
     inline friend
     constexpr bool
     isfinite(const natural& q) noexcept {
@@ -223,50 +167,17 @@ public:
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class T>
     natural&
-    operator += (const natural<T>& c) noexcept
+    operator += (const value_type& v) noexcept
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        if(!isinf(*this)) {
-            const auto vc = value_type(c);
-
-            if(isinf(c))
-                *this = infinity();
-            else {
-                if((max_val() - v_) < vc) {
-                    v_ = max_val();
-                } else {
-                    v_ += vc;
-                }
-            }
-        }
-        return *this;
-    }
-
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_natural<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
-    natural&
-    operator += (T&& v) noexcept
-    {
-        static_assert(is_integral<decay_t<T>>::value,
-            "natural += x : x has to be an integral number");
-
-        AM_CHECK_NARROWING(value_type,T)
-
         if(!isinf(*this)) {
             if(v > max_val()) {
                 *this = infinity();
             } else {
-                const auto vc = value_type(std::forward<T>(v));
-                if((max_val() - v_) < vc) {
+                if((max_val() - v_) < v) {
                     v_ = max_val();
                 } else {
-                    v_ += vc;
+                    v_ += v;
                 }
             }
         }
@@ -291,42 +202,12 @@ public:
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class T>
     natural&
-    operator -= (const natural<T>& c) noexcept
+    operator -= (const value_type& v) noexcept
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        if(isinf(*this)) {
-            if(isinf(c) || (value_type(c) > max_val()))
-                v_ = zero_val();
-        }
-        else {
-            if(!isinf(c) && (v_ > c.v_)) {
-                v_ -= value_type(c);
-            } else {
-                v_ = zero_val();
-            }
-        }
-        return *this;
-    }
-
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_natural<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
-    natural&
-    operator -= (T&& v) noexcept
-    {
-        static_assert(is_integral<decay_t<T>>::value,
-            "natural += x : x has to be an integral number");
-
-        AM_CHECK_NARROWING(value_type,T)
-
         if(!isinf(*this)) {
             if(v_ > v) {
-                v_ -= value_type(std::forward<T>(v));
+                v_ -= v;
             } else {
                 v_ = zero_val();
             }
@@ -353,50 +234,16 @@ public:
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class T>
     natural&
-    operator *= (const natural<T>& c) noexcept
+    operator *= (const value_type& v) noexcept
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        if(!isinf(*this)) {
-            const auto cv = value_type(c);
-            if(isinf(c) || (cv > max_val())) {
-                *this = infinity();
-            } else {
-                if(cv > (max_val() / v_)) {
-                    v_ = max_val();
-                } else {
-                    v_ *= cv;
-                }
-            }
-        } else {
-            if(c == c.zero_val()) v_ = zero_val();
-        }
-        return *this;
-    }
-
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_natural<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
-    natural&
-    operator *= (T&& v) noexcept
-    {
-        static_assert(is_integral<decay_t<T>>::value,
-            "natural *= x : x has to be an integral number");
-
-        AM_CHECK_NARROWING(value_type,T)
-
         if(!isinf(*this)) {
             if(v > zero_val()) {
                 if(v <= max_val()) {
-                    const auto cv = value_type(std::forward<T>(v));
-                    if(cv > (max_val() / v_)) {
+                    if(v > (max_val() / v_)) {
                         v_ = max_val();
                     } else {
-                        v_ *= cv;
+                        v_ *= v;
                     }
                 } else {
                     v_ = max_val();
@@ -415,14 +262,14 @@ public:
         if(v_ != infty_val() && v_ < max_val()) ++v_;
         return *this;
     }
-    //-----------------------------------------------------
+
     natural
     operator ++ (int) noexcept {
         auto old = *this;
         ++*this;
         return old;
     }
-    //-----------------------------------------------------
+
     natural&
     operator -- () noexcept {
         if(v_ != infty_val()) {
@@ -430,13 +277,14 @@ public:
         }
         return *this;
     }
-    //-----------------------------------------------------
+
     natural
     operator -- (int) noexcept {
         auto old = *this;
         ++*this;
         return old;
     }
+
 
 private:
     //---------------------------------------------------------------
@@ -450,7 +298,7 @@ private:
     }
     static constexpr value_type
     max_val() {
-        return numeric_limits<value_type>::max();
+        return std::numeric_limits<value_type>::max();
     }
 
 
@@ -494,7 +342,7 @@ operator + (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr common_numeric_t<T1,T2>
 operator + (const natural<T1>& a, const T2& b) noexcept
@@ -504,13 +352,13 @@ operator + (const natural<T1>& a, const T2& b) noexcept
     using cv_t = common_numeric_t<T1,T2>;
 
     return (isinf(a) || isinf(b))
-        ? max_infinity<cv_t>::value()
-        : ( (numeric_max<cv_t>::value() - cv_t(a)) < cv_t(b)
-               ? numeric_max<cv_t>::value()
+        ? num::infinity<cv_t>
+        : ( (max_value<cv_t> - cv_t(a)) < cv_t(b)
+               ? max_value<cv_t>
                : cv_t(a) + cv_t(b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator + (const T2& b, const natural<T1>& a) noexcept
@@ -520,9 +368,9 @@ operator + (const T2& b, const natural<T1>& a) noexcept
     using cv_t = common_numeric_t<T1,T2>;
 
     return (isinf(a) || isinf(b))
-        ? max_infinity<cv_t>::value()
-        : ( (numeric_max<cv_t>::value() - cv_t(b)) < cv_t(a)
-               ? numeric_max<cv_t>::value()
+        ? num::infinity<cv_t>
+        : ( (max_value<cv_t> - cv_t(b)) < cv_t(a)
+               ? max_value<cv_t>
                : cv_t(b) + cv_t(a));
 }
 
@@ -548,7 +396,7 @@ operator - (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr common_numeric_t<T1,T2>
 operator - (const natural<T1>& a, const T2& b) noexcept
@@ -558,14 +406,14 @@ operator - (const natural<T1>& a, const T2& b) noexcept
     using cv_t = common_numeric_t<T1,T2>;
 
     return (isinf(a))
-        ? (isinf(b)) ? cv_t(0) : max_infinity<cv_t>::value()
+        ? (isinf(b)) ? cv_t(0) : num::infinity<cv_t>
         : (isinf(b)) ? cv_t(0) :
             (cv_t(b) > cv_t(a)
                ? cv_t(0)
                : cv_t(a) - cv_t(b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator - (const T2& b, const natural<T1>& a) noexcept
@@ -575,7 +423,7 @@ operator - (const T2& b, const natural<T1>& a) noexcept
     using cv_t = common_numeric_t<T1,T2>;
 
     return (isinf(b))
-        ? (isinf(a)) ? cv_t(0) : max_infinity<cv_t>::value()
+        ? (isinf(a)) ? cv_t(0) : num::infinity<cv_t>
         : (isinf(a)) ? cv_t(0) :
             (cv_t(a) > cv_t(b)
                ? cv_t(0)
@@ -612,7 +460,7 @@ operator * (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr common_numeric_t<T1,T2>
 operator * (const natural<T1>& a, const T2& b) noexcept
@@ -623,21 +471,21 @@ operator * (const natural<T1>& a, const T2& b) noexcept
 
     return (isinf(a))
         ? ( (isinf(b))
-            ? max_infinity<cv_t>::value()
-            : ((b == T2(0)) ? cv_t(0) : max_infinity<cv_t>::value())
+            ? num::infinity<cv_t>
+            : ((b == T2(0)) ? cv_t(0) : num::infinity<cv_t>)
         )
         : ( (isinf(b))
-            ? ((a == a.zero()) ? cv_t(0) : max_infinity<cv_t>::value())
+            ? ((a == a.zero()) ? cv_t(0) : num::infinity<cv_t>)
             : ((a == a.zero() || b == T2(0))
                   ? cv_t(0)
-                  : ((cv_t(a) > (numeric_max<cv_t>::value() / cv_t(b)))
-                      ? numeric_max<cv_t>::value()
+                  : ((cv_t(a) > (max_value<cv_t> / cv_t(b)))
+                      ? max_value<cv_t>
                       : cv_t(a) * cv_t(b) )
               )
         );
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator * (const T2& b, const natural<T1>& a) noexcept
@@ -648,15 +496,15 @@ operator * (const T2& b, const natural<T1>& a) noexcept
 
     return (isinf(a))
         ? ( (isinf(b))
-            ? max_infinity<cv_t>::value()
-            : ((b == T2(0)) ? cv_t(0) : max_infinity<cv_t>::value())
+            ? num::infinity<cv_t>
+            : ((b == T2(0)) ? cv_t(0) : num::infinity<cv_t>)
         )
         : ( (isinf(b))
-            ? ((a == a.zero()) ? cv_t(0) : max_infinity<cv_t>::value())
+            ? ((a == a.zero()) ? cv_t(0) : num::infinity<cv_t>)
             : ((a == a.zero() || b == T2(0))
                   ? cv_t(0)
-                  : ((cv_t(a) > (numeric_max<cv_t>::value() / cv_t(b)))
-                      ? numeric_max<cv_t>::value()
+                  : ((cv_t(a) > (max_value<cv_t> / cv_t(b)))
+                      ? max_value<cv_t>
                       : cv_t(a) * cv_t(b) )
               )
         );
@@ -678,7 +526,7 @@ operator == (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator == (const natural<T1>& a, const T2& b) noexcept
@@ -688,7 +536,7 @@ operator == (const natural<T1>& a, const T2& b) noexcept
     return isinf(a) ? isinf(b) : (isinf(b) ? false : (T1(a) == b) );
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator == (const T2& b, const natural<T1>& a) noexcept
@@ -709,7 +557,7 @@ operator != (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator != (const natural<T1>& a, const T2& b) noexcept
@@ -717,7 +565,7 @@ operator != (const natural<T1>& a, const T2& b) noexcept
     return !(a == b);
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator != (const T2& b, const natural<T1>& a) noexcept
@@ -736,7 +584,7 @@ operator <= (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <= (const natural<T1>& a, const T2& b) noexcept
@@ -746,7 +594,7 @@ operator <= (const natural<T1>& a, const T2& b) noexcept
     return isinf(b) || (!isinf(a) && (T1(a) <= b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <= (const T2& b, const natural<T1>& a) noexcept
@@ -767,7 +615,7 @@ operator <  (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <  (const natural<T1>& a, const T2& b) noexcept
@@ -777,7 +625,7 @@ operator <  (const natural<T1>& a, const T2& b) noexcept
     return !isinf(a) && (isinf(b) || (T1(a) < b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator <  (const T2& b, const natural<T1>& a) noexcept
@@ -797,7 +645,7 @@ operator >= (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >= (const natural<T1>& a, const T2& b) noexcept
@@ -807,7 +655,7 @@ operator >= (const natural<T1>& a, const T2& b) noexcept
     return isinf(a) || (!isinf(b) && (T1(a) >= b));
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >= (const T2& b, const natural<T1>& a) noexcept
@@ -827,7 +675,7 @@ operator >  (const natural<T1>& a, const natural<T2>& b) noexcept
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >  (const natural<T1>& a, const T2& b) noexcept
@@ -837,7 +685,7 @@ operator >  (const natural<T1>& a, const T2& b) noexcept
     return !isinf(b) && (isinf(a) || (T1(a) > b) );
 }
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
+template<class T1, class T2, class = std::enable_if_t<
     !is_natural<T2>::value && is_number<T2>::value && is_integral<T2>::value>>
 inline constexpr bool
 operator >  (const T2& b, const natural<T1>& a) noexcept
@@ -880,76 +728,6 @@ print(Ostream& os, const natural<Int>& c)
     return os;
 }
 
-
-
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-template<class T>
-class numeric_limits<natural<T>>
-{
-    using val_t = natural<T>;
-
-public:
-    static constexpr bool is_specialized = true;
-
-    static constexpr val_t
-    min() {return val_t::zero(); }
-
-    static constexpr val_t
-    max() {return val_t::max(); }
-
-    static constexpr val_t
-    lowest() {return val_t::zero(); }
-
-    static constexpr int digits = numeric_limits<T>::digits;
-    static constexpr int digits10 = numeric_limits<T>::digits10;
-    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
-    static constexpr bool is_signed = false;
-    static constexpr bool is_integer = true;
-    static constexpr bool is_exact = numeric_limits<T>::is_exact;
-    static constexpr int radix = numeric_limits<T>::radix;
-
-    static constexpr val_t
-    tolerance() noexcept { return num::tolerance<T>::value(); }
-
-    static constexpr val_t
-    round_error() noexcept { return numeric_limits<T>::round_error(); }
-
-    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
-    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
-    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
-    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
-
-    static constexpr bool has_infinity = true;
-    static constexpr bool has_quiet_NaN = false;
-    static constexpr bool has_signaling_NaN = false;
-    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
-    static constexpr bool has_denorm_loss = false;
-
-    static constexpr val_t
-    infinity() noexcept {return val_t::infinity(); }
-
-    static constexpr val_t
-    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
-
-    static constexpr val_t
-    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
-
-    static constexpr val_t
-    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
-
-    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
-    static constexpr bool is_bounded = true;
-    static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
-
-    static constexpr bool traps = numeric_limits<T>::traps;
-    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
-    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
-};
 
 
 
@@ -1004,30 +782,6 @@ struct common_numeric_type<natural<T1>,natural<T2>>
 };
 
 
-namespace detail {
-
-//-------------------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, natural<To>, From> :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, natural<To>, natural<From> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, natural<From> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-
-}  // namespace detail
-
-
 
 
 /*****************************************************************************
@@ -1036,15 +790,15 @@ struct is_non_narrowing_helper<true, To, natural<From> > :
  *
  *****************************************************************************/
 template<class IntT>
-inline constexpr natural<signed_t<decay_t<IntT>>>
+inline constexpr natural<signed_t<std::decay_t<IntT>>>
 make_natural(IntT&& x)
 {
     static_assert(is_integral<IntT>::value,
         "make_natural(x): x has to be an integral number");
 
-//    assert(x <= numeric_limits<signed_t<decay_t<IntT>>>::max());
+//    assert(x <= numeric_limits<signed_t<std::decay_t<IntT>>>::max());
 
-    return natural<signed_t<decay_t<IntT>>>{make_signed(std::forward<IntT>(x))};
+    return natural<signed_t<std::decay_t<IntT>>>{make_signed(std::forward<IntT>(x))};
 }
 
 
@@ -1066,5 +820,79 @@ operator "" _n (unsigned long long int x)
 
 }  // namespace num
 }  // namespace am
+
+
+namespace std {
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class T>
+class numeric_limits<am::num::natural<T>>
+{
+    using val_t = am::num::natural<T>;
+
+public:
+    static constexpr bool is_specialized = true;
+
+    static constexpr val_t
+    min() {return val_t::zero(); }
+
+    static constexpr val_t
+    max() {return val_t::max(); }
+
+    static constexpr val_t
+    lowest() {return val_t::zero(); }
+
+    static constexpr int digits = numeric_limits<T>::digits;
+    static constexpr int digits10 = numeric_limits<T>::digits10;
+    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
+    static constexpr bool is_signed = false;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = numeric_limits<T>::is_exact;
+    static constexpr int radix = numeric_limits<T>::radix;
+
+    static constexpr val_t
+    epsilon() noexcept { return std::numeric_limits<T>::epsilon(); }
+
+    static constexpr val_t
+    round_error() noexcept { return numeric_limits<T>::round_error(); }
+
+    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
+    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
+    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
+    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
+
+    static constexpr bool has_infinity = true;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = false;
+    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    static constexpr bool has_denorm_loss = false;
+
+    static constexpr val_t
+    infinity() noexcept {return val_t::infinity(); }
+
+    static constexpr val_t
+    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
+
+    static constexpr val_t
+    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
+
+    static constexpr val_t
+    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
+
+    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
+
+    static constexpr bool traps = numeric_limits<T>::traps;
+    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
+    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
+};
+
+
+} // namespace std
 
 #endif

@@ -17,7 +17,6 @@
 #include "constants.h"
 #include "traits.h"
 #include "limits.h"
-#include "narrowing.h"
 #include "equality.h"
 
 
@@ -67,138 +66,75 @@ public:
 
 
     //---------------------------------------------------------------
-    // TYPES
-    //---------------------------------------------------------------
     using value_type      = NumberType;
     using numeric_type    = value_type;
 
 
     //---------------------------------------------------------------
-    // CONSTRUCTION / DESTRUCTION
-    //---------------------------------------------------------------
-
-    //-----------------------------------------------------
     /// @brief default constructor
     constexpr
     dual() = default;
 
-    //-----------------------------------------------------
     /// @brief
-    template<class T, class = typename std::enable_if<
-        !is_dual<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     explicit constexpr
-    dual(T&& a):
-        r_(std::forward<T>(a)), i_(value_type(0))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
-
-    //-----------------------------------------------------
-    /// @brief
-    constexpr
-    dual(value_type real, value_type imag):
-        r_(std::move(real)), i_(std::move(imag))
+    dual(const value_type& a):
+        r_{a}, i_(0)
     {}
 
-    //-----------------------------------------------------
     /// @brief
-    template<class T1, class T2, class = typename std::enable_if<
-        !is_dual<decay_t<T1>>::value &&
-        !is_dual<decay_t<T2>>::value &&
-        is_number<decay_t<T1>,decay_t<T2>>::value>::type>
-    explicit constexpr
-    dual(T1&& real, T2&& imag):
-        r_(std::forward<T1>(real)), i_(std::forward<T2>(imag))
-    {
-        AM_CHECK_NARROWING2(value_type,T1,T2)
-    }
+    constexpr
+    dual(const value_type& realPart, const value_type& imagPart):
+        r_{realPart}, i_{imagPart}
+    {}
 
-    //-----------------------------------------------------
+
+    //---------------------------------------------------------------
     constexpr
     dual(const dual&) = default;
 
-    //-----------------------------------------------------
     constexpr
     dual(dual&&) = default;
 
-    //-----------------------------------------------------
-    template<class T>
-    explicit constexpr
-    dual(const dual<T>& src):
-        r_(src.real()), i_(src.imag())
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
-    //-----------------------------------------------------
-    template<class T>
-    explicit constexpr
-    dual(dual<T>&& src):
-        r_(std::move(src.real())), i_(std::move(src.imag()))
-    {
-        AM_CHECK_NARROWING(value_type,T)
-    }
 
-
-    //---------------------------------------------------------------
-    // ASSIGNMENT
     //---------------------------------------------------------------
     dual&
     operator = (const dual&) = default;
-    //-----------------------------------------------------
+    
     dual&
     operator = (dual&&) = default;
 
-    //-----------------------------------------------------
-    template<class T>
-    dual&
-    operator = (const dual<T>& d)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
-        r_ = d.r_;
-        i_ = d.i_;
-        return *this;
-    }
-    //-----------------------------------------------------
-    template<class T>
-    dual&
-    operator = (dual<T>&& d)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
-        r_ = std::move(d.r_);
-        i_ = std::move(d.i_);
-        return *this;
-    }
 
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_dual<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     dual&
-    operator = (T&& n)
+    operator = (const value_type& realPart)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
-        r_ = std::forward<T>(n);
+        r_ = realPart;
         i_ = value_type(0);
         return *this;
     }
 
 
     //---------------------------------------------------------------
-    // ELEMENT ACCESS
-    //---------------------------------------------------------------
     constexpr const value_type&
     real() const noexcept {
         return r_;
     }
 
-    //-----------------------------------------------------
     constexpr const value_type&
     imag() const noexcept {
         return i_;
+    }
+
+    dual&
+    real(const value_type& v) noexcept {
+        r_ = v;
+        return *this;
+    }
+
+    dual&
+    imag(const value_type& v) noexcept {
+        i_ = v;
+        return *this;
     }
 
 
@@ -221,61 +157,34 @@ public:
     //---------------------------------------------------------------
     // dual (op)= number
     //---------------------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_dual<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     dual&
-    operator += (const T& v)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
+    operator += (const value_type& v) {
         r_ += v;
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_dual<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     dual&
-    operator -= (const T& v) {
+    operator -= (const value_type& v) {
         r_ -= v;
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_dual<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     dual&
-    operator *= (const T& v)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
+    operator *= (const value_type& v) {
         r_ *= v;
         i_ *= v;
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_dual<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     dual&
-    operator /= (const T& v)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
+    operator /= (const value_type& v) {
         r_ /= v;
         i_ /= v;
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_dual<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     dual&
-    operator ^= (const T& e)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
+    operator ^= (const value_type& e) {
         using std::pow;
 
         auto a_ya_1 = pow(r_ , e-1);
@@ -288,34 +197,28 @@ public:
 
 
     //---------------------------------------------------------------
-    // increment / decrement
-    //---------------------------------------------------------------
     dual&
-    operator ++ ()
-    {
+    operator ++ () {
         ++r_;
         return *this;
     }
     //-----------------------------------------------------
     dual&
-    operator -- ()
-    {
+    operator -- () {
         --r_;
         return *this;
     }
 
     //-----------------------------------------------------
     dual
-    operator ++ (int)
-    {
+    operator ++ (int) {
         auto old = *this;
         ++*this;
         return old;
     }
     //-----------------------------------------------------
     dual
-    operator -- (int)
-    {
+    operator -- (int) {
         auto old = *this;
         --*this;
         return old;
@@ -325,56 +228,39 @@ public:
     //---------------------------------------------------------------
     // dual (op)= dual with different value_type
     //---------------------------------------------------------------
-    template<class T>
     dual&
-    operator += (const dual<T>& o)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
+    operator += (const dual& o) {
         r_ += o.real();
         i_ += o.imag();
         return *this;
     }
     //-----------------------------------------------------
-    template<class T>
     dual&
-    operator -= (const dual<T>& o)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
+    operator -= (const dual& o) {
         r_ -= o.real();
         i_ -= o.imag();
         return *this;
     }
     //-----------------------------------------------------
-    template<class T>
     dual&
-    operator *= (const dual<T>& o)
+    operator *= (const dual& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         i_ = (r_ * o.imag()) + (o.real() * i_);
         r_ *= o.real();
         return *this;
     }
     //-----------------------------------------------------
-    template<class T>
     dual&
-    operator /= (const dual<T>& o)
+    operator /= (const dual& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         i_ = ((i_ * o.real()) - (r_ * o.imag())) / (o.real() * o.real());
         r_ /= o.real();
         return *this;
     }
     //-----------------------------------------------------
-    template<class T>
     dual&
-    operator ^= (const dual<T>& y)
+    operator ^= (const dual& y)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         using std::pow;
         using std::log;
 
@@ -387,23 +273,16 @@ public:
     }
 
     //-----------------------------------------------------
-    template<class T>
     dual&
-    times_conj(const dual<T>& o)
+    times_conj(const dual& o)
     {
-        AM_CHECK_NARROWING(value_type,T)
-
         i_ = (r_ * (-o.imag())) + (o.real() * i_);
         r_ *= o.real();
         return *this;
     }
     //-----------------------------------------------------
-    template<class T>
     dual&
-    conj_times(const dual<T>& o)
-    {
-        AM_CHECK_NARROWING(value_type,T)
-
+    conj_times(const dual& o) {
         i_ = (r_ * o.imag()) + (o.real() * (-i_));
         r_ *= o.real();
         return *this;
@@ -426,28 +305,26 @@ private:
  *
  *
  *****************************************************************************/
-template<class T1, class T2, class = typename std::enable_if<
-    !is_dual<decay_t<T1>>::value &&
-    is_number<decay_t<T1>>::value &&
-    !is_dual<decay_t<T2>>::value &&
-    is_number<decay_t<T2>>::value>::type>
-inline
-dual<common_numeric_t<decay_t<T1>,decay_t<T2>>>
-make_dual(T1&& a, T2&& b)
+template<class T1, class T2, class = std::enable_if_t<
+    !is_dual<T1>::value &&
+    is_number<T1>::value &&
+    !is_dual<T2>::value &&
+    is_number<T2>::value>>
+inline auto
+make_dual(const T1& a, const T2& b)
 {
-    return dual<common_numeric_t<decay_t<T1>,decay_t<T2>>>
-        {std::forward<T1>(a), std::forward<T2>(b)};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{T(a), T(b)};
 }
 
 //---------------------------------------------------------------
-template<class T, class = typename
-    std::enable_if<!is_dual<decay_t<T>>::value &&
-    is_number<decay_t<T>>::value,T>::type>
-inline
-dual<decay_t<T>>
-make_dual(T&& x)
+template<class T, class = std::enable_if_t<
+    !is_dual<T>::value &&
+    is_number<std::decay_t<T>>::value,T>>
+inline auto
+make_dual(const T& x)
 {
-    return dual<decay_t<T>>{std::forward<T>(x), T(0)};
+    return dual<T>{x, T(0)};
 }
 
 
@@ -487,8 +364,8 @@ print(Ostream& os, const dual<T>& d)
  *
  *****************************************************************************/
 template<class T>
-inline constexpr auto
-real(const dual<T>& d) noexcept -> decltype(d.real())
+inline constexpr decltype(auto)
+real(const dual<T>& d) noexcept
 {
     return d.real();
 }
@@ -497,8 +374,8 @@ real(const dual<T>& d) noexcept -> decltype(d.real())
 
 //-------------------------------------------------------------------
 template<class T>
-inline constexpr auto
-imag(const dual<T>& d) noexcept -> decltype(d.imag())
+inline constexpr decltype(auto)
+imag(const dual<T>& d) noexcept
 {
     return d.imag();
 }
@@ -507,8 +384,7 @@ imag(const dual<T>& d) noexcept -> decltype(d.imag())
 
 //-------------------------------------------------------------------
 template<class T>
-inline constexpr
-dual<T>
+inline constexpr auto
 conj(const dual<T>& x)
 {
     return dual<T>{x.real(), -x.imag()};
@@ -542,7 +418,7 @@ operator != (const dual<T1>& a, const dual<T2>& b)
 template<class T1, class T2, class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const dual<T1>& a, const dual<T2>& b,
-    const T3& tol = tolerance<T3>::value())
+    const T3& tol = tolerance<T3>)
 {
     return (approx_equal(a.real(), b.real(), tol) &&
             approx_equal(a.imag(), b.imag(), tol) );
@@ -551,7 +427,7 @@ approx_equal(const dual<T1>& a, const dual<T2>& b,
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_1(const dual<T>& x, const T& tol = tolerance<T>::value())
+approx_1(const dual<T>& x, const T& tol = tolerance<T>)
 {
     return (
         approx_1(x.real(), tol) &&
@@ -561,7 +437,7 @@ approx_1(const dual<T>& x, const T& tol = tolerance<T>::value())
 //---------------------------------------------------------
 template<class T>
 inline constexpr bool
-approx_0(const dual<T>& x, const T& tol = tolerance<T>::value())
+approx_0(const dual<T>& x, const T& tol = tolerance<T>)
 {
     return (
         approx_0(x.real(), tol) &&
@@ -653,33 +529,31 @@ operator <= (const T2& r, const dual<T1>& x)
 // ADDITION
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator + (const dual<T1> x, const dual<T2>& y)
 {
-    return dual<common_numeric_t<T1,T2>>{
-        x.real() + y.real(), x.imag() + y.imag()};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{ T(x.real()) + T(y.real()), 
+                    T(x.imag()) + T(y.imag()) };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator + (const dual<T1> x, const T2& y)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {x.real() + y, x.imag() + y};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{ T(x.real()) + T(y), T(x.imag()) + T(y) };
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator + (const T2& y, const dual<T1> x)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {y + x.real(), y + x.imag()};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{ T(y) + T(x.real()), T(y) + T(x.imag()) };
 }
 
 
@@ -688,33 +562,31 @@ operator + (const T2& y, const dual<T1> x)
 // SUBTRACTION
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator - (const dual<T1> x, const dual<T2>& y)
 {
-    return dual<common_numeric_t<T1,T2>>{
-        x.real() - y.real(), x.imag() - y.imag()};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{ T(x.real()) - T(y.real()), 
+                    T(x.imag()) - T(y.imag()) };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator - (const dual<T1> x, const T2& y)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {x.real() - y, x.imag() - y};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{ T(x.real()) - T(y), T(x.imag()) - T(y)};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator - (const T2& y, const dual<T1> x)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {y - x.real(), y - x.imag()};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{T(y) - T(x.real()), T(y) - T(x.imag())};
 }
 
 
@@ -723,34 +595,32 @@ operator - (const T2& y, const dual<T1> x)
 // MULTIPLIPCATION
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator * (const dual<T1> x, const dual<T2>& y)
 {
-    return dual<common_numeric_t<T1,T2>>{
-        x.real() * y.real(),
-        (x.real() * y.imag()) + (y.real() * x.imag()) };
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{
+        T(x.real()) * T(y.real()),
+        (T(x.real()) * T(y.imag())) + (T(y.real()) * T(x.imag())) };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator * (const dual<T1> x, const T2& y)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {x.real() * y, x.imag() * y};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{T(x.real()) * T(y), T(x.imag()) * T(y)};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator * (const T2& y, const dual<T1> x)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {y * x.real(), y * x.imag()};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{T(y) * T(x.real()), T(y) * T(x.imag())};
 }
 
 
@@ -759,35 +629,34 @@ operator * (const T2& y, const dual<T1> x)
 // DIVISION
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator / (const dual<T1> x, const dual<T2>& y)
 {
-    return dual<common_numeric_t<T1,T2>>{
-        x.real() / y.real(),
-        ((x.imag() * y.real()) - (x.real() * y.imag())) / (y.real() * y.real())
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{
+        T(x.real()) / T(y.real()),
+        ((T(x.imag()) * T(y.real())) - (T(x.real()) * T(y.imag()))) / 
+            (T(y.real()) * T(y.real()))
     };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator / (const dual<T1> x, const T2& y)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {x.real() / y, x.imag() / y};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{T(x.real()) / T(y), T(x.imag()) / T(y)};
 }
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline constexpr
-dual<common_numeric_t<T1,T2>>
+inline constexpr auto
 operator / (const T2& y, const dual<T1> x)
 {
-    return dual<common_numeric_t<T1,T2>>
-        {y / x.real(), y / x.imag()};
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{T(y) / T(x.real()), T(y) / T(x.imag())};
 }
 
 
@@ -796,8 +665,7 @@ operator / (const T2& y, const dual<T1> x)
 // EXPONENTIATION
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline
-dual<common_numeric_t<T1,T2>>
+inline auto
 operator ^ (const dual<T1> b, const dual<T2>& e)
 {
     return pow(b,e);
@@ -806,8 +674,7 @@ operator ^ (const dual<T1> b, const dual<T2>& e)
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline
-dual<common_numeric_t<T1,T2>>
+inline auto
 operator ^ (const dual<T1> b, const T2& e)
 {
     return pow(b,e);
@@ -815,8 +682,7 @@ operator ^ (const dual<T1> b, const T2& e)
 //---------------------------------------------------------
 template<class T1, class T2, class = typename
     std::enable_if<!is_dual<T2>::value && is_number<T2>::value>::type>
-inline
-dual<common_numeric_t<T1,T2>>
+inline auto
 operator ^ (const T2& b, const dual<T1> e)
 {
     return pow(make_dual(b),e);
@@ -828,8 +694,7 @@ operator ^ (const T2& b, const dual<T1> e)
 // INVERSION
 //-------------------------------------------------------------------
 template<class T>
-inline constexpr
-dual<T>
+inline constexpr auto
 operator - (const dual<T> x)
 {
     return dual<T>{-x.real(), -x.imag()};
@@ -841,22 +706,24 @@ operator - (const dual<T> x)
 // SPECIAL MULTIPLICATIONS
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline dual<common_numeric_t<T1,T2>>
+inline auto
 times_conj(const dual<T1>& x, const dual<T2>& y)
 {
-    return dual<common_numeric_t<T1,T2>>{
-        x.real() * y.real(),
-        (x.real() * (-y.imag())) + (y.real() * x.imag()) };
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{
+        T(x.real()) * T(y.real()),
+        (T(x.real()) * T(-y.imag())) + (T(y.real()) * T(x.imag())) };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-inline dual<common_numeric_t<T1,T2>>
+inline auto
 conj_times(const dual<T1>& x, const dual<T2>& y)
 {
-    return dual<common_numeric_t<T1,T2>>{
-        x.real() * y.real(),
-        (x.real() * y.imag()) + (y.real() * (-x.imag())) };
+    using T = common_numeric_t<T1,T2>;
+    return dual<T>{
+        T(x.real()) * T(y.real()),
+        (T(x.real()) * T(y.imag())) + (T(y.real()) * T(-x.imag())) };
 }
 
 
@@ -876,8 +743,7 @@ conj_times(const dual<T1>& x, const dual<T2>& y)
 
 //-------------------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 ceil(const dual<T>& x)
 {
     using std::ceil;
@@ -886,8 +752,7 @@ ceil(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 floor(const dual<T>& x)
 {
     using std::floor;
@@ -900,7 +765,7 @@ floor(const dual<T>& x)
 //-------------------------------------------------------------------
 /// @brief absolute value
 template<class T>
-inline T
+inline auto
 abs(const dual<T>& x)
 {
     using std::abs;
@@ -910,7 +775,7 @@ abs(const dual<T>& x)
 //---------------------------------------------------------
 /// @brief magnitude squared
 template<class T>
-inline dual<T>
+inline auto
 abs2(const dual<T>& x)
 {
     return dual<T>{(x.real() * x.real()), 0};
@@ -922,8 +787,7 @@ abs2(const dual<T>& x)
 // ROOTS
 //-------------------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 sqrt(const dual<T>& x)
 {
     using std::sqrt;
@@ -934,8 +798,7 @@ sqrt(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 cbrt(const dual<T>& x)
 {
     using std::cbrt;
@@ -950,48 +813,46 @@ cbrt(const dual<T>& x)
 // EXPONENTIATION
 //-------------------------------------------------------------------
 template<class T1, class T2>
-inline
-dual<common_numeric_t<T1,T2>>
+inline auto
 pow(const dual<T1> b, const dual<T2>& e)
 {
     using std::pow;
     using std::log;
 
-    auto ba_ea_1 = pow(b.real(), e.real()-1);
+    using T = common_numeric_t<T1,T2>;
 
-    return dual<common_numeric_t<T1,T2>>{
-        b.real() * ba_ea_1 * (1 + (e.imag() * log(b.real()))),
-        b.imag() * e.real() * ba_ea_1 };
+    const auto ba_ea_1 = T(pow(b.real(), e.real()-1));
+
+    return dual<T>{
+        T(b.real()) * ba_ea_1 * (T(1) + (T(e.imag()) * T(log(b.real()))) ),
+        T(b.imag()) * T(e.real()) * ba_ea_1 };
 }
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 pow(const dual<T> b, const T& e)
 {
     using std::pow;
 
-    auto ba_e_1 = pow(b.real(), e - 1);
+    const auto ba_e_1 = pow(b.real(), e - 1);
 
     return dual<T>{b.real() * ba_e_1, b.imag() * e * ba_e_1};
 }
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 exp(const dual<T>& x)
 {
     using std::exp;
-    auto expr = exp(x.real());
+    const auto expr = exp(x.real());
     return dual<T>{expr, x.imag() * expr};
 }
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 exp2(const dual<T>& x)
 {
     using std::exp2;
@@ -1003,8 +864,7 @@ exp2(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 expm1(const dual<T>& x)
 {
     using std::expm1;
@@ -1014,8 +874,7 @@ expm1(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 ldexp(const dual<T>& a, const dual<int>&b)
 {
     using std::ldexp;
@@ -1024,8 +883,7 @@ ldexp(const dual<T>& a, const dual<int>&b)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 frexp(const dual<T>& a, dual<int>* b)
 {
     using std::frexp;
@@ -1036,8 +894,7 @@ frexp(const dual<T>& a, dual<int>* b)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 modf(const dual<T>& a, dual<T>* b)
 {
     using std::modf;
@@ -1052,8 +909,7 @@ modf(const dual<T>& a, dual<T>* b)
 // LOGARITHMS
 //-------------------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 log(const dual<T>& x)
 {
     using std::log;
@@ -1062,8 +918,7 @@ log(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 log10(const dual<T>& x)
 {
     using std::log10;
@@ -1074,8 +929,7 @@ log10(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 log2(const dual<T>& x)
 {
     using std::log2;
@@ -1087,8 +941,7 @@ log2(const dual<T>& x)
 //---------------------------------------------------------
 /// @brief logarithm to floating-point basis (FLT_RADIX)
 template<class T>
-inline
-dual<T>
+inline auto
 logb(const dual<T>& x)
 {
     using std::logb;
@@ -1099,8 +952,7 @@ logb(const dual<T>& x)
 //---------------------------------------------------------
 /// @brief logarithm + 1
 template<class T>
-inline
-dual<T>
+inline auto
 log1p(const dual<T>& x)
 {
     using std::log1p;
@@ -1110,8 +962,7 @@ log1p(const dual<T>& x)
 //---------------------------------------------------------
 /// @brief logarithm to any base
 template<class T>
-inline
-dual<T>
+inline auto
 log_base(const T& base, const dual<T>& x)
 {
     using std::log;
@@ -1127,8 +978,7 @@ log_base(const T& base, const dual<T>& x)
 // TRIGONOMETRIC
 //-------------------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 sin(const dual<T>& x)
 {
     using std::sin;
@@ -1138,8 +988,7 @@ sin(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 cos(const dual<T>& x)
 {
     using std::sin;
@@ -1149,8 +998,7 @@ cos(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 tan(const dual<T>& x)
 {
     using std::cos;
@@ -1167,8 +1015,7 @@ tan(const dual<T>& x)
 // INVERSE TRIGONOMETRIC
 //-------------------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 asin(const dual<T>& x)
 {
     using std::asin;
@@ -1178,8 +1025,7 @@ asin(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 acos(const dual<T>& x)
 {
     using std::acos;
@@ -1189,8 +1035,7 @@ acos(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 atan(const dual<T>& x)
 {
     using std::atan;
@@ -1203,8 +1048,7 @@ atan(const dual<T>& x)
 // HYPERBOLIC
 //-------------------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 sinh(const dual<T>& x)
 {
     using std::sinh;
@@ -1214,8 +1058,7 @@ sinh(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 cosh(const dual<T>& x)
 {
     using std::sinh;
@@ -1225,8 +1068,7 @@ cosh(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 tanh(const dual<T>& x)
 {
     using std::cosh;
@@ -1243,8 +1085,7 @@ tanh(const dual<T>& x)
 // INVERSE HYPERBOLIC
 //-------------------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 asinh(const dual<T>& x)
 {
     using std::asinh;
@@ -1254,8 +1095,7 @@ asinh(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 acosh(const dual<T>& x)
 {
     using std::acosh;
@@ -1265,8 +1105,7 @@ acosh(const dual<T>& x)
 
 //---------------------------------------------------------
 template<class T>
-inline
-dual<T>
+inline auto
 atanh(const dual<T>& x)
 {
     using std::atanh;
@@ -1280,7 +1119,7 @@ atanh(const dual<T>& x)
 //-------------------------------------------------------------------
 ///@brief  error function
 template<class T>
-inline dual<T>
+inline auto
 erf(const dual<T>& x)
 {
     using std::erf;
@@ -1292,7 +1131,7 @@ erf(const dual<T>& x)
 //---------------------------------------------------------
 ///@brief complementary error function
 template<class T>
-inline dual<T>
+inline auto
 erfc(const dual<T>& x)
 {
     using std::erfc;
@@ -1324,8 +1163,6 @@ erfc(const dual<T>& x)
 
 
 
-//-------------------------------------------------------------------
-//
 //-------------------------------------------------------------------
 template<class T>
 inline bool
@@ -1413,31 +1250,6 @@ struct common_numeric_type<dual<T1>,dual<T2>>
 {
     using type = dual<common_numeric_t<T1,T2>>;
 };
-
-
-namespace detail {
-
-//-------------------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, dual<To>, From> :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, dual<To>, dual<From> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, dual<From> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-
-}  // namespace detail
-
 
 
 }  // namespace num

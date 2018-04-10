@@ -15,7 +15,6 @@
 #include <utility>
 #include <random>
 
-#include "narrowing.h"
 #include "traits.h"
 
 
@@ -59,7 +58,7 @@ template<class T = real_t>
 struct radians_turn
 {
     using type = T;
-    static constexpr type value = static_cast<type>(2 * pi);
+    static constexpr type value = static_cast<type>(2 * pi<type>);
 };
 
 
@@ -146,14 +145,11 @@ class angle
 
 public:
     //---------------------------------------------------------------
-    // TYPES
-    //---------------------------------------------------------------
     using turn_type    = Turn;
     using numeric_type = typename Turn::type;
+    using value_type   = numeric_type;
 
 
-    //---------------------------------------------------------------
-    // CONSTANTS
     //---------------------------------------------------------------
     static constexpr numeric_type
     turn() noexcept {
@@ -162,30 +158,16 @@ public:
 
 
     //---------------------------------------------------------------
-    // CONSTRUCTION / DESTRUCTION
-    //---------------------------------------------------------------
     ///@brief no default contructor, angle has to be initialized with a value
     angle() = delete;
 
     //-----------------------------------------------------
     /// @brief implicit conversion from simple values is not allowed
     explicit constexpr
-    angle(numeric_type a):
-        //TODO doesn't compile with gcc 5.1
-        //but desirable for move-enabled 'heavy' number types
-        //v_{std::move(a)}
+    angle(const numeric_type& a):
         v_{a}
     {}
-    //-----------------------------------------------------
-    /// @brief implicit conversion from simple values is not allowed
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value && !is_angle<T>::value>::type>
-    explicit constexpr
-    angle(T a):
-        v_(static_cast<numeric_type>(a))
-    {
-        AM_CHECK_NARROWING(numeric_type, T)
-    }
+    
     //-----------------------------------------------------
     /// @brief   implicit conversion of angles is allowed
     /// @details may cause numerical drift when performed repeatedly
@@ -193,9 +175,7 @@ public:
     constexpr
     angle(const angle<T>& a):
         v_{a.template as<turn_type>()}
-    {
-        AM_CHECK_NARROWING(numeric_type, typename T::type)
-    }
+    {}
 
     //-----------------------------------------------------
     angle(const angle&) = default;
@@ -205,8 +185,6 @@ public:
     angle&
     operator = (const angle<T>& a)
     {
-        AM_CHECK_NARROWING(numeric_type, typename T::type)
-
         v_ = a.template as<turn_type>();
         return *this;
     }
@@ -230,44 +208,30 @@ public:
     //---------------------------------------------------------------
     // ASSIGNING ARITHMETIC OPERATIONS
     //---------------------------------------------------------------
-    template<class T>
     angle&
-    operator += (const angle<T>& a)
+    operator += (const angle& a)
     {
-        AM_CHECK_NARROWING(numeric_type, typename T::type)
-
-        v_ += a.template as<turn_type>();
+        v_ += a.v_;
         return *this;
     }
     //-----------------------------------------------------
-    template<class T>
     angle&
-    operator -= (const angle<T>& a)
+    operator -= (const angle& a)
     {
-        AM_CHECK_NARROWING(numeric_type, typename T::type)
-
-        v_ -= a.template as<turn_type>();
+        v_ -= a.v_;
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value && !is_angle<T>::value>::type>
     angle&
-    operator *= (const T& factor)
+    operator *= (const numeric_type& factor)
     {
-        AM_CHECK_NARROWING(numeric_type, T)
-
         v_ *= factor;
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<T>::value && !is_angle<T>::value>::type>
     angle&
-    operator /= (const T& factor)
+    operator /= (const numeric_type& factor)
     {
-        AM_CHECK_NARROWING(numeric_type, T)
-
         v_ /= factor;
         return *this;
     }
@@ -276,42 +240,34 @@ public:
     //---------------------------------------------------------------
     // ARITHMETIC OPERATIONS
     //---------------------------------------------------------------
-    template<class T>
     constexpr angle
-    operator + (const angle<T>& a) const
+    operator + (const angle& a) const
     {
-        return angle{v_ + a.template as<turn_type>()};
+        return angle{v_ + a.v_};
     }
     //-----------------------------------------------------
-    template<class T>
     constexpr angle
-    operator - (const angle<T>& a) const
+    operator - (const angle& a) const
     {
-        return angle{v_ - a.template as<turn_type>()};
+        return angle{v_ - a.v_};
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     constexpr angle
-    operator * (const T& factor) const
+    operator * (const numeric_type& factor) const
     {
         return angle{v_ * factor};
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     constexpr angle
-    operator / (const T& factor) const
+    operator / (const numeric_type& factor) const
     {
         return angle{v_ / factor};
     }
 
     //-----------------------------------------------------
     /// @brief pre-multiplication
-    template<class T, class = typename std::enable_if<
-        is_number<decay_t<T>>::value && !is_angle<decay_t<T>>::value>::type>
     inline friend constexpr angle
-    operator * (const T& factor, const angle& a)
+    operator * (const numeric_type& factor, const angle& a)
     {
         return angle{factor * a.v_};
     }
@@ -321,7 +277,7 @@ public:
     // inversion (works only on signed domains)
     //---------------------------------------------------------------
     template<class T = numeric_type, class = typename std::enable_if<
-        !std::is_unsigned<T>::value && !is_angle<decay_t<T>>::value>::type>
+        !std::is_unsigned<T>::value && !is_angle<std::decay_t<T>>::value>::type>
     constexpr angle
     operator - () const {
         return angle{-v_};
@@ -363,37 +319,37 @@ public:
     //---------------------------------------------------------------
     template<class T>
     constexpr bool
-    operator == (const angle<T>& other) const {
+    operator == (const angle<T>& other) const noexcept {
         return (v_ == other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator != (const angle<T>& other) const {
+    operator != (const angle<T>& other) const noexcept {
         return (v_ != other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator < (const angle<T>& other) const {
+    operator < (const angle<T>& other) const noexcept {
         return (v_ < other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator > (const angle<T>& other) const {
+    operator > (const angle<T>& other) const noexcept {
         return (v_ > other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator <= (const angle<T>& other) const {
+    operator <= (const angle<T>& other) const noexcept {
         return (v_ <= other.template as<turn_type>());
     }
     //-----------------------------------------------------
     template<class T>
     constexpr bool
-    operator >= (const angle<T>& other) const {
+    operator >= (const angle<T>& other) const noexcept {
         return (v_ >= other.template as<turn_type>());
     }
 
@@ -492,8 +448,8 @@ public:
         std::enable_if<!std::is_same<turn_type,OutTurn>::value>::type>
     constexpr conversion_t<OutTurn>
     as() const noexcept {
-        using res_t = conversion_t<OutTurn>;
-        return ( (res_t(OutTurn::value) / res_t(turn())) * res_t(v_));
+        using T = conversion_t<OutTurn>;
+        return ( (T(OutTurn::value) / T(turn())) * T(v_));
     }
 
 
@@ -661,11 +617,11 @@ constexpr radians<real_t> operator"" _rad (unsigned long long int x) {
 }
 //---------------------------------------------------------
 constexpr radians<real_t> operator"" _pi_rad(long double x) {
-    return radians<real_t>{real_t(x * pi)};
+    return radians<real_t>{real_t(x) * pi<real_t>};
 }
 //---------------------------------------------------------
 constexpr radians<real_t> operator"" _pi_rad(unsigned long long int x) {
-    return radians<real_t>{real_t(x * pi)};
+    return radians<real_t>{real_t(x) * pi<real_t>};
 }
 
 
@@ -713,18 +669,18 @@ template<class U1, class U2>
 inline common_numeric_t<typename U1::type, typename U2::type>
 operator / (const angle<U1>& a, const angle<U2>& b)
 {
-    using res_t = common_numeric_t<typename U1::type, typename U2::type>;
+    using T = common_numeric_t<typename U1::type, typename U2::type>;
 
-    return radians_cast<res_t>(a) / radians_cast<res_t>(b);
+    return radians_cast<T>(a) / radians_cast<T>(b);
 }
 //---------------------------------------------------------
 template<class U>
 inline typename U::type
 operator / (const angle<U>& a, const angle<U>& b)
 {
-    using res_t = typename U::type;
+    using T = typename U::type;
 
-    return radians_cast<res_t>(a) / radians_cast<res_t>(b);
+    return radians_cast<T>(a) / radians_cast<T>(b);
 }
 
 
@@ -839,32 +795,6 @@ struct common_numeric_type<angle<T>,angle<T>>
     using type = angle<T>;
 };
 
-
-
-namespace detail {
-
-//-------------------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, angle<To>, From> :
-    public is_non_narrowing_helper<true,typename angle<To>::numeric_type,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, angle<To>, angle<From> > :
-    public is_non_narrowing_helper<true,
-        typename angle<To>::numeric_type,
-        typename angle<From>::numeric_type>
-{};
-
-//---------------------------------------------------------
-template<class To, class From>
-struct is_non_narrowing_helper<true, To, angle<From> > :
-    public is_non_narrowing_helper<true,To,typename angle<From>::numeric_type>
-{};
-
-
-}  // namespace detail
 
 
 
@@ -1115,8 +1045,6 @@ rad_atanh(T a)
 template<class Turn, class ValueDistr>
 class angle_distribution
 {
-    AM_CHECK_NARROWING(typename Turn::type,typename ValueDistr::result_type)
-
 public:
     using param_type   = typename ValueDistr::param_type;
     using numeric_type = typename ValueDistr::result_type;

@@ -26,20 +26,6 @@ namespace num {
 
 
 
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-
-template<class T>
-using decay_t = typename std::decay<T>::type;
-
-
-
-
-
-
 /*************************************************************************//***
  *
  * @brief concept checking low-level tests
@@ -54,7 +40,7 @@ template<class T>
 constexpr auto
 check_is_addable(T a, T b, int)
     -> decltype(a = a + b, a += b, b += a, std::true_type{});
-//---------------------------------------------------------
+
 template<class T>
 constexpr auto
 check_is_addable(T, T, long)
@@ -67,7 +53,7 @@ template<class T>
 constexpr auto
 check_is_subtractable(T a, T b, int)
     -> decltype(a = a - b, a -= b, b -= a, std::true_type{});
-//---------------------------------------------------------
+
 template<class T>
 constexpr auto
 check_is_subtractable(T, T, long)
@@ -82,7 +68,7 @@ check_is_additive(F a, F b, int)
     -> decltype(
         a = a + b, a += b, b += a, a = a - b, a -= b, b -= a,
         std::true_type{});
-//---------------------------------------------------------
+
 template<class F>
 constexpr auto
 check_is_additive(F a, F b, long)
@@ -95,7 +81,7 @@ template<class T>
 constexpr auto
 check_is_multipliable(T a, T b, int)
     -> decltype(a = a * b, a *= b, b *= a, std::true_type{});
-//---------------------------------------------------------
+
 template<class T>
 constexpr auto
 check_is_multipliable(T, T, long)
@@ -108,7 +94,7 @@ template<class T>
 constexpr auto
 check_is_divisible(T a, T b, int)
     -> decltype(a = a / b, a /= b, b /= a, std::true_type{});
-//---------------------------------------------------------
+
 template<class T>
 constexpr auto
 check_is_divisible(T, T, long)
@@ -121,50 +107,11 @@ template<class T>
 constexpr auto
 check_is_invertable(T a, int)
     -> decltype(a = -a, std::true_type{});
-//---------------------------------------------------------
+
 template<class T>
 constexpr auto
 check_is_invertable(T, long)
     -> std::false_type;
-
-
-
-//-------------------------------------------------------------------
-//template<class T>
-//constexpr auto
-//check_is_equal_comparable(T a, int)
-//    -> decltype(a == a || a != a, std::true_type{});
-//---------------------------------------------------------
-//template<class T>
-//constexpr auto
-//check_is_equal_comparable(T a, long)
-//    -> std::false_type;
-
-
-
-//-------------------------------------------------------------------
-//template<class T>
-//constexpr auto
-//check_is_less_comparable(T a, int)
-//    -> decltype(a < a || a <= a, std::true_type{});
-//---------------------------------------------------------
-//template<class T>
-//constexpr auto
-//check_is_less_comparable(T a, long)
-//    -> std::false_type;
-
-
-
-//-------------------------------------------------------------------
-//template<class T>
-//constexpr auto
-//check_is_greater_comparable(T a, int)
-//    -> decltype(a > a || a >= a, std::true_type{});
-//---------------------------------------------------------
-//template<class T>
-//constexpr auto
-//check_is_greater_comparable(T a, long)
-//    -> std::false_type;
 
 
 
@@ -223,8 +170,6 @@ check_has_numeric_type(long)
 
 
 
-
-
 /*************************************************************************//***
  *
  * @brief underlying numeric type
@@ -236,15 +181,12 @@ struct has_numeric_type: public
 {};
 
 
-
-//-------------------------------------------------------------------
 template<class T, bool isBuiltin = std::is_arithmetic<T>::value>
 struct numeric_type
 {
     using type = typename T::numeric_type;
 };
 
-//---------------------------------------------------------
 template<class T>
 struct numeric_type<T,true>
 {
@@ -252,32 +194,27 @@ struct numeric_type<T,true>
 };
 
 
-//---------------------------------------------------------
 template<class T>
 struct numeric_type<std::initializer_list<T>,false>
 {
     using type = typename numeric_type<T>::type;
 };
 
-//---------------------------------------------------------
 template<class T, std::size_t n>
 struct numeric_type<std::array<T,n>,false>
 {
     using type = typename numeric_type<T>::type;
 };
 
-//---------------------------------------------------------
 template<class T>
 struct numeric_type<std::complex<T>,false>
 {
     using type = typename numeric_type<T>::type;
 };
 
-//---------------------------------------------------------
+
 template<class T>
 using numeric_t = typename numeric_type<T>::type;
-
-
 
 
 
@@ -292,43 +229,37 @@ struct common_numeric_type
 {
     using type =
         typename std::common_type<
-            numeric_t<decay_t<T>>,
+            numeric_t<std::decay_t<T>>,
             typename common_numeric_type<Ts...>::type>::type;
 };
 
-//---------------------------------------------------------
 template<class T>
 struct common_numeric_type<T>
 {
-    using type = numeric_t<decay_t<T>>;
+    using type = numeric_t<std::decay_t<T>>;
 };
 
-//---------------------------------------------------------
 template<class... Ts>
 using common_numeric_t = typename common_numeric_type<Ts...>::type;
 
 
 
-//-------------------------------------------------------------------
 template<class... Ts>
 using floating_point_t = common_numeric_t<real_t,Ts...>;
 
 
 
-//-------------------------------------------------------------------
 template<class T, class T2>
 struct common_numeric_type<std::complex<T>,T2>
 {
     using type = std::complex<common_numeric_t<T,T2>>;
 };
-//---------------------------------------------------------
+
 template<class T, class T2>
 struct common_numeric_type<T2,std::complex<T>>
 {
     using type = common_numeric_t<std::complex<T>,T2>;
 };
-
-
 
 
 
@@ -344,9 +275,9 @@ struct unsigned_type
     using type = typename unsigned_type<common_numeric_t<T,Ts...>>::type;
 };
 
-//---------------------------------------------------------
+
 template<class T>
-struct unsigned_type<T> {using type = decay_t<T>; };
+struct unsigned_type<T> {using type = std::decay_t<T>; };
 
 template<>
 struct unsigned_type<signed char>  {using type = unsigned char; };
@@ -370,11 +301,8 @@ struct unsigned_type<std::complex<T>> {
 };
 
 
-//-------------------------------------------------------------------
 template<class... Ts>
-using unsigned_t = typename unsigned_type<decay_t<Ts>...>::type;
-
-
+using unsigned_t = typename unsigned_type<std::decay_t<Ts>...>::type;
 
 
 
@@ -390,7 +318,7 @@ struct signed_type
     using type = typename signed_type<common_numeric_t<T,Ts...>>::type;
 };
 
-//---------------------------------------------------------
+
 template<class T>
 struct signed_type<T> {using type = T; };
 
@@ -416,11 +344,8 @@ struct signed_type<std::complex<T>> {
 };
 
 
-//-------------------------------------------------------------------
 template<class... Ts>
-using signed_t = typename signed_type<decay_t<Ts>...>::type;
-
-
+using signed_t = typename signed_type<std::decay_t<Ts>...>::type;
 
 
 
@@ -436,14 +361,11 @@ struct has_dimensions: public
 {};
 
 
-
-//-------------------------------------------------------------------
 template<class T, bool hasdim = has_dimensions<T>::value>
 struct dimensions :
     std::integral_constant<int, int(0)>
 {};
 
-//---------------------------------------------------------
 template<class T>
 struct dimensions<T,true> :
     std::integral_constant<
@@ -451,7 +373,7 @@ struct dimensions<T,true> :
         T::dimensions()>
 {};
 
-//-------------------------------------------------------------------
+
 template<class T, std::size_t n>
 struct dimensions<std::array<T,n>,false> :
     std::integral_constant<std::size_t,n>
@@ -465,10 +387,8 @@ struct same_dimension :
     std::integral_constant<bool,
         (same_dimension<n,H>::value &&
          same_dimension<n,T...>::value)>
-{
-};
+{};
 
-//---------------------------------------------------------
 template<std::size_t n, class T>
 struct same_dimension<n,T> :
     std::integral_constant<bool, (dimensions<T>::value == n)>
@@ -490,8 +410,6 @@ using component_t = typename component<T>::type;
 
 
 
-
-
 /*****************************************************************************
  *
  * SPECIAL FUNCTION OVERLOADS FOR BUILTIN-TYPES
@@ -506,7 +424,6 @@ real(T&& x) -> decltype(std::forward<T>(x))
 }
 
 
-//---------------------------------------------------------
 template<class T, class = typename std::enable_if<
     std::is_arithmetic<typename std::decay<T>::type>::value>::type>
 inline constexpr T
@@ -514,8 +431,6 @@ imag(const T&)
 {
     return T(0);
 }
-
-
 
 
 
@@ -531,35 +446,30 @@ struct is_addable : public
 {};
 
 
-//-------------------------------------------------------------------
 template<class T>
 struct is_subtractable : public
     decltype(detail::check_is_subtractable(std::declval<T>(), std::declval<T>(), 0))
 {};
 
 
-//-------------------------------------------------------------------
 template<class F>
 struct is_additive : public
     decltype(detail::check_is_additive(std::declval<F>(), std::declval<F>(), 0))
 {};
 
 
-//-------------------------------------------------------------------
 template<class T>
 struct is_multipliable : public
     decltype(detail::check_is_multipliable(std::declval<T>(), std::declval<T>(), 0))
 {};
 
 
-//-------------------------------------------------------------------
 template<class T>
 struct is_divisible : public
     decltype(detail::check_is_divisible(std::declval<T>(), std::declval<T>(), 0))
 {};
 
 
-//-------------------------------------------------------------------
 template<class T>
 struct is_invertable : public
     decltype(detail::check_is_invertable(std::declval<T>(), 0))
@@ -582,15 +492,14 @@ struct is_invertable : public
 template<class H, class... T>
 struct is_integral :
     std::integral_constant<bool,
-        is_integral<decay_t<H>>::value &&
-        is_integral<decay_t<T>...>::value>
+        is_integral<std::decay_t<H>>::value &&
+        is_integral<std::decay_t<T>...>::value>
 {};
 
-//-----------------------------------------------------
 template<class T>
 struct is_integral<T> :
     std::integral_constant<bool,
-        std::is_integral<decay_t<T>>::value>
+        std::is_integral<std::decay_t<T>>::value>
 {};
 
 
@@ -600,7 +509,7 @@ struct is_integral<T> :
 //-------------------------------------------------------------------
 template<class T>
 struct is_unsigned :
-    public std::is_unsigned<decay_t<T>>
+    public std::is_unsigned<std::decay_t<T>>
 {};
 
 
@@ -611,31 +520,19 @@ struct is_unsigned :
 template<class H, class... T>
 struct is_floating_point :
     std::integral_constant<bool,
-        is_floating_point<decay_t<H>>::value &&
-        is_floating_point<decay_t<T>...>::value>
+        is_floating_point<std::decay_t<H>>::value &&
+        is_floating_point<std::decay_t<T>...>::value>
 {};
 
-//-----------------------------------------------------
 template<class T>
 struct is_floating_point<T> :
-    public std::is_floating_point<decay_t<T>>
+    public std::is_floating_point<std::decay_t<T>>
 {};
 
-//-----------------------------------------------------
-//class decimal;
-//template<>
-//struct is_floating_point<decimal> :
-//    std::true_type
-//{};
-
-//-----------------------------------------------------
 template<class T>
 struct is_floating_point<std::complex<T>> :
     std::integral_constant<bool, is_floating_point<T>::value>
 {};
-
-
-
 
 
 
@@ -648,18 +545,18 @@ struct is_floating_point<std::complex<T>> :
 template<class H, class... T>
 struct is_number :
     std::integral_constant<bool,
-        is_number<decay_t<H>>::value &&
-        is_number<decay_t<T>...>::value>
+        is_number<std::decay_t<H>>::value &&
+        is_number<std::decay_t<T>...>::value>
 {};
 
-//-----------------------------------------------------
+
 template<class T>
 struct is_number<T> :
     std::integral_constant<bool,
-        std::is_arithmetic<decay_t<T>>::value>
+        std::is_arithmetic<std::decay_t<T>>::value>
 {};
 
-//-----------------------------------------------------
+
 template<class T>
 struct is_number<std::complex<T>> : std::true_type {};
 
@@ -676,24 +573,6 @@ template<class T>
 struct is_number<const std::complex<T>> : std::true_type {};
 
 
-//-----------------------------------------------------
-/*
-template<class T>
-struct is_number<T> :
-    std::integral_constant<bool, true
-        && is_addable<T>::value
-        && is_subtractable<T>::value
-        && is_multipliable<T>::value
-        && is_divisible<T>::value
-        && is_invertable<T>::value
-//        && is_equal_comparable<T>::value
-        >
-{};
-*/
-
-
-
-
 
 
 /*****************************************************************************
@@ -706,21 +585,20 @@ struct has_min: public
     decltype(detail::check_has_min(std::declval<T>(), 0))
 {};
 
-//-------------------------------------------------------------------
+
 template<class T>
 struct has_max: public
     decltype(detail::check_has_max(std::declval<T>(), 0))
 {};
 
 
-//-------------------------------------------------------------------
+
 template<class T, class... R>
 struct is_interval :
     std::integral_constant<bool,
         is_interval<T>::value && is_interval<R...>::value>
 {};
 
-//---------------------------------------------------------
 template<class T>
 struct is_interval<T> :
     std::integral_constant<bool,

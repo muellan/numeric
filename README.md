@@ -1,7 +1,7 @@
 AM numeric
 ==========
 
-Header-only numeric facilities for C++11.
+Header-only numeric facilities for C++14.
 
 
 ## Quick Overview
@@ -25,10 +25,8 @@ Header-only numeric facilities for C++11.
 ### Other
   - number conversion factories
   - number concept checking
-  - checking for narrowing
-  - some tests (not very thorough at the moment)
 
 
 ## Requirements
-  - requires C++11 conforming compiler
-  - tested with g++ 4.7.2, 4.9.2, 5.1.0, 5.3.1, 7.2 and clang++ 5.0.1
+  - requires C++14 conforming compiler
+  - tested with g++ {5.4, 7.2} and clang++ 5.0.2

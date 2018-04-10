@@ -49,21 +49,29 @@ namespace num {
  *
  *****************************************************************************/
 
-//---------------------------------------------------------------
-/// @brief mathematical constants
-//  TODO C++14 replace with variable templates ?
-//---------------------------------------------------------------
-constexpr long double pi      = static_cast<long double>(3.141592653589793238462643383279500);
+template<class T>
+constexpr T pi = static_cast<T>(3.141592653589793238462643383279500);
 
-constexpr long double euler_e = static_cast<long double>(2.718281828459045235360287471352663);
+template<class T>
+constexpr T euler_e = static_cast<T>(2.718281828459045235360287471352663);
 
-constexpr long double log2_e  = static_cast<long double>(1.4426950408889634074);
-constexpr long double log10_e = static_cast<long double>(0.43429448190325182765);
-constexpr long double ln2     = static_cast<long double>(0.69314718055994530942);
-constexpr long double ln10    = static_cast<long double>(2.30258509299404568402);
+template<class T>
+constexpr T log2_e = static_cast<T>(1.4426950408889634074);
 
-constexpr long double sqrt2   = static_cast<long double>(1.41421356237309504880);
-constexpr long double sqrt1_2 = static_cast<long double>(0.70710678118654752440);
+template<class T>
+constexpr T log10_e = static_cast<T>(0.43429448190325182765);
+
+template<class T>
+constexpr T ln2 = static_cast<T>(0.69314718055994530942);
+
+template<class T>
+constexpr T ln10 = static_cast<T>(2.30258509299404568402);
+
+template<class T>
+constexpr T sqrt2 = static_cast<T>(1.41421356237309504880);
+
+template<class T>
+constexpr T sqrt1_2 = static_cast<T>(0.70710678118654752440);
 
 
 
@@ -74,11 +82,11 @@ namespace literals {
 //---------------------------------------------------------
 constexpr long double operator "" _pi(long double x)
 {
-    return (x * pi);
+    return (x * pi<long double>);
 }
 constexpr long double operator "" _pi(unsigned long long int x)
 {
-    return (x * pi);
+    return (x * pi<long double>);
 }
 
 
@@ -87,12 +95,12 @@ constexpr long double operator "" _pi(unsigned long long int x)
 //---------------------------------------------------------
 constexpr long double operator "" _e(long double x)
 {
-    return (x * euler_e);
+    return (x * euler_e<long double>);
 }
 //---------------------------------------------------------
 constexpr long double operator "" _e(unsigned long long int x)
 {
-    return (x * euler_e);
+    return (x * euler_e<long double>);
 }
 
 }  // namespace literals

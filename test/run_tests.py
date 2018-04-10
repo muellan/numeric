@@ -31,7 +31,7 @@ compiler = "gcc"
 valgrind = "valgrind --error-exitcode=1"
 gcov     = "gcov -l "
 
-gccflags = ("-std=c++0x -O0 -g "
+gccflags = ("-std=c++14 -O0 -g "
                     " -Wall -Wextra -Wpedantic "
                     " -Wno-unknown-pragmas"
                     " -Wno-unknown-warning"

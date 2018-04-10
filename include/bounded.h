@@ -81,8 +81,6 @@ struct clip_and_report
     template<class In, class Tgt>
     Tgt operator () (In x, Tgt min, Tgt max) const noexcept
     {
-        AM_CHECK_NARROWING(Tgt,In);
-
         auto res = Tgt(std::move(x));
         if(res < min) {
             std::cerr << res << " below [" << min << ',' << max << "]\n";
@@ -184,21 +182,16 @@ public:
     constexpr
     bounded() = default;
 
-    //-----------------------------------------------------
     /// @brief
-    template<class T, class = typename std::enable_if<
-        !is_bounded<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     constexpr
-    bounded(T&& v,
+    bounded(const value_type& v,
             interval_type ival = interval_type(),
             bounding_policy bp = bounding_policy())
     :
         interval_type(ival), bounding_policy(bp),
-        v_(get_bounded(std::forward<T>(v), ival, bp))
+        v_(get_bounded(v, ival, bp))
     { }
-    //-----------------------------------------------------
-    /// @brief
+    
     explicit constexpr
     bounded(interval_type ival,
             bounding_policy bp = bounding_policy())
@@ -206,48 +199,20 @@ public:
         interval_type(std::move(ival)), bounding_policy(std::move(bp)),
         v_(min(ival))
     {}
-    //-----------------------------------------------------
-    /// @brief
-    template<class T, class B, class P>
-    explicit constexpr
-    bounded(const bounded<T,B,P>& v,
-            interval_type ival,
-            bounding_policy bp = bounding_policy())
-     :
-        interval_type(ival), bounding_policy(bp),
-        v_(get_bounded(v, ival, bp))
-    { }
 
-    //-----------------------------------------------------
+
+    //---------------------------------------------------------------
     constexpr
     bounded(const bounded&) = default;
 
-    //-----------------------------------------------------
     constexpr
     bounded(bounded&&) = default;
 
-    //-----------------------------------------------------
-    template<class T, class B, class P>
-    explicit constexpr
-    bounded(const bounded<T,B,P>& src):
-        interval_type(), bounding_policy(),
-        v_(get_bounded(src, interval_type(), bounding_policy()))
-    { }
-    //-----------------------------------------------------
-    template<class T, class B, class P>
-    explicit constexpr
-    bounded(bounded<T,B,P>&& src):
-        interval_type(), bounding_policy(),
-        v_(get_bounded(std::move(src), interval_type(), bounding_policy()))
-    { }
 
-
-    //---------------------------------------------------------------
-    // ASSIGNMENT
     //---------------------------------------------------------------
     bounded&
     operator = (const bounded&) = default;
-    //-----------------------------------------------------
+    
     bounded&
     operator = (bounded&& src)
     {
@@ -258,40 +223,14 @@ public:
     }
 
 
-    //-----------------------------------------------------
-    template<class T, class B, class P>
     bounded&
-    operator = (const bounded<T,B,P>& b)
+    operator = (const value_type& v)
     {
-        v_ = get_bounded(b);
-
-        return *this;
-    }
-    //-----------------------------------------------------
-    template<class T, class B, class P>
-    bounded&
-    operator = (bounded<T,B,P>&& b)
-    {
-        v_ = get_bounded(std::move(b));
-
-        return *this;
-    }
-
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_bounded<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
-    bounded&
-    operator = (T&& v)
-    {
-        v_ = get_bounded(std::forward<T>(v));
-
+        v_ = get_bounded(v);
         return *this;
     }
 
 
-    //---------------------------------------------------------------
-    // ELEMENT ACCESS
     //---------------------------------------------------------------
     constexpr const value_type&
     value() const noexcept {
@@ -304,57 +243,35 @@ public:
     {
         return v_;
     }
-    //-----------------------------------------------------
-//    constexpr
-//    operator const value_type& () const & noexcept
-//    {
-//        return v_;
-//    }
-//    //-----------------------------------------------------
-//    constexpr
-//    operator value_type&& () && noexcept
-//    {
-//        return std::move(v_);
-//    }
 
 
     //---------------------------------------------------------------
-    // bounded (op)= number
-    //---------------------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
-    operator += (const T& v)
+    operator += (const value_type& v)
     {
         v_ = get_bounded(v_ + v);
 
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
-    operator -= (const T& v)
+    operator -= (const value_type& v)
     {
         v_ = get_bounded(v_ - v);
 
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
-    operator *= (const T& v)
+    operator *= (const value_type& v)
     {
         v_ = get_bounded(v_ * v);
 
         return *this;
     }
     //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_bounded<T>::value && is_number<T>::value>::type>
     bounded&
-    operator /= (const T& v)
+    operator /= (const value_type& v)
     {
         v_ = get_bounded(v_ /= v);
 
@@ -363,34 +280,28 @@ public:
 
 
     //---------------------------------------------------------------
-    // increment / decrement
-    //---------------------------------------------------------------
     bounded&
-    operator ++ ()
-    {
+    operator ++ () {
         v_ = get_bounded(v_ + 1);
         return *this;
     }
-    //-----------------------------------------------------
+  
     bounded&
-    operator -- ()
-    {
+    operator -- () {
         v_ = get_bounded(v_ - 1);
         return *this;
     }
 
     //-----------------------------------------------------
     bounded
-    operator ++ (int)
-    {
+    operator ++ (int) {
         auto old = *this;
         ++*this;
         return old;
     }
-    //-----------------------------------------------------
+ 
     bounded
-    operator -- (int)
-    {
+    operator -- (int) {
         auto old = *this;
         --*this;
         return old;
@@ -398,50 +309,33 @@ public:
 
 
     //---------------------------------------------------------------
-    // bounded (op)= bounded with different value_type
-    //---------------------------------------------------------------
-    template<class T, class B, class P>
     bounded&
-    operator += (const bounded<T,B,P>& o)
-    {
+    operator += (const bounded& o) {
         v_ = get_bounded(v_ + o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class B, class P>
+   
     bounded&
-    operator -= (const bounded<T,B,P>& o)
-    {
+    operator -= (const bounded& o) {
         v_ = get_bounded(v_ - o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class B, class P>
+    
     bounded&
-    operator *= (const bounded<T,B,P>& o)
-    {
+    operator *= (const bounded& o) {
         v_ = get_bounded(v_ * o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class B, class P>
+  
     bounded&
-    operator /= (const bounded<T,B,P>& o)
-    {
+    operator /= (const bounded& o) {
         v_ = get_bounded(v_ / o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class B, class P>
+    
     bounded&
-    operator %= (const bounded<T,B,P>& o)
-    {
+    operator %= (const bounded& o) {
         v_ = get_bounded(v_ % o.value());
-
         return *this;
     }
 
@@ -454,7 +348,6 @@ private:
         return bounding_policy::operator()(std::move(v), min(), max());
     }
 
-    //-----------------------------------------------------
     /// @brief needed for constexpr construction
     template<class T>
     static constexpr value_type
@@ -505,51 +398,51 @@ using interval_clipped = clipped<T,interval<T>>;
 
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_bounded<decay_t<T>>::value>::type>
+template<class T, class = std::enable_if_t<
+    is_number<std::decay_t<T>>::value &&
+    !is_bounded<std::decay_t<T>>::value>>
 inline constexpr
-unit_clipped<decay_t<T>>
+unit_clipped<std::decay_t<T>>
 make_unit_clipped(T&& x)
 {
-    return unit_clipped<decay_t<T>>{std::forward<T>(x)};
+    return unit_clipped<std::decay_t<T>>{std::forward<T>(x)};
 }
 
 
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_bounded<decay_t<T>>::value>::type>
+template<class T, class = std::enable_if_t<
+    is_number<std::decay_t<T>>::value &&
+    !is_bounded<std::decay_t<T>>::value>>
 inline constexpr
-symunit_clipped<decay_t<T>>
+symunit_clipped<std::decay_t<T>>
 make_symunit_clipped(T&& x)
 {
-    return symunit_clipped<decay_t<T>>{std::forward<T>(x)};
+    return symunit_clipped<std::decay_t<T>>{std::forward<T>(x)};
 }
 
 
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_bounded<decay_t<T>>::value>::type>
+template<class T, class = std::enable_if_t<
+    is_number<std::decay_t<T>>::value &&
+    !is_bounded<std::decay_t<T>>::value>>
 inline constexpr
-interval_clipped<decay_t<T>>
+interval_clipped<std::decay_t<T>>
 make_clipped(T&& x)
 {
-    return interval_clipped<decay_t<T>>{std::forward<T>(x)};
+    return interval_clipped<std::decay_t<T>>{std::forward<T>(x)};
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
-    is_number<decay_t<T1>>::value &&
-    !is_bounded<decay_t<T1>>::value>::type>
+template<class T1, class T2, class = std::enable_if_t<
+    is_number<std::decay_t<T1>>::value &&
+    !is_bounded<std::decay_t<T1>>::value>>
 inline constexpr
-interval_clipped<common_numeric_t<decay_t<T1>,T2>>
+interval_clipped<common_numeric_t<std::decay_t<T1>,T2>>
 make_clipped(T1&& x, interval<T2> bounds)
 {
-    return interval_clipped<common_numeric_t<decay_t<T1>,T2>>{
+    return interval_clipped<common_numeric_t<std::decay_t<T1>,T2>>{
         std::forward<T1>(x), std::move(bounds)};
 }
 
@@ -638,51 +531,51 @@ using interval_wrapped = wrapped<T,interval<T>>;
 
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_bounded<decay_t<T>>::value>::type>
+template<class T, class = std::enable_if_t<
+    is_number<std::decay_t<T>>::value &&
+    !is_bounded<std::decay_t<T>>::value>>
 inline constexpr
-unit_wrapped<decay_t<T>>
+unit_wrapped<std::decay_t<T>>
 make_unit_wrapped(T&& x)
 {
-    return unit_wrapped<decay_t<T>>{std::forward<T>(x)};
+    return unit_wrapped<std::decay_t<T>>{std::forward<T>(x)};
 }
 
 
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_bounded<decay_t<T>>::value>::type>
+template<class T, class = std::enable_if_t<
+    is_number<std::decay_t<T>>::value &&
+    !is_bounded<std::decay_t<T>>::value>>
 inline constexpr
-symunit_wrapped<decay_t<T>>
+symunit_wrapped<std::decay_t<T>>
 make_symunit_wrapped(T&& x)
 {
-    return symunit_wrapped<decay_t<T>>{std::forward<T>(x)};
+    return symunit_wrapped<std::decay_t<T>>{std::forward<T>(x)};
 }
 
 
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_bounded<decay_t<T>>::value>::type>
+template<class T, class = std::enable_if_t<
+    is_number<std::decay_t<T>>::value &&
+    !is_bounded<std::decay_t<T>>::value>>
 inline constexpr
-interval_wrapped<decay_t<T>>
+interval_wrapped<std::decay_t<T>>
 make_wrapped(T&& x)
 {
-    return interval_wrapped<decay_t<T>>{std::forward<T>(x)};
+    return interval_wrapped<std::decay_t<T>>{std::forward<T>(x)};
 }
 
 //---------------------------------------------------------
-template<class T1, class T2, class = typename std::enable_if<
-    is_number<decay_t<T1>>::value &&
-    !is_bounded<decay_t<T1>>::value>::type>
+template<class T1, class T2, class = std::enable_if_t<
+    is_number<std::decay_t<T1>>::value &&
+    !is_bounded<std::decay_t<T1>>::value>>
 inline constexpr
-interval_wrapped<common_numeric_t<decay_t<T1>,T2>>
+interval_wrapped<common_numeric_t<std::decay_t<T1>,T2>>
 make_wrapped(T1&& x, interval<T2> bounds)
 {
-    return interval_wrapped<common_numeric_t<decay_t<T1>,T2>>{
+    return interval_wrapped<common_numeric_t<std::decay_t<T1>,T2>>{
         std::forward<T1>(x), std::move(bounds)};
 }
 
@@ -779,7 +672,7 @@ template<class T1, class B1, class P1, class T2, class B2, class P2,
     class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b,
-    const T3& tol = tolerance<T3>::value())
+    const T3& tol = tolerance<T3>)
 {
     return approx_equal(a.value(), b.value(), tol);
 }
@@ -787,7 +680,7 @@ approx_equal(const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b,
 //---------------------------------------------------------
 template<class T, class B, class P>
 inline constexpr bool
-approx_1(const bounded<T,B,P>& x, const T& tol = tolerance<T>::value())
+approx_1(const bounded<T,B,P>& x, const T& tol = tolerance<T>)
 {
     return approx_1(x.value(), tol);
 }
@@ -795,7 +688,7 @@ approx_1(const bounded<T,B,P>& x, const T& tol = tolerance<T>::value())
 //---------------------------------------------------------
 template<class T, class B, class P>
 inline constexpr bool
-approx_0(const bounded<T,B,P>& x, const T& tol = tolerance<T>::value())
+approx_0(const bounded<T,B,P>& x, const T& tol = tolerance<T>)
 {
     return approx_0(x.value(), tol);
 }
@@ -803,16 +696,16 @@ approx_0(const bounded<T,B,P>& x, const T& tol = tolerance<T>::value())
 
 
 //-------------------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator == (const bounded<T1,B,P>& x, const T2& r)
 {
     return (x.value() == r);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator == (const T2& r, const bounded<T1,B,P>& x)
 {
@@ -829,16 +722,16 @@ operator == (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
 
 
 //-------------------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator != (const bounded<T1,B,P>& x, const T2& r)
 {
     return (x.value() != r);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator != (const T2& r, const bounded<T1,B,P>& x)
 {
@@ -855,16 +748,16 @@ operator != (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
 
 
 //-------------------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator > (const bounded<T1,B,P>& x, const T2& r)
 {
     return (x.value() > r);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator > (const T2& r, const bounded<T1,B,P>& x)
 {
@@ -880,16 +773,16 @@ operator > (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
 
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator >= (const bounded<T1,B,P>& x, const T2& r)
 {
     return (x.value() >= r);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator >= (const T2& r, const bounded<T1,B,P>& x)
 {
@@ -905,16 +798,16 @@ operator >= (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
 
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator < (const bounded<T1,B,P>& x, const T2& r)
 {
     return (x.value() < r);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator < (const T2& r, const bounded<T1,B,P>& x)
 {
@@ -930,16 +823,16 @@ operator < (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
 
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator <= (const bounded<T1,B,P>& x, const T2& r)
 {
     return (x.value() <= r);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
 inline bool
 operator <= (const T2& r, const bounded<T1,B,P>& x)
 {
@@ -966,31 +859,25 @@ operator <= (const bounded<T1,B1,P1>& a, const bounded<T2,B2,P2>& b)
 // ADDITION
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
-inline constexpr
-auto
+inline constexpr auto
 operator + (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
-    -> decltype(x.value() + y.value())
 {
     return (x.value() + y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator + (const bounded<T1,B,P>& x, const T2& y)
-    -> decltype(x.value() + y)
 {
     return (x.value() + y);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator + (const T2& y, const bounded<T1,B,P>& x)
-    -> decltype(y + x.value())
 {
     return (y + x.value());
 }
@@ -1001,31 +888,25 @@ operator + (const T2& y, const bounded<T1,B,P>& x)
 // SUBTRACTION
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
-inline constexpr
-auto
+inline constexpr auto
 operator - (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
-    -> decltype(x.value() - y.value())
 {
     return (x.value() - y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator - (const bounded<T1,B,P>& x, const T2& y)
-    -> decltype(x.value() - y)
 {
     return (x.value() - y);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator - (const T2& y, const bounded<T1,B,P>& x)
-    -> decltype(y - x.value())
 {
     return (y - x.value());
 }
@@ -1036,31 +917,25 @@ operator - (const T2& y, const bounded<T1,B,P>& x)
 // MULTIPLIPCATION
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
-inline constexpr
-auto
+inline constexpr auto
 operator * (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
-    -> decltype(x.value() * y.value())
 {
     return (x.value() * y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator * (const bounded<T1,B,P>& x, const T2& y)
-    -> decltype(x.value() * y)
 {
     return (x.value() * y);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator * (const T2& y, const bounded<T1,B,P>& x)
-    -> decltype(y * x.value())
 {
     return (y * x.value());
 }
@@ -1071,31 +946,25 @@ operator * (const T2& y, const bounded<T1,B,P>& x)
 // DIVISION
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
-inline constexpr
-auto
+inline constexpr auto
 operator / (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
-    -> decltype(x.value() / y.value())
 {
     return (x.value() / y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator / (const bounded<T1,B,P>& x, const T2& y)
-    -> decltype(x.value() / y)
 {
     return (x.value() / y);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator / (const T2& y, const bounded<T1,B,P>& x)
-    -> decltype(y / x.value())
 {
     return (y / x.value());
 }
@@ -1106,31 +975,25 @@ operator / (const T2& y, const bounded<T1,B,P>& x)
 // MODULO
 //-------------------------------------------------------------------
 template<class T1, class B1, class P1, class T2, class B2, class P2>
-inline constexpr
-auto
+inline constexpr auto
 operator % (const bounded<T1,B1,P1>& x, const bounded<T2,B2,P2>& y)
-    -> decltype(x.value() % y.value())
 {
     return (x.value() % y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator % (const bounded<T1,B,P>& x, const T2& y)
-    -> decltype(x.value() % y)
 {
     return (x.value() % y);
 }
 //---------------------------------------------------------
-template<class T1, class B, class P, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_bounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class B, class P, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_bounded<T2>::value>>
+inline constexpr auto
 operator % (const T2& y, const bounded<T1,B,P>& x)
-    -> decltype(y % x.value())
 {
     return (y % x.value());
 }
@@ -1203,89 +1066,17 @@ abs(const bounded<T,B,P>& x)
 //---------------------------------------------------------
 template<class T, class B, class P>
 inline constexpr auto
-min(const bounded<T,B,P>& x) -> decltype(x.min())
+min(const bounded<T,B,P>& x)
 {
     return x.min();
 }
 //---------------------------------------------------------
 template<class T, class B, class P>
 inline constexpr auto
-max(const bounded<T,B,P>& x) -> decltype(x.max())
+max(const bounded<T,B,P>& x)
 {
     return x.max();
 }
-
-
-
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-template<class T, class B, class P>
-class numeric_limits<bounded<T,B,P>>
-{
-    using val_t = bounded<T,B,P>;
-
-public:
-    static constexpr bool is_specialized = true;
-
-    static constexpr val_t
-    min() {return val_t::min(); }
-
-    static constexpr val_t
-    max() {return val_t::max(); }
-
-    static constexpr val_t
-    lowest() {return val_t::min(); }
-
-    static constexpr int digits = numeric_limits<T>::digits;
-    static constexpr int digits10 = numeric_limits<T>::digits10;
-    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
-    static constexpr bool is_signed = numeric_limits<T>::is_signed;
-    static constexpr bool is_integer = numeric_limits<T>::is_integer;
-    static constexpr bool is_exact = numeric_limits<T>::is_exact;
-    static constexpr int radix = numeric_limits<T>::radix;
-
-    static constexpr val_t
-    tolerance() noexcept { return num::tolerance<T>::value(); }
-
-    static constexpr val_t
-    round_error() noexcept { return numeric_limits<T>::round_error(); }
-
-    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
-    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
-    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
-    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
-
-    static constexpr bool has_infinity = numeric_limits<T>::has_infinity;
-    static constexpr bool has_quiet_NaN = numeric_limits<T>::has_quiet_NaN;
-    static constexpr bool has_signaling_NaN = numeric_limits<T>::has_signaling_NaN;
-    static constexpr std::float_denorm_style has_denorm = numeric_limits<T>::has_denorm;
-    static constexpr bool has_denorm_loss = numeric_limits<T>::has_denorm_loss;
-
-    static constexpr val_t
-    infinity() noexcept {return val_t(numeric_limits<T>::infinity()); }
-
-    static constexpr val_t
-    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
-
-    static constexpr val_t
-    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
-
-    static constexpr val_t
-    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
-
-    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
-    static constexpr bool is_bounded = true;
-    static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
-
-    static constexpr bool traps = numeric_limits<T>::traps;
-    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
-    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
-};
-
 
 
 
@@ -1340,33 +1131,81 @@ struct common_numeric_type<bounded<T1,B1,P1>,bounded<T2,B2,P2>>
 };
 
 
-namespace detail {
-
-//-------------------------------------------------------------------
-template<class To, class B, class P, class From>
-struct is_non_narrowing_helper<true, bounded<To,B,P>, From> :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class B1, class P1, class From, class B2, class P2>
-struct is_non_narrowing_helper<true, bounded<To,B1,P1>, bounded<From,B2,P2> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From, class B, class P>
-struct is_non_narrowing_helper<true, To, bounded<From,B,P> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-
-}  // namespace detail
-
-
-
 }  // namespace num
 }  // namespace am
 
+
+namespace std {
+
+/*****************************************************************************
+ *
+ * @brief specialization of std::numeric_limits
+ *
+ *****************************************************************************/
+template<class T, class B, class P>
+class numeric_limits<am::num::bounded<T,B,P>>
+{
+    using val_t = am::num::bounded<T,B,P>;
+
+public:
+    static constexpr bool is_specialized = true;
+
+    static constexpr val_t
+    min() {return val_t::min(); }
+
+    static constexpr val_t
+    max() {return val_t::max(); }
+
+    static constexpr val_t
+    lowest() {return val_t::min(); }
+
+    static constexpr int digits = numeric_limits<T>::digits;
+    static constexpr int digits10 = numeric_limits<T>::digits10;
+    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
+    static constexpr bool is_signed = numeric_limits<T>::is_signed;
+    static constexpr bool is_integer = numeric_limits<T>::is_integer;
+    static constexpr bool is_exact = numeric_limits<T>::is_exact;
+    static constexpr int radix = numeric_limits<T>::radix;
+
+    static constexpr val_t
+    epsilon() noexcept { return std::numeric_limits<T>::epsilon(); }
+
+    static constexpr val_t
+    round_error() noexcept { return numeric_limits<T>::round_error(); }
+
+    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
+    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
+    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
+    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
+
+    static constexpr bool has_infinity = numeric_limits<T>::has_infinity;
+    static constexpr bool has_quiet_NaN = numeric_limits<T>::has_quiet_NaN;
+    static constexpr bool has_signaling_NaN = numeric_limits<T>::has_signaling_NaN;
+    static constexpr std::float_denorm_style has_denorm = numeric_limits<T>::has_denorm;
+    static constexpr bool has_denorm_loss = numeric_limits<T>::has_denorm_loss;
+
+    static constexpr val_t
+    infinity() noexcept {return val_t(numeric_limits<T>::infinity()); }
+
+    static constexpr val_t
+    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
+
+    static constexpr val_t
+    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
+
+    static constexpr val_t
+    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
+
+    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
+
+    static constexpr bool traps = numeric_limits<T>::traps;
+    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
+    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
+};
+
+
+} // namespace std
 
 #endif

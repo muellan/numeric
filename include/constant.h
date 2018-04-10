@@ -36,13 +36,12 @@ public:
     //---------------------------------------------------------------
     /// @brief construction is only allowed with a concrete value
     template<class V, class = typename
-        std::enable_if<!std::is_same<decay_t<V>,constant<T>>::value>::type>
+        std::enable_if<!std::is_same<std::decay_t<V>,constant<T>>::value>::type>
     explicit constexpr
     constant(V&& value):
         v_(std::forward<T>(value))
     {}
 
-    //-----------------------------------------------------
     constant(const constant&) = default;
     constant(constant&&) = default;
 
@@ -58,7 +57,6 @@ public:
         return v_;
     }
 
-    //-----------------------------------------------------
     /// @brief allow implicit conversions to wrapped type
     constexpr
     operator const value_type& () const noexcept {
@@ -85,7 +83,6 @@ is_constant(const constant<T>&) noexcept {
     return true;
 }
 
-//-----------------------------------------------------
 template<class T>
 inline constexpr bool
 is_constant(const T&) noexcept {
@@ -96,10 +93,10 @@ is_constant(const T&) noexcept {
 
 //-------------------------------------------------------------------
 template<class T>
-inline constexpr constant<decay_t<T>>
+inline constexpr constant<std::decay_t<T>>
 make_constant(T&& x)
 {
-    return constant<decay_t<T>>{std::forward<T>(x)};
+    return constant<std::decay_t<T>>{std::forward<T>(x)};
 }
 
 

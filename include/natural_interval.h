@@ -57,17 +57,6 @@ public:
         max_((min < max) ? std::move(max) : std::move(min))
     {}
 
-    //-----------------------------------------------------
-    template<class T1, class T2, class = typename std::enable_if<
-        is_number<T1,T2>::value>::type>
-    constexpr
-    natural_interval(T1&& min, T2&& max) noexcept :
-        min_((min < max) ? std::forward<T1>(min) : std::forward<T2>(max)),
-        max_((min < max) ? std::forward<T2>(max) : std::forward<T1>(min))
-    {
-        AM_CHECK_NARROWING2(value_type,T1,T2)
-    }
-
 
     //---------------------------------------------------------------
     constexpr const value_type&
@@ -121,8 +110,6 @@ private:
  *
  *
  *****************************************************************************/
-
-//-------------------------------------------------------------------
 template<class Ostream, class T>
 inline Ostream&
 operator << (Ostream& os, const natural_interval<T>& r)

@@ -26,18 +26,18 @@ int main()
     using std::abs;
     constexpr auto eps = 0.01;
 
-    auto a = num::clipped<int,num::interval<int>>{ 5, {-2,8}};
-    auto b = num::clipped<int,num::interval<int>>{ 6, {-2,8}};
-    auto c = num::clipped<int,num::interval<int>>{10, {-2,8}};
-    auto d = num::clipped<int,num::interval<int>>{-5, {-2,8}};
+    auto a = clipped<int,interval<int>>{ 5, {-2,8}};
+    auto b = clipped<int,interval<int>>{ 6, {-2,8}};
+    auto c = clipped<int,interval<int>>{10, {-2,8}};
+    auto d = clipped<int,interval<int>>{-5, {-2,8}};
 
-    auto d0 = num::clipped<double,num::unit_interval<double>>{-0.12};
-    auto d1 = num::clipped<double,num::unit_interval<double>>{0.02};
-    auto d2 = num::clipped<double,num::unit_interval<double>>{0.25};
-    auto d3 = num::clipped<double,num::unit_interval<double>>{0.50};
-    auto d4 = num::clipped<double,num::unit_interval<double>>{0.75};
-    auto d5 = num::clipped<double,num::unit_interval<double>>{0.98};
-    auto d6 = num::clipped<double,num::unit_interval<double>>{1.23};
+    auto d0 = clipped<double,unit_interval<double>>{-0.12};
+    auto d1 = clipped<double,unit_interval<double>>{0.02};
+    auto d2 = clipped<double,unit_interval<double>>{0.25};
+    auto d3 = clipped<double,unit_interval<double>>{0.50};
+    auto d4 = clipped<double,unit_interval<double>>{0.75};
+    auto d5 = clipped<double,unit_interval<double>>{0.98};
+    auto d6 = clipped<double,unit_interval<double>>{1.23};
 
     if( //double values, compile-time bounds
         (abs(d0 - 0.00) < eps) &&

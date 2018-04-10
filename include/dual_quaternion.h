@@ -62,8 +62,7 @@ print(Ostream& os, const dual_quaternion<T>& q)
  *
  *****************************************************************************/
 template<class T>
-inline constexpr
-dual_quaternion<T>
+inline constexpr auto
 dual_conj(const dual_quaternion<T>& q)
 {
     return dual_quaternion<T> {
@@ -76,8 +75,7 @@ dual_conj(const dual_quaternion<T>& q)
 
 //---------------------------------------------------------
 template<class T>
-inline constexpr
-dual_quaternion<T>
+inline constexpr auto
 full_conj(const dual_quaternion<T>& q)
 {
     return dual_quaternion<T> {
@@ -94,8 +92,7 @@ full_conj(const dual_quaternion<T>& q)
 // REAL PART
 //-------------------------------------------------------------------
 template<class T>
-inline constexpr
-quaternion<T>
+inline constexpr auto
 real(const dual_quaternion<T>& dq)
 {
     return quaternion<T>{dq.real().real(),
@@ -110,8 +107,7 @@ real(const dual_quaternion<T>& dq)
 // DUAL PART
 //-------------------------------------------------------------------
 template<class T>
-inline constexpr
-quaternion<T>
+inline constexpr auto
 imag(const dual_quaternion<T>& dq)
 {
     return quaternion<T>{dq.real().imag(),
@@ -131,40 +127,39 @@ template<
     class T1, class T2, class T3, class T4,
     class T5, class T6, class T7, class T8
 >
-inline constexpr
-dual_quaternion<common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>>
+inline constexpr auto
 make_dual_quaternion(
-    T1&& aw, T2&& ax, T3&& ay, T4&& az,
-    T5&& bw, T6&& bx, T7&& by, T8&& bz)
+    const T1& aw, const T2& ax, const T3& ay, const T4& az,
+    const T5& bw, const T6& bx, const T7& by, const T8& bz)
 {
     using res_t = common_numeric_t<T1,T2,T3,T4,T5,T6,T7,T8>;
 
     return dual_quaternion<res_t>{
-        dual<res_t>{std::forward<T1>(aw), std::forward<T5>(bw)},
-        dual<res_t>{std::forward<T2>(ax), std::forward<T6>(bx)},
-        dual<res_t>{std::forward<T3>(ay), std::forward<T7>(by)},
-        dual<res_t>{std::forward<T4>(az), std::forward<T8>(bz)} };
+            dual<res_t>{aw, bw},
+            dual<res_t>{ax, bx},
+            dual<res_t>{ay, by},
+            dual<res_t>{az, bz}
+        };
 }
 
 //---------------------------------------------------------
 template<class T1, class T2>
-inline constexpr
-dual_quaternion<common_numeric_t<T1,T2>>
+inline constexpr auto
 make_dual(const quaternion<T1>& real, const quaternion<T2>& imag)
 {
     using res_t = common_numeric_t<T1,T2>;
 
     return dual_quaternion<res_t>{
-        dual<res_t>{real.real(),   imag.real()},
-        dual<res_t>{real.imag_i(), imag.imag_i()},
-        dual<res_t>{real.imag_j(), imag.imag_j()},
-        dual<res_t>{real.imag_k(), imag.imag_k()}
-    };
+            dual<res_t>{real.real(),   imag.real()},
+            dual<res_t>{real.imag_i(), imag.imag_i()},
+            dual<res_t>{real.imag_j(), imag.imag_j()},
+            dual<res_t>{real.imag_k(), imag.imag_k()}  
+        };
 }
 
 //---------------------------------------------------------
 template<class T>
-inline constexpr dual_quaternion<T>
+inline constexpr auto
 make_dual(const quaternion<T>& q)
 {
     return dual_quaternion<T>{q};

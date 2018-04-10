@@ -12,6 +12,7 @@
 #define AMLIB_NUMERIC_CONVERSION_H_
 
 #include <cstdlib>
+#include <cstring>
 #include <string>
 
 #include "traits.h"
@@ -28,18 +29,18 @@ namespace num {
  *
  *****************************************************************************/
 template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_floating_point<decay_t<T>>::value>::type>
-inline constexpr floating_point_t<decay_t<T>>
+    is_number<std::decay_t<T>>::value &&
+    !is_floating_point<std::decay_t<T>>::value>::type>
+inline constexpr floating_point_t<std::decay_t<T>>
 make_real(T&& x)
 {
-    return floating_point_t<decay_t<T>>(std::forward<T>(x));
+    return floating_point_t<std::decay_t<T>>(std::forward<T>(x));
 }
 
 //-------------------------------------------------------------------
 template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    is_floating_point<decay_t<T>>::value>::type>
+    is_number<std::decay_t<T>>::value &&
+    is_floating_point<std::decay_t<T>>::value>::type>
 inline constexpr auto
 make_real(T&& x) -> decltype(x)
 {
@@ -55,18 +56,18 @@ make_real(T&& x) -> decltype(x)
  *
  *****************************************************************************/
 template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_unsigned<decay_t<T>>::value>::type>
-inline constexpr unsigned_t<decay_t<T>>
+    is_number<std::decay_t<T>>::value &&
+    !is_unsigned<std::decay_t<T>>::value>::type>
+inline constexpr unsigned_t<std::decay_t<T>>
 make_unsigned(T&& x)
 {
-    return unsigned_t<decay_t<T>>(std::forward<T>(x));
+    return unsigned_t<std::decay_t<T>>(std::forward<T>(x));
 }
 
 //-------------------------------------------------------------------
 template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    is_unsigned<decay_t<T>>::value>::type>
+    is_number<std::decay_t<T>>::value &&
+    is_unsigned<std::decay_t<T>>::value>::type>
 inline constexpr auto
 make_unsigned(T&& x) -> decltype(x)
 {
@@ -82,18 +83,18 @@ make_unsigned(T&& x) -> decltype(x)
  *
  *****************************************************************************/
 template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    is_unsigned<decay_t<T>>::value>::type>
-inline constexpr signed_t<decay_t<T>>
+    is_number<std::decay_t<T>>::value &&
+    is_unsigned<std::decay_t<T>>::value>::type>
+inline constexpr signed_t<std::decay_t<T>>
 make_signed(T&& x)
 {
-    return signed_t<decay_t<T>>(std::forward<T>(x));
+    return signed_t<std::decay_t<T>>(std::forward<T>(x));
 }
 
 //-------------------------------------------------------------------
 template<class T, class = typename std::enable_if<
-    is_number<decay_t<T>>::value &&
-    !is_unsigned<decay_t<T>>::value>::type>
+    is_number<std::decay_t<T>>::value &&
+    !is_unsigned<std::decay_t<T>>::value>::type>
 inline constexpr auto
 make_signed(T&& x) -> decltype(x)
 {
@@ -113,165 +114,202 @@ make_signed(T&& x) -> decltype(x)
 
 namespace detail {
 
-//-------------------------------------------------------------------
-struct convert {
-    template<class T>
-    static T to(const char* s) noexcept;
+
+/*************************************************************************//**
+ * @brief forwards string to first non-whitespace char;
+ *        std string -> unsigned conv yields max value, but we want 0;
+ *        also checks for nullptr
+ *****************************************************************************/
+inline bool
+fwd_to_unsigned_int(const char*& s)
+{
+    if(!s) return false;
+    for(; std::isspace(*s); ++s);
+    if(!s[0] || s[0] == '-') return false;
+    if(s[0] == '-') return false;
+    return true;
+}
+
+
+/*************************************************************************//**
+ *
+ * @brief value limits clamping
+ *
+ *****************************************************************************/
+template<class T, class V, bool = (sizeof(V) > sizeof(T))>
+struct limits_clamped {
+    static T from(const V& v) {
+        if(v > V(std::numeric_limits<T>::max())) {
+            return std::numeric_limits<T>::max();
+        }
+        if(v < V(std::numeric_limits<T>::lowest())) {
+            return std::numeric_limits<T>::lowest();
+        }
+        return T(v);
+    }
+};
+
+template<class T, class V>
+struct limits_clamped<T,V,false> {
+    static T from(const V& v) { return T(v); }
 };
 
 
-//---------------------------------------------------------
-template<> inline
-char
-convert::to<char>(const char* s) noexcept
-{
-    const auto i = std::atoi(s);
-
-    if(i > std::numeric_limits<char>::max())
-        return std::numeric_limits<char>::max();
-
-    return static_cast<char>(i);
-}
-//---------------------------------------------------------
-template<> inline
-short
-convert::to<short>(const char* s) noexcept
-{
-    const auto i = std::atoi(s);
-
-    if(i > std::numeric_limits<short>::max())
-        return std::numeric_limits<short>::max();
-
-    return static_cast<short>(i);
-}
-//---------------------------------------------------------
-template<> inline
-int
-convert::to<int>(const char* s) noexcept  {
-    return std::atoi(s);
-}
-//---------------------------------------------------------
-template<> inline
-long
-convert::to<long>(const char* s) noexcept  {
-    return std::atol(s);
-}
-//---------------------------------------------------------
-template<> inline
-long long
-convert::to<long long>(const char* s) noexcept  {
-    return std::atol(s);
+/*************************************************************************//**
+ *
+ * @brief returns value of v as a T, clamped at T's maximum
+ *
+ *****************************************************************************/
+template<class T, class V>
+inline T clamped_on_limits(const V& v) {
+    return limits_clamped<T,V>::from(v);
 }
 
 
-//---------------------------------------------------------
-template<> inline
-unsigned char
-convert::to<unsigned char>(const char* s) noexcept
-{
-    const auto i = std::atoi(s);
 
-    if(i <= 0) return static_cast<unsigned char>(0);
+/*************************************************************************//**
+ *
+ * @brief type conversion helpers
+ *
+ *****************************************************************************/
+template<class T>
+struct convert;
 
-    if(i > std::numeric_limits<unsigned char>::max())
-        return std::numeric_limits<unsigned char>::max();
+template<class T>
+struct convert {
+    static inline T from(const char* s) {
+        if(!s) return false;
+        //a conversion from const char* to / must exist
+        return static_cast<T>(s);
+    }
+};
 
-    return static_cast<unsigned char>(i);
-}
-//---------------------------------------------------------
-template<> inline
-unsigned short
-convert::to<unsigned short>(const char* s) noexcept
-{
-    const auto i = std::atoi(s);
+template<>
+struct convert<bool> {
+    static inline bool from(const char* s) {
+        if(!s) return false;
+        return static_cast<bool>(s);
+    }
+};
 
-    if(i <= 0) return static_cast<unsigned short>(0);
+template<>
+struct convert<unsigned char> {
+    static inline unsigned char from(const char* s) {
+        if(!fwd_to_unsigned_int(s)) return (0);
+        return clamped_on_limits<unsigned char>(std::strtoull(s,nullptr,10));
+    }
+};
 
-    if(i > std::numeric_limits<unsigned short>::max())
-        return std::numeric_limits<unsigned short>::max();
+template<>
+struct convert<unsigned short int> {
+    static inline unsigned short int from(const char* s) {
+        if(!fwd_to_unsigned_int(s)) return (0);
+        return clamped_on_limits<unsigned short int>(std::strtoull(s,nullptr,10));
+    }
+};
 
-    return static_cast<unsigned short>(i);
-}
-//---------------------------------------------------------
-template<> inline
-unsigned int
-convert::to<unsigned int>(const char* s) noexcept
-{
-    const auto i = std::atoi(s);
+template<>
+struct convert<unsigned int> {
+    static inline unsigned int from(const char* s) {
+        if(!fwd_to_unsigned_int(s)) return (0);
+        return clamped_on_limits<unsigned int>(std::strtoull(s,nullptr,10));
+    }
+};
 
-    if(i <= 0) return static_cast<unsigned int>(0);
-    return static_cast<unsigned int>(i);
-}
-//---------------------------------------------------------
-template<> inline
-unsigned long
-convert::to<unsigned long>(const char* s) noexcept
-{
-    const auto i = std::atol(s);
+template<>
+struct convert<unsigned long int> {
+    static inline unsigned long int from(const char* s) {
+        if(!fwd_to_unsigned_int(s)) return (0);
+        return clamped_on_limits<unsigned long int>(std::strtoull(s,nullptr,10));
+    }
+};
 
-    if(i <= 0) return static_cast<unsigned long>(0);
-    return static_cast<unsigned long>(i);
-}
-//---------------------------------------------------------
-template<> inline
-unsigned long long
-convert::to<unsigned long long>(const char* s) noexcept
-{
-    const auto i = std::atoi(s);
+template<>
+struct convert<unsigned long long int> {
+    static inline unsigned long long int from(const char* s) {
+        if(!fwd_to_unsigned_int(s)) return (0);
+        return clamped_on_limits<unsigned long long int>(std::strtoull(s,nullptr,10));
+    }
+};
 
-    if(i <= 0) return static_cast<unsigned long long>(0);
-    return static_cast<unsigned long long>(i);
-}
+template<>
+struct convert<char> {
+    static inline char from(const char* s) {
+        //parse as single character?
+        const auto n = std::strlen(s);
+        if(n == 1) return s[0];
+        //parse as integer
+        return clamped_on_limits<char>(std::strtoll(s,nullptr,10));
+    }
+};
 
+template<>
+struct convert<short int> {
+    static inline short int from(const char* s) {
+        return clamped_on_limits<short int>(std::strtoll(s,nullptr,10));
+    }
+};
 
-//---------------------------------------------------------
-template<> inline
-float
-convert::to<float>(const char* s) noexcept
-{
-    const auto f = std::stof(s);
+template<>
+struct convert<int> {
+    static inline int from(const char* s) {
+        return clamped_on_limits<int>(std::strtoll(s,nullptr,10));
+    }
+};
 
-    if(f > std::numeric_limits<float>::max())
-        return std::numeric_limits<float>::max();
+template<>
+struct convert<long int> {
+    static inline long int from(const char* s) {
+        return clamped_on_limits<long int>(std::strtoll(s,nullptr,10));
+    }
+};
 
-    if(f < std::numeric_limits<float>::lowest())
-        return std::numeric_limits<float>::lowest();
+template<>
+struct convert<long long int> {
+    static inline long long int from(const char* s) {
+        return (std::strtoll(s,nullptr,10));
+    }
+};
 
-    return static_cast<float>(f);
-}
+template<>
+struct convert<float> {
+    static inline float from(const char* s) {
+        return (std::strtof(s,nullptr));
+    }
+};
 
-//---------------------------------------------------------
-template<> inline
-double
-convert::to<double>(const char* s) noexcept {
-    return std::stod(s);
-}
+template<>
+struct convert<double> {
+    static inline double from(const char* s) {
+        return (std::strtod(s,nullptr));
+    }
+};
 
+template<>
+struct convert<long double> {
+    static inline long double from(const char* s) {
+        return (std::strtold(s,nullptr));
+    }
+};
 
-//---------------------------------------------------------
-template<> inline
-long double
-convert::to<long double>(const char* s) noexcept {
-    return std::stold(s);
-}
 
 }  // namespace detail
 
 
 //-------------------------------------------------------------------
-template<class To, class = typename std::enable_if<is_number<To>::value>>
-inline To
+template<class Target, class = std::enable_if_t<is_number<Target>::value>>
+inline Target
 to(const std::string& str) noexcept
 {
-    return detail::convert::to<To>(str.c_str());
+    return detail::convert<Target>::from(str.c_str());
 }
 
 //-------------------------------------------------------------------
-template<class To, class = typename std::enable_if<is_number<To>::value>>
-inline To
+template<class Target, class = std::enable_if_t<is_number<Target>::value>>
+inline Target
 to(const char* str) noexcept
 {
-    return detail::convert::to<To>(str);
+    return detail::convert<Target>::from(str);
 }
 
 
@@ -290,7 +328,7 @@ to_string(T&& x)
 }
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+template<class T, class = std::enable_if_t<is_number<T>::value>>
 std::string
 to_string(T number, int precision)
 {
@@ -302,7 +340,7 @@ to_string(T number, int precision)
 
 
 //-------------------------------------------------------------------
-template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+template<class T, class = std::enable_if_t<is_number<T>::value>>
 std::string
 to_fixed_string(T number, int precision)
 {
@@ -314,7 +352,7 @@ to_fixed_string(T number, int precision)
 
 
 //---------------------------------------------------------
-template<class T, class = typename std::enable_if<is_number<T>::value>::type>
+template<class T, class = std::enable_if_t<is_number<T>::value>>
 std::string
 to_fixed_string(T number, int precision, int intDigits,
                 const std::string& prefixFiller = std::string(" "))

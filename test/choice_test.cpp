@@ -41,9 +41,9 @@ void initialization()
 //-------------------------------------------------------------------
 void arithmetic()
 {
-    auto c1 = choice<std::int8_t,8>{2};
+    auto c1 = choice<int,8>{2};
 
-    auto c2 = choice<std::int8_t,11>{0};
+    auto c2 = choice<int,11>{0};
     c2 += 123456;
     auto c3 = c2;
     c3 -= 1123;

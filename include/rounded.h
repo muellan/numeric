@@ -18,7 +18,6 @@
 
 #include "limits.h"
 #include "traits.h"
-#include "narrowing.h"
 
 
 namespace am {
@@ -128,90 +127,51 @@ public:
     rounded() = default;
 
     //-----------------------------------------------------
-    /// @brief
-    template<class T, class = typename std::enable_if<
-        !is_rounded<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     constexpr
-    rounded(T&& v, rounding_method rm = rounding_method()) :
+    rounded(const value_type& v, rounding_method rm = rounding_method()) :
         rounding_method(rm),
-        v_(corrected(std::forward<T>(v), rm))
+        v_{corrected(v, rm)}
     {}
-    //-----------------------------------------------------
-    /// @brief
+
+    constexpr
+    rounded(value_type&& v, rounding_method rm = rounding_method()) :
+        rounding_method(rm),
+        v_{corrected(std::move(v), rm)}
+    {}
+
     explicit constexpr
     rounded(rounding_method rp) :
         rounding_method(std::move(rp)),
         v_()
     {}
-    //-----------------------------------------------------
-    /// @brief
-    template<class T, class R>
-    explicit constexpr
-    rounded(const rounded<T,R>& v, rounding_method rm = rounding_method()) :
-        rounding_method(rm),
-        v_(corrected(v, rm))
-    {}
 
-    //-----------------------------------------------------
     constexpr
     rounded(const rounded&) = default;
 
-    //-----------------------------------------------------
     constexpr
     rounded(rounded&&) = default;
 
-    //-----------------------------------------------------
-    template<class T, class R>
-    explicit constexpr
-    rounded(const rounded<T,R>& src):
-        rounding_method(src),
-        v_(corrected(src, rounding_method()))
-    {}
 
-
-    //---------------------------------------------------------------
-    // ASSIGNMENT
     //---------------------------------------------------------------
     rounded&
     operator = (const rounded&) = default;
-    //-----------------------------------------------------
+    
     rounded&
-    operator = (rounded&& src)
-    {
+    operator = (rounded&& src) {
         rounding_method::operator = (src);
         v_ = std::move(src.v_);
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class T, class R>
     rounded&
-    operator = (const rounded<T,R>& b)
-    {
-        v_ = corrected(b);
-
-        return *this;
-    }
-    //-----------------------------------------------------
-    template<class T, class R>
-    rounded&
-    operator = (rounded<T,R>&& b)
-    {
-        v_ = corrected(std::move(b));
-
+    operator = (const value_type& v) {
+        v_ = corrected(v);
         return *this;
     }
 
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_rounded<decay_t<T>>::value &&
-        is_number<decay_t<T>>::value>::type>
     rounded&
-    operator = (T&& v)
-    {
-        v_ = corrected(std::forward<T>(v));
-
+    operator = (value_type&& v) {
+        v_ = corrected(std::move(v));
         return *this;
     }
 
@@ -222,7 +182,6 @@ public:
         return v_;
     }
 
-    //-----------------------------------------------------
     constexpr
     operator const value_type& () const noexcept
     {
@@ -231,78 +190,53 @@ public:
 
 
     //---------------------------------------------------------------
-    // rounded (op)= number
-    //---------------------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_rounded<T>::value && is_number<T>::value>::type>
     rounded&
-    operator += (const T& v)
-    {
+    operator += (const value_type& v) {
         v_ = corrected(v_ + v);
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_rounded<T>::value && is_number<T>::value>::type>
+
     rounded&
-    operator -= (const T& v)
-    {
+    operator -= (const value_type& v) {
         v_ = corrected(v_ - v);
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_rounded<T>::value && is_number<T>::value>::type>
+
     rounded&
-    operator *= (const T& v)
-    {
+    operator *= (const value_type& v) {
         v_ = corrected(v_ * v);
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class = typename std::enable_if<
-        !is_rounded<T>::value && is_number<T>::value>::type>
+    
     rounded&
-    operator /= (const T& v)
-    {
+    operator /= (const value_type& v) {
         v_ = corrected(v_ /= v);
-
         return *this;
     }
 
 
     //---------------------------------------------------------------
-    // increment / decrement
-    //---------------------------------------------------------------
     rounded&
-    operator ++ ()
-    {
+    operator ++ () {
         v_ = corrected(v_ + 1);
         return *this;
     }
-    //-----------------------------------------------------
+    
     rounded&
-    operator -- ()
-    {
+    operator -- () {
         v_ = corrected(v_ - 1);
         return *this;
     }
 
-    //-----------------------------------------------------
     rounded
-    operator ++ (int)
-    {
+    operator ++ (int) {
         auto old = *this;
         ++*this;
         return old;
     }
-    //-----------------------------------------------------
+    
     rounded
-    operator -- (int)
-    {
+    operator -- (int) {
         auto old = *this;
         --*this;
         return old;
@@ -310,72 +244,51 @@ public:
 
 
     //---------------------------------------------------------------
-    // rounded (op)= rounded with different value_type
-    //---------------------------------------------------------------
-    template<class T, class R>
     rounded&
-    operator += (const rounded<T,R>& o)
-    {
+    operator += (const rounded& o) {
         v_ = corrected(v_ + o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class R>
+    
     rounded&
-    operator -= (const rounded<T,R>& o)
-    {
+    operator -= (const rounded& o) {
         v_ = corrected(v_ - o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class R>
+    
     rounded&
-    operator *= (const rounded<T,R>& o)
-    {
+    operator *= (const rounded& o) {
         v_ = corrected(v_ * o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class R>
+    
     rounded&
-    operator /= (const rounded<T,R>& o)
-    {
+    operator /= (const rounded& o) {
         v_ = corrected(v_ / o.value());
-
         return *this;
     }
-    //-----------------------------------------------------
-    template<class T, class R>
+   
     rounded&
-    operator %= (const rounded<T,R>& o)
-    {
+    operator %= (const rounded& o) {
         v_ = corrected(v_ % o.value());
-
         return *this;
     }
 
 
 private:
     //---------------------------------------------------------------
-    template<class T>
     constexpr value_type
-    corrected(T v) const noexcept {
+    corrected(value_type v) const noexcept {
         return rounding_method::operator()(std::move(v));
     }
 
-    //-----------------------------------------------------
     /// @brief needed for constexpr construction
-    template<class T>
     static constexpr value_type
-    corrected(T v, const rounding_method& rm) noexcept {
+    corrected(value_type v, const rounding_method& rm) noexcept {
         return rm(std::move(v));
     }
 
     value_type v_;
-
 };
 
 
@@ -402,16 +315,15 @@ using rounded_to_nearest_int = rounded<T,round_to_nearest_int>;
  * FACTORIES
  *
  *****************************************************************************/
-template<class T1, class T2, class = typename std::enable_if<
-    is_number<decay_t<T1>>::value &&
-    is_number<decay_t<T2>>::value &&
-    !is_rounded<decay_t<T1>>::value &&
-    !is_rounded<decay_t<T2>>::value>::type>
-inline constexpr
-rounded_to_nearest<common_numeric_t<decay_t<T1>,decay_t<T2>>>
+template<class T1, class T2, class = std::enable_if_t<
+    is_number<std::decay_t<T1>>::value &&
+    is_number<std::decay_t<T2>>::value &&
+    !is_rounded<std::decay_t<T1>>::value &&
+    !is_rounded<std::decay_t<T2>>::value>>
+inline constexpr auto
 make_rounded_to_nearest(T1&& x, T2&& unit)
 {
-    return rounded_to_nearest<common_numeric_t<decay_t<T1>,decay_t<T2>>>{
+    return rounded_to_nearest<common_numeric_t<std::decay_t<T1>,std::decay_t<T2>>>{
         std::forward<T1>(x), std::move(unit)};
 }
 
@@ -461,7 +373,7 @@ template<class T1, class B1, class T2, class B2,
     class T3 = common_numeric_t<T1,T2>>
 inline constexpr bool
 approx_equal(const rounded<T1,B1>& a, const rounded<T2,B2>& b,
-    const T3& tol = tolerance<T3>::value())
+    const T3& tol = tolerance<T3>)
 {
     return approx_equal(a.value(), b.value(), tol);
 }
@@ -469,7 +381,7 @@ approx_equal(const rounded<T1,B1>& a, const rounded<T2,B2>& b,
 //---------------------------------------------------------
 template<class T, class B>
 inline constexpr bool
-approx_1(const rounded<T,B>& x, const T& tol = tolerance<T>::value())
+approx_1(const rounded<T,B>& x, const T& tol = tolerance<T>)
 {
     return approx_1(x.value(), tol);
 }
@@ -477,7 +389,7 @@ approx_1(const rounded<T,B>& x, const T& tol = tolerance<T>::value())
 //---------------------------------------------------------
 template<class T, class B>
 inline constexpr bool
-approx_0(const rounded<T,B>& x, const T& tol = tolerance<T>::value())
+approx_0(const rounded<T,B>& x, const T& tol = tolerance<T>)
 {
     return approx_0(x.value(), tol);
 }
@@ -485,16 +397,16 @@ approx_0(const rounded<T,B>& x, const T& tol = tolerance<T>::value())
 
 
 //-------------------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator == (const rounded<T1,R>& x, const T2& r)
 {
     return (x.value() == r);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator == (const T2& r, const rounded<T1,R>& x)
 {
@@ -511,16 +423,16 @@ operator == (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
 
 
 //-------------------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator != (const rounded<T1,R>& x, const T2& r)
 {
     return (x.value() != r);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator != (const T2& r, const rounded<T1,R>& x)
 {
@@ -537,16 +449,16 @@ operator != (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
 
 
 //-------------------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator > (const rounded<T1,R>& x, const T2& r)
 {
     return (x.value() > r);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator > (const T2& r, const rounded<T1,R>& x)
 {
@@ -562,16 +474,16 @@ operator > (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
 
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator >= (const rounded<T1,R>& x, const T2& r)
 {
     return (x.value() >= r);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator >= (const T2& r, const rounded<T1,R>& x)
 {
@@ -587,16 +499,16 @@ operator >= (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
 
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator < (const rounded<T1,R>& x, const T2& r)
 {
     return (x.value() < r);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator < (const T2& r, const rounded<T1,R>& x)
 {
@@ -612,16 +524,16 @@ operator < (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
 
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator <= (const rounded<T1,R>& x, const T2& r)
 {
     return (x.value() <= r);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
 inline bool
 operator <= (const T2& r, const rounded<T1,R>& x)
 {
@@ -644,31 +556,25 @@ operator <= (const rounded<T1,R1>& a, const rounded<T2,R2>& b)
  *
  *****************************************************************************/
 template<class T1, class R1, class T2, class R2>
-inline constexpr
-auto
+inline constexpr auto
 operator + (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
-    -> decltype(x.value() + y.value())
 {
     return (x.value() + y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator + (const rounded<T1,R>& x, const T2& y)
-    -> decltype(x.value() + y)
 {
     return (x.value() + y);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator + (const T2& y, const rounded<T1,R>& x)
-    -> decltype(y + x.value())
 {
     return (y + x.value());
 }
@@ -677,31 +583,25 @@ operator + (const T2& y, const rounded<T1,R>& x)
 
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
-inline constexpr
-auto
+inline constexpr auto
 operator - (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
-    -> decltype(x.value() - y.value())
 {
     return (x.value() - y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator - (const rounded<T1,R>& x, const T2& y)
-    -> decltype(x.value() - y)
 {
     return (x.value() - y);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator - (const T2& y, const rounded<T1,R>& x)
-    -> decltype(y - x.value())
 {
     return (y - x.value());
 }
@@ -710,31 +610,25 @@ operator - (const T2& y, const rounded<T1,R>& x)
 
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
-inline constexpr
-auto
+inline constexpr auto
 operator * (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
-    -> decltype(x.value() * y.value())
 {
     return (x.value() * y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator * (const rounded<T1,R>& x, const T2& y)
-    -> decltype(x.value() * y)
 {
     return (x.value() * y);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator * (const T2& y, const rounded<T1,R>& x)
-    -> decltype(y * x.value())
 {
     return (y * x.value());
 }
@@ -743,31 +637,25 @@ operator * (const T2& y, const rounded<T1,R>& x)
 
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
-inline constexpr
-auto
+inline constexpr auto
 operator / (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
-    -> decltype(x.value() / y.value())
 {
     return (x.value() / y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator / (const rounded<T1,R>& x, const T2& y)
-    -> decltype(x.value() / y)
 {
     return (x.value() / y);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator / (const T2& y, const rounded<T1,R>& x)
-    -> decltype(y / x.value())
 {
     return (y / x.value());
 }
@@ -776,31 +664,25 @@ operator / (const T2& y, const rounded<T1,R>& x)
 
 //-------------------------------------------------------------------
 template<class T1, class R1, class T2, class R2>
-inline constexpr
-auto
+inline constexpr auto
 operator % (const rounded<T1,R1>& x, const rounded<T2,R2>& y)
-    -> decltype(x.value() % y.value())
 {
     return (x.value() % y.value());
 }
 
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator % (const rounded<T1,R>& x, const T2& y)
-    -> decltype(x.value() % y)
 {
     return (x.value() % y);
 }
 //---------------------------------------------------------
-template<class T1, class R, class T2, class = typename
-    std::enable_if<is_number<T2>::value && !is_rounded<T2>::value>::type>
-inline constexpr
-auto
+template<class T1, class R, class T2, class = 
+    std::enable_if_t<is_number<T2>::value && !is_rounded<T2>::value>>
+inline constexpr auto
 operator % (const T2& y, const rounded<T1,R>& x)
-    -> decltype(y % x.value())
 {
     return (y % x.value());
 }
@@ -873,77 +755,6 @@ abs(const rounded<T,R>& x)
 
 /*****************************************************************************
  *
- *
- *
- *****************************************************************************/
-template<class T, class R>
-class numeric_limits<rounded<T,R>>
-{
-    using val_t = rounded<T,R>;
-
-public:
-    static constexpr bool is_specialized = true;
-
-    static constexpr val_t
-    min() {return val_t(numeric_limits<T>::min()); }
-
-    static constexpr val_t
-    max() {return val_t(numeric_limits<T>::max()); }
-
-    static constexpr val_t
-    lowest() {return val_t(numeric_limits<T>::lowest()); }
-
-    static constexpr int digits = numeric_limits<T>::digits;
-    static constexpr int digits10 = numeric_limits<T>::digits10;
-    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
-    static constexpr bool is_signed = numeric_limits<T>::is_signed;
-    static constexpr bool is_integer = numeric_limits<T>::is_integer;
-    static constexpr bool is_exact = numeric_limits<T>::is_exact;
-    static constexpr int radix = numeric_limits<T>::radix;
-
-    static constexpr val_t
-    tolerance() noexcept { return num::tolerance<T>::value(); }
-
-    static constexpr val_t
-    round_error() noexcept { return numeric_limits<T>::round_error(); }
-
-    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
-    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
-    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
-    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
-
-    static constexpr bool has_infinity = numeric_limits<T>::has_infinity;
-    static constexpr bool has_quiet_NaN = numeric_limits<T>::has_quiet_NaN;
-    static constexpr bool has_signaling_NaN = numeric_limits<T>::has_signaling_NaN;
-    static constexpr std::float_denorm_style has_denorm = numeric_limits<T>::has_denorm;
-    static constexpr bool has_denorm_loss = numeric_limits<T>::has_denorm_loss;
-
-    static constexpr val_t
-    infinity() noexcept {return val_t(numeric_limits<T>::infinity()); }
-
-    static constexpr val_t
-    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
-
-    static constexpr val_t
-    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
-
-    static constexpr val_t
-    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
-
-    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
-    static constexpr bool is_bounded = numeric_limits<T>::is_bounded;
-    static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
-
-    static constexpr bool traps = numeric_limits<T>::traps;
-    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
-    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
-};
-
-
-
-
-/*****************************************************************************
- *
  * TRAITS SPECIALIZATIONS
  *
  *****************************************************************************/
@@ -993,32 +804,81 @@ struct common_numeric_type<rounded<T1,R1>,rounded<T2,R2>>
 };
 
 
-namespace detail {
-
-//-------------------------------------------------------------------
-template<class To, class R, class From>
-struct is_non_narrowing_helper<true, rounded<To,R>, From> :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class R1, class From, class R2>
-struct is_non_narrowing_helper<true, rounded<To,R1>, rounded<From,R2> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-//---------------------------------------------------------
-template<class To, class From, class R>
-struct is_non_narrowing_helper<true, To, rounded<From,R> > :
-    public is_non_narrowing_helper<true,To,From>
-{};
-
-
-}  // namespace detail
-
-
 }  // namespace num
 }  // namespace am
 
+
+namespace std {
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+template<class T, class R>
+class numeric_limits<am::num::rounded<T,R>>
+{
+    using val_t = am::num::rounded<T,R>;
+
+public:
+    static constexpr bool is_specialized = true;
+
+    static constexpr val_t
+    min() {return val_t(numeric_limits<T>::min()); }
+
+    static constexpr val_t
+    max() {return val_t(numeric_limits<T>::max()); }
+
+    static constexpr val_t
+    lowest() {return val_t(numeric_limits<T>::lowest()); }
+
+    static constexpr int digits = numeric_limits<T>::digits;
+    static constexpr int digits10 = numeric_limits<T>::digits10;
+    static constexpr int max_digits10 = numeric_limits<T>::max_digits10;
+    static constexpr bool is_signed = numeric_limits<T>::is_signed;
+    static constexpr bool is_integer = numeric_limits<T>::is_integer;
+    static constexpr bool is_exact = numeric_limits<T>::is_exact;
+    static constexpr int radix = numeric_limits<T>::radix;
+
+    static constexpr val_t
+    epsilon() noexcept { return std::numeric_limits<T>::epsilon(); }
+
+    static constexpr val_t
+    round_error() noexcept { return numeric_limits<T>::round_error(); }
+
+    static constexpr int min_exponent   = numeric_limits<T>::min_exponent;
+    static constexpr int min_exponent10 = numeric_limits<T>::min_exponent10;
+    static constexpr int max_exponent   = numeric_limits<T>::max_exponent;
+    static constexpr int max_exponent10 = numeric_limits<T>::max_exponent10;
+
+    static constexpr bool has_infinity = numeric_limits<T>::has_infinity;
+    static constexpr bool has_quiet_NaN = numeric_limits<T>::has_quiet_NaN;
+    static constexpr bool has_signaling_NaN = numeric_limits<T>::has_signaling_NaN;
+    static constexpr std::float_denorm_style has_denorm = numeric_limits<T>::has_denorm;
+    static constexpr bool has_denorm_loss = numeric_limits<T>::has_denorm_loss;
+
+    static constexpr val_t
+    infinity() noexcept {return val_t(numeric_limits<T>::infinity()); }
+
+    static constexpr val_t
+    quiet_NaN() noexcept {return val_t(numeric_limits<T>::quiet_NaN()); }
+
+    static constexpr val_t
+    signaling_NaN() noexcept {return val_t(numeric_limits<T>::signaling_NaN()); }
+
+    static constexpr val_t
+    denorm_min() noexcept {return val_t(numeric_limits<T>::denorm_min()); }
+
+    static constexpr bool is_iec559 = numeric_limits<T>::is_iec559;
+    static constexpr bool is_bounded = numeric_limits<T>::is_bounded;
+    static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
+
+    static constexpr bool traps = numeric_limits<T>::traps;
+    static constexpr bool tinyness_before = numeric_limits<T>::tinyness_before;
+    static constexpr std::float_round_style round_style = numeric_limits<T>::round_style;
+};
+
+} // namespace std
 
 #endif
