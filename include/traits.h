@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_TRAITS_H_
-#define AMLIB_NUMERIC_TRAITS_H_
+#ifndef AM_NUMERIC_TRAITS_H_
+#define AM_NUMERIC_TRAITS_H_
 
 #include <type_traits>
 #include <utility>

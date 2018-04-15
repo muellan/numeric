@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_BIQUATERNION_H_
-#define AMLIB_NUMERIC_BIQUATERNION_H_
+#ifndef AM_NUMERIC_BIQUATERNION_H_
+#define AM_NUMERIC_BIQUATERNION_H_
 
 
 #include <complex>

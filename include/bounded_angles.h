@@ -9,8 +9,8 @@
  *****************************************************************************/
 
 
-#ifndef AMLIB_NUMERIC_ANGLES_H_
-#define AMLIB_NUMERIC_ANGLES_H_
+#ifndef AM_NUMERIC_ANGLES_H_
+#define AM_NUMERIC_ANGLES_H_
 
 
 #include "angle.h"

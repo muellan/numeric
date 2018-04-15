@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_QUATERNION_H_
-#define AMLIB_NUMERIC_QUATERNION_H_
+#ifndef AM_NUMERIC_QUATERNION_H_
+#define AM_NUMERIC_QUATERNION_H_
 
 #include <cmath>
 #include <random>
@@ -731,13 +731,13 @@ make_quaternion(T1&& real, T2&& imagi, T3&& imagj, T4&& imagk)
 //-------------------------------------------------------------------
 // RANDOM UNIFORM
 //-------------------------------------------------------------------
-template<class T, class URBG>
+template<class T, class URNG>
 inline quaternion<T>
-random_unit_quaternion(URBG& urbg)
+random_unit_quaternion(URNG& urng)
 {
     static_assert(
         is_floating_point<T>::value,
-        "random_unit_quaternion<T>(urbg): T must be a floating-point number type");
+        "random_unit_quaternion<T>(urng): T must be a floating-point number type");
 
     using std::cos;
     using std::sin;
@@ -746,9 +746,9 @@ random_unit_quaternion(URBG& urbg)
     auto d_0_1 = std::uniform_real_distribution<T>{T(0), T(1)};
     auto d_0_2pi = std::uniform_real_distribution<T>{T(0), T(2 * pi<T>)};
 
-    const auto u0 = d_0_1(urbg);
-    const auto u1 = d_0_2pi(urbg);
-    const auto u2 = d_0_2pi(urbg);
+    const auto u0 = d_0_1(urng);
+    const auto u1 = d_0_2pi(urng);
+    const auto u2 = d_0_2pi(urng);
     const auto uA = sqrt(T(1) - u0);
     const auto uB = sqrt(u0);
 
@@ -756,28 +756,28 @@ random_unit_quaternion(URBG& urbg)
 }
 
 //---------------------------------------------------------
-template<class URBG>
+template<class URNG>
 inline quaternion<real_t>
-random_unit_quat(URBG& urbg) {
-    return random_unit_quaternion<quaternion<real_t>>(urbg);
+random_unit_quat(URNG& urng) {
+    return random_unit_quaternion<quaternion<real_t>>(urng);
 }
 
-template<class URBG>
+template<class URNG>
 inline quaternion<float>
-random_unit_quatf(URBG& urbg) {
-    return random_unit_quaternion<quaternion<float>>(urbg);
+random_unit_quatf(URNG& urng) {
+    return random_unit_quaternion<quaternion<float>>(urng);
 }
 
-template<class URBG>
+template<class URNG>
 inline quaternion<double>
-random_unit_quatd(URBG& urbg) {
-    return random_unit_quaternion<quaternion<double>>(urbg);
+random_unit_quatd(URNG& urng) {
+    return random_unit_quaternion<quaternion<double>>(urng);
 }
 
-template<class URBG>
+template<class URNG>
 inline quaternion<long double>
-random_unit_quatld(URBG& urbg) {
-    return random_unit_quaternion<quaternion<long double>>(urbg);
+random_unit_quatld(URNG& urng) {
+    return random_unit_quaternion<quaternion<long double>>(urng);
 }
 
 

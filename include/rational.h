@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_RATIONAL_H_
-#define AMLIB_NUMERIC_RATIONAL_H_
+#ifndef AM_NUMERIC_RATIONAL_H_
+#define AM_NUMERIC_RATIONAL_H_
 
 #include <cmath>
 #include <cfloat>

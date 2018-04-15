@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_NATURAL_H_
-#define AMLIB_NUMERIC_NATURAL_H_
+#ifndef AM_NUMERIC_NATURAL_H_
+#define AM_NUMERIC_NATURAL_H_
 
 
 #include <cstdint>

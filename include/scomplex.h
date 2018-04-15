@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_SPLIT_COMPLEX_H_
-#define AMLIB_NUMERIC_SPLIT_COMPLEX_H_
+#ifndef AM_NUMERIC_SPLIT_COMPLEX_H_
+#define AM_NUMERIC_SPLIT_COMPLEX_H_
 
 #include <cmath>
 #include <cfloat>

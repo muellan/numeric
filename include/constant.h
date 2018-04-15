@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_CONSTANT_H_
-#define AMLIB_NUMERIC_CONSTANT_H_
+#ifndef AM_NUMERIC_CONSTANT_H_
+#define AM_NUMERIC_CONSTANT_H_
 
 
 #include "traits.h"

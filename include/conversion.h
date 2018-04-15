@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_CONVERSION_H_
-#define AMLIB_NUMERIC_CONVERSION_H_
+#ifndef AM_NUMERIC_CONVERSION_H_
+#define AM_NUMERIC_CONVERSION_H_
 
 #include <cstdlib>
 #include <cstring>

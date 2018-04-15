@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_CONSTANTS_H_
-#define AMLIB_NUMERIC_CONSTANTS_H_
+#ifndef AM_NUMERIC_CONSTANTS_H_
+#define AM_NUMERIC_CONSTANTS_H_
 
 
 #include <cstdint>

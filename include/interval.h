@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_RANGE_H_
-#define AMLIB_NUMERIC_RANGE_H_
+#ifndef AM_NUMERIC_RANGE_H_
+#define AM_NUMERIC_RANGE_H_
 
 #include <type_traits>
 #include <utility>

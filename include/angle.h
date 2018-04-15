@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_ANGLE_H_
-#define AMLIB_NUMERIC_ANGLE_H_
+#ifndef AM_NUMERIC_ANGLE_H_
+#define AM_NUMERIC_ANGLE_H_
 
 #include <cmath>
 #include <utility>
@@ -1087,16 +1087,16 @@ public:
     }
 
     //---------------------------------------------------------------
-    template<class URBG>
+    template<class URNG>
     result_type
-    operator() (URBG& urbg) {
-        return result_type{distr_(urbg)};
+    operator() (URNG& urng) {
+        return result_type{distr_(urng)};
     }
     //-----------------------------------------------------
-    template<class URBG>
+    template<class URNG>
     result_type
-    operator() (URBG& urbg, const param_type& par) {
-        return result_type{distr_(urbg,par)};
+    operator() (URNG& urng, const param_type& par) {
+        return result_type{distr_(urng,par)};
     }
 
 

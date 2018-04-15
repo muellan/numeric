@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_NATURAL_INTERVAL_H_
-#define AMLIB_NUMERIC_NATURAL_INTERVAL_H_
+#ifndef AM_NUMERIC_NATURAL_INTERVAL_H_
+#define AM_NUMERIC_NATURAL_INTERVAL_H_
 
 
 #include "natural.h"

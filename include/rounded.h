@@ -8,8 +8,8 @@
  *
  *****************************************************************************/
 
-#ifndef AMLIB_NUMERIC_ROUNDED_H_
-#define AMLIB_NUMERIC_ROUNDED_H_
+#ifndef AM_NUMERIC_ROUNDED_H_
+#define AM_NUMERIC_ROUNDED_H_
 
 
 #include <cmath>
@@ -50,7 +50,7 @@ struct round_to_nearest
         if(unit_ <= T(0)) {
             unit_ = is_integral<T>::value
                        ? T(1)
-                       : numeric_limits<T>::epsilon();
+                       : std::numeric_limits<T>::epsilon();
         }
     }
 
